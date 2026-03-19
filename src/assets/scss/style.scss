@@ -1,0 +1,114 @@
+// -----------------------------
+// 🔥 Bootstrap core (KEEP)
+// -----------------------------
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+
+@import "variables";
+@import "variables-dark";
+@import "user-variables";
+
+@import "bootstrap/scss/bootstrap";
+
+// -----------------------------
+// 🔥 Utilities (KEEP)
+// -----------------------------
+@import "custom/utilities";
+@import "bootstrap/scss/utilities/api";
+
+// -----------------------------
+// 🔥 Core UI components (KEEP)
+// -----------------------------
+@import "custom/buttons";
+@import "custom/card";
+@import "custom/dropdowns";
+@import "custom/nav";
+@import "custom/navbar";
+@import "custom/reboot";
+@import "custom/type";
+
+// -----------------------------
+// 🔥 Basic components (KEEP)
+// -----------------------------
+@import "components/general";
+@import "components/avatar";
+
+// -----------------------------
+// 🔥 Optional (ADD LATER WHEN NEEDED)
+// -----------------------------
+// @import "components/choices";
+// @import "components/dropzone";
+// @import "components/glightbox";
+// @import "components/flatpickr";
+// @import "components/toastify";
+// @import "components/zuck";
+// @import "components/overlayscrollbars";
+
+// -----------------------------
+// 🔥 Dark mode + custom
+// -----------------------------
+@import "dark-mode";
+@import "custom-react";
+@import "user";
+
+
+////// previous scss file
+
+// // // Bootstrap variables
+// // @import "bootstrap/scss/functions";
+// // @import "bootstrap/scss/variables";
+
+// // // Theme variables
+// // @import "variables";
+// // @import "variables-dark";
+
+// // // User variables
+// // @import "user-variables";
+
+// // // Bootstrap core
+// // @import "bootstrap/scss/bootstrap";
+
+// // // Extended bootstrap utilities
+// // @import "custom/utilities";
+// // @import "bootstrap/scss/utilities/api";
+
+// // @import "tiny-slider/dist/tiny-slider.css";
+// // @import "simplebar-react/dist/simplebar.min.css";
+
+// // // Extended bootstrap components
+// // @import "custom/accordion";
+// // @import "custom/breadcrumb";
+// // @import "custom/buttons";
+// // @import "custom/card";
+// // @import "custom/dropdowns";
+// // @import "custom/list-group";
+// // @import "custom/nav";
+// // @import "custom/navbar";
+// // @import "custom/pagination";
+// // @import "custom/reboot";
+// // @import "custom/type";
+// // @import "custom/badge";
+// // @import "custom/offcanvas";
+// // @import "custom/toasts";
+
+// // // Theme components 
+// // @import "components/general";
+// // @import "components/avatar";
+// // @import "components/tiny-slider";
+// // @import "components/glightbox";
+// // @import "components/choices";
+// // @import "components/dropzone";
+// // @import "components/overlayscrollbars";
+// // @import "components/mockup";
+// // @import "components/flatpickr";
+// // @import "components/toastify";
+// // @import "components/zuck";
+
+// // // Theme dark
+// // @import "dark-mode";
+
+// // // React's Custom
+// // @import "custom-react";
+
+// // // In this scss you can write your scss/css
+// // @import "user";
