@@ -23,7 +23,8 @@ export const loginApi = async (data: LoginRequest): Promise<LoginResponse> => {
     withCredentials: true, // ✅ IMPORTANT (for cookies)
   });
 
-  return response.data.data; // based on your ApiResponseResult
+  //return response.data.data; // based on your ApiResponseResult
+  return response.data.data ?? response.data; //return response.data.data; // based on your ApiResponseResult
 };
 
 // ✅ LOGIN
@@ -43,7 +44,7 @@ export const useLogin = () => {
         accessToken: data.accessToken,
       });
 
-      router.push("/feed/home");
+      router.push("/feed");
     },
 
     onError: (error) => {
