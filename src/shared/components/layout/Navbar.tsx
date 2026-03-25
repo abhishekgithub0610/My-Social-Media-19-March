@@ -8,10 +8,15 @@ import MobileMenuToggle from "./MobileMenuToggle";
 import NotificationDropdown from "./NotificationDropdown";
 import ProfileDropdown from "./ProfileDropdown";
 import StyledHeader from "./StyledHeader";
+import { useAuthStore } from "@/features/account/store/authStore";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
-
+  const { user, accessToken } = useAuthStore();
+  // Show loading until user is fetched or use localStorage value
+  if (!accessToken) {
+    return null; // or return a skeleton / empty Navbar
+  }
   return (
     <StyledHeader>
       <div className="container">
@@ -29,15 +34,6 @@ const Navbar = () => {
               href="/messages"
             >
               <BsChatLeftTextFill size={15} />
-            </Link>
-          </li>
-
-          <li className="nav-item ms-2">
-            <Link
-              className="nav-link bg-light icon-md btn btn-light p-0"
-              href="/settings/account"
-            >
-              <BsGearFill size={15} />
             </Link>
           </li>
 

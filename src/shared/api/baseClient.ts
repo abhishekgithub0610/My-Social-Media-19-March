@@ -70,12 +70,8 @@ baseClient.interceptors.response.use(
         const newAccessToken = res.accessToken;
 
         const { setUser, user } = useAuthStore.getState();
-
         if (user) {
-          setUser({
-            ...user,
-            accessToken: newAccessToken,
-          });
+          setUser(user, newAccessToken); // ✅ FIXED
         }
 
         processQueue(null, newAccessToken);

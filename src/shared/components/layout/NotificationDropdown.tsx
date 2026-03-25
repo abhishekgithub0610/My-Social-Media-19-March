@@ -14,7 +14,7 @@ import {
 } from "react-bootstrap";
 import { BsBellFill } from "react-icons/bs";
 import type { Notification } from "@/features/notification/types/notification";
-
+const AVATAR_SIZE = 40;
 const mockNotifications: Notification[] = [
   {
     id: "1",
@@ -80,6 +80,8 @@ const NotificationDropdown = () => {
                           className="avatar-img rounded-circle"
                           src={notification.avatar}
                           alt=""
+                          width={AVATAR_SIZE}
+                          height={AVATAR_SIZE}
                         />
                       ) : (
                         <div

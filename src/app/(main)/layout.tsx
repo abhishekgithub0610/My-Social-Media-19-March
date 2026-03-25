@@ -1,4 +1,5 @@
 import Navbar from "@/shared/components/layout/Navbar";
+import Footer from "@/shared/components/layout/Footer";
 
 export default function MainLayout({
   children,
@@ -8,7 +9,8 @@ export default function MainLayout({
   return (
     <>
       <Navbar />
-      <div className="main-container">{children}</div>
+      <main style={{ marginTop: "5px" }}>{children}</main>
+      {/* <div className="main-container">{children}</div> */}
     </>
   );
 }

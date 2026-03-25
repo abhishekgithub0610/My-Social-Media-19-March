@@ -36,16 +36,46 @@ export const useLogin = () => {
     mutationFn: loginApi,
 
     onSuccess: (data) => {
-      // ✅ store in Zustand (NOT localStorage)
-      setUser({
-        id: data.id,
-        email: data.email,
-        role: data.role,
-        accessToken: data.accessToken,
-      });
+      if (!data.result) return; // safety
+
+      setUser(
+        {
+          id: data.result.id,
+          email: data.result.email,
+          role: data.result.role,
+          name: data.result.name,
+          avatar: data.result.avatar,
+        },
+        data.result.accessToken, // token separate
+      );
+
+      console.log("LOGIN RESPONSE (result):", data.result);
+      // // onSuccess: (data) => {
+      // //   setUser(
+      // //     {
+      // //       id: data.id,
+      // //       email: data.email,
+      // //       role: data.role,
+      // //       name: data.name, // optional
+      // //       avatar: data.avatar, // optional
+      // //     },
+      // //     data.accessToken, // ✅ token separate
+      // //   );
+      // //   console.log("LOGIN RESPONSE:", data); // 👈 ADD THIS
 
       router.push("/feed");
     },
+    // // onSuccess: (data) => {
+    // //   // ✅ store in Zustand (NOT localStorage)
+    // //   setUser({
+    // //     id: data.id,
+    // //     email: data.email,
+    // //     role: data.role,
+    // //     accessToken: data.accessToken,
+    // //   });
+
+    // //   router.push("/feed");
+    // // },
 
     onError: (error) => {
       console.error("Login failed", error);

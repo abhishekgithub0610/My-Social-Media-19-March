@@ -19,6 +19,7 @@ import {
   BsSun,
 } from "react-icons/bs";
 import type { IconType } from "react-icons";
+import { useAuthStore } from "@/features/account/store/authStore";
 
 //import type { ThemeType } from "@/types/context";
 
@@ -28,16 +29,16 @@ import avatar7 from "@/assets/images/avatar/07.jpg";
 import clsx from "clsx";
 //import { developedByLink } from "@/context/constants";
 import Link from "next/link";
-
+import { useRouter } from "next/navigation";
 // type ThemeModeType = {
 //   theme: ThemeType;
 //   icon: IconType;
 // };
-const user = {
-  name: "Abhishek",
-  role: "User",
-  avatar: avatar7, // keep for now
-};
+// const user = {
+//   name: "Abhishek",
+//   role: "User",
+//   avatar: avatar7, // keep for now
+// };
 const ProfileDropdown = () => {
   // const themeModes: ThemeModeType[] = [
   //   {
@@ -55,7 +56,15 @@ const ProfileDropdown = () => {
   // ];
 
   //const { theme: themeMode, updateTheme } = useLayoutContext();
+  const { user, clearUser } = useAuthStore();
+  const router = useRouter();
 
+  const handleLogout = () => {
+    clearUser(); // ✅ your method
+    router.push("/sign-in");
+  };
+  console.log("User in ProfileDropdown:", user); // Debugging line
+  if (!user) return null;
   return (
     <Dropdown as="li" className="nav-item ms-2" drop="down" align="end">
       <DropdownToggle
@@ -81,10 +90,14 @@ const ProfileDropdown = () => {
             />
           </div>
           <div>
-            <Link className="h6 stretched-link" href="#">
+            <Link className="h6" href="/profile">
+              {user.email}
+            </Link>
+            <p className="small m-0">{user.role}</p>
+            {/* <Link className="h6 stretched-link" href="#">
               Lori Ferguson
             </Link>
-            <p className="small m-0">Web Developer</p>
+            <p className="small m-0">Web Developer</p> */}
           </div>
         </div>
         <DropdownItem
@@ -107,13 +120,17 @@ const ProfileDropdown = () => {
           Documentation
         </DropdownItem>
         <DropdownDivider />
-        <DropdownItem
+        <DropdownItem onClick={handleLogout} className="text-danger">
+          <BsPower className="me-2" />
+          Logout
+        </DropdownItem>
+        {/* <DropdownItem
           className="bg-danger-soft-hover"
           href="/auth-advance/sign-in"
         >
           <BsPower className="fa-fw me-2" />
           Sign Out
-        </DropdownItem>{" "}
+        </DropdownItem>{" "} */}
         <DropdownDivider />
         {/* <div className="modeswitch-item theme-icon-active d-flex justify-content-center gap-3 align-items-center p-2 pb-0">
           <span>Mode:</span>

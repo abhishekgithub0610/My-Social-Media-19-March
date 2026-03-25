@@ -1,4 +1,4 @@
-import useFileUploader from "@/hooks/useFileUploader";
+import useFileUploader from "@/shared/hooks/useFileUploader";
 import { type ReactNode } from "react";
 import { Card, Col, FormLabel, FormText } from "react-bootstrap";
 import Dropzone from "react-dropzone";

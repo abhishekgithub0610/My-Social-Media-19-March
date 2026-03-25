@@ -26,10 +26,13 @@ const TextFormInput = <
   label,
   noValidate,
   labelClassName: labelClass,
+  required, // ✅ NEW: add required prop
   ...other
 }: FormInputProps<TFieldValues> &
   FormControlProps &
-  InputHTMLAttributes<HTMLInputElement>) => {
+  InputHTMLAttributes<HTMLInputElement> & {
+    required?: boolean; // ✅ NEW: explicitly define required prop
+  }) => {
   return (
     <Controller<TFieldValues, TName>
       name={name as TName}
@@ -41,6 +44,8 @@ const TextFormInput = <
             (typeof label === "string" ? (
               <FormLabel htmlFor={id ?? name} className={labelClass}>
                 {label}
+                {/* ✅ NEW: show red * if required */}
+                {required && <span className="text-danger ms-1">*</span>}
               </FormLabel>
             ) : (
               <>{label}</>
