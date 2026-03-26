@@ -2,11 +2,18 @@
 import SelectInput from "@/shared/components/ui/SelectInput";
 import TextAreaFormInput from "@/shared/components/ui/TextAreaFormInput";
 import TextFormInput from "@/shared/components/ui/TextFormInput";
+import { components, OptionProps } from "react-select";
 import type { CreatePageFormValues } from "../types/page";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { useState, useRef } from "react";
+import { useCreatePage } from "../hooks/usePages";
+import Image from "next/image";
+import { Controller } from "react-hook-form";
+import Select from "react-select";
+import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+import { getErrorMessage } from "@/shared/utils/errorHandler";
 import {
   Button,
   Card,
@@ -15,13 +22,65 @@ import {
   CardTitle,
   Col,
 } from "react-bootstrap";
+
 import {
   BsFacebook,
   BsInstagram,
   BsPinterest,
   BsTwitter,
 } from "react-icons/bs";
+import { AxiosError } from "axios";
+
+const TYPE_OPTIONS = [
+  "daily",
+  "daily+",
+  "weekly",
+  "weekly+",
+  "bi-weekly",
+  "bi-weekly+",
+  "monthly",
+  "monthly+",
+  "yearly",
+  "yearly+",
+];
+
+type OptionType = {
+  label: string;
+  value: string;
+};
+
+const Option = (props: OptionProps<OptionType, true>) => {
+  return (
+    <components.Option {...props}>
+      <input
+        type="checkbox"
+        checked={props.isSelected}
+        onChange={() => null}
+        style={{ marginRight: 8 }}
+      />
+      {props.label}
+    </components.Option>
+  );
+};
+
 const CreatePageForm = () => {
+  const { mutate, isPending } = useCreatePage();
+  const handleTypeChange = (selected: string[]) => {
+    if (!selected.length) {
+      setValue("type", []);
+      return;
+    }
+
+    // find lowest index (earliest in list)
+    const minIndex = Math.min(
+      ...selected.map((val) => TYPE_OPTIONS.indexOf(val)),
+    );
+
+    // ✅ select from selected → end
+    const updated = TYPE_OPTIONS.slice(minIndex);
+
+    setValue("type", updated, { shouldValidate: true });
+  };
   const createFormSchema: yup.ObjectSchema<CreatePageFormValues> = yup.object({
     pageImage: yup.mixed<File>().required("Page image is required"),
 
@@ -46,9 +105,8 @@ const CreatePageForm = () => {
     // ✅ optional phone
     phoneNo: yup
       .number()
-      .transform((v, originalValue) => (originalValue === "" ? null : v))
-      .nullable()
-      .typeError("Phone number must be a valid number"),
+      .typeError("Phone number must be a valid number")
+      .required("Phone number is required"),
 
     aboutPage: yup
       .string()
@@ -56,6 +114,11 @@ const CreatePageForm = () => {
       .required("About page is required"),
 
     category: yup.string().required("Please select a category"),
+    type: yup
+      .array()
+      .of(yup.string().required()) // ✅ FIX HERE
+      .min(1, "Please select at least one type")
+      .required("Type is required"),
   });
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -79,40 +142,42 @@ const CreatePageForm = () => {
     control,
     handleSubmit,
     setValue,
+    reset, // ✅ ADD THIS
     formState: { errors },
   } = useForm<CreatePageFormValues>({
     resolver: yupResolver(createFormSchema),
+    defaultValues: {
+      type: [], // ✅ IMPORTANT
+    },
   });
-  const onSubmit = async (data: CreatePageFormValues) => {
-    console.log("FORM DATA:", data);
-
+  const onSubmit = (data: CreatePageFormValues) => {
     const formData = new FormData();
 
     formData.append("pageName", data.pageName);
     formData.append("displayName", data.displayName);
-    if (data.email) {
-      formData.append("email", data.email);
-    }
-    if (data.url) {
-      formData.append("url", data.url);
-    }
-    formData.append("phoneNo", String(data.phoneNo));
+
+    if (data.email) formData.append("email", data.email);
+    if (data.url) formData.append("url", data.url);
+    if (data.phoneNo) formData.append("phoneNo", String(data.phoneNo));
+
     formData.append("aboutPage", data.aboutPage);
+    formData.append("category", data.category);
 
-    // 🔥 image
+    // ✅ IMAGE (IMPORTANT)
     formData.append("pageImage", data.pageImage);
-
-    try {
-      const res = await fetch("/api/pages", {
-        method: "POST",
-        body: formData,
-      });
-
-      const result = await res.json();
-      console.log("SUCCESS:", result);
-    } catch (err) {
-      console.error("ERROR:", err);
-    }
+    data.type.forEach((t, i) => {
+      formData.append(`Types[${i}]`, t); // ✅ MATCH BACKEND PROPERTY
+    });
+    mutate(formData, {
+      onSuccess: () => {
+        toast.success("Page created successfully 🚀");
+        reset();
+        setPreview(null);
+      },
+      onError: (err: unknown) => {
+        toast.error(getErrorMessage(err as AxiosError<{ message?: string }>));
+      },
+    });
   };
   return (
     <Card>
@@ -136,13 +201,25 @@ const CreatePageForm = () => {
               onClick={() => fileInputRef.current?.click()}
             >
               {preview ? (
+                <Image
+                  src={preview}
+                  alt="Page preview"
+                  width={120}
+                  height={120}
+                  unoptimized // ✅ avoids optimization issues for local blob
+                  style={{ objectFit: "cover", borderRadius: "50%" }}
+                />
+              ) : (
+                <span>Upload</span>
+              )}
+              {/* {preview ? (
                 <img
                   src={preview}
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
               ) : (
                 <span>Upload</span>
-              )}
+              )} */}
             </div>
             {errors.pageImage && (
               <div className="text-danger mt-2">{errors.pageImage.message}</div>
@@ -193,9 +270,99 @@ const CreatePageForm = () => {
                 { label: "Entertainment", value: "entertainment" },
                 { label: "Hotel", value: "hotel" },
                 { label: "Travel", value: "travel" },
+                { label: "Influencer", value: "influencer" },
+                { label: "Health", value: "health" },
+                { label: "Health Specialist", value: "health-specialist" },
+                { label: "Motivation", value: "motivation" },
+                { label: "Sports", value: "sports" },
               ]}
             />
           </Col>
+          <Col xs={12}>
+            <label className="form-label">
+              Type <span className="text-danger">*</span>
+            </label>
+
+            <Controller
+              name="type"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  isMulti
+                  closeMenuOnSelect={false}
+                  hideSelectedOptions={false}
+                  components={{ Option }}
+                  options={TYPE_OPTIONS.map((item) => ({
+                    label: item,
+                    value: item,
+                  }))}
+                  value={TYPE_OPTIONS.filter((opt) =>
+                    field.value?.includes(opt),
+                  ).map((v) => ({ label: v, value: v }))}
+                  onChange={(val, actionMeta) => {
+                    // ✅ handle clear (when user clicks cross icon)
+                    if (actionMeta.action === "clear") {
+                      field.onChange([]);
+                      return;
+                    }
+
+                    // ❗ safety check
+                    if (!actionMeta.option) return;
+
+                    const clickedValue = actionMeta.option.value;
+                    const index = TYPE_OPTIONS.indexOf(clickedValue);
+
+                    // ✅ always select clicked → bottom
+                    const updated = TYPE_OPTIONS.slice(index);
+
+                    field.onChange(updated);
+                  }}
+                />
+                // <Select
+                //   {...field}
+                //   isMulti
+                //   options={TYPE_OPTIONS.map((item) => ({
+                //     label: item,
+                //     value: item,
+                //   }))}
+                //   value={TYPE_OPTIONS.filter((opt) =>
+                //     field.value?.includes(opt),
+                //   ).map((v) => ({ label: v, value: v }))}
+
+                //   onChange={(val) => {
+                //     const values =
+                //       (val as { label: string; value: string }[])?.map(
+                //         (v) => v.value,
+                //       ) || [];
+
+                //     handleTypeChange(values);
+                //   }}
+                // />
+              )}
+            />
+
+            {errors.type && (
+              <div className="text-danger mt-1">{errors.type.message}</div>
+            )}
+          </Col>
+          {/* <Col xs={12}>
+            <SelectInput<CreatePageFormValues>
+              name="type"
+              label="Type"
+              control={control}
+              required
+              isMulti // ✅ IMPORTANT
+              options={TYPE_OPTIONS.map((item) => ({
+                label: item,
+                value: item,
+              }))}
+              onChange={(val: { label: string; value: string }[] | null) => {
+                const values = val?.map((v) => v.value) || [];
+                handleTypeChange(values);
+              }}
+            />
+          </Col> */}
           <TextFormInput
             name="url"
             label="Website URL"
@@ -208,6 +375,7 @@ const CreatePageForm = () => {
             label="Phone number"
             placeholder="Phone number (Required)"
             control={control}
+            required // ✅ ADD THIS
             containerClassName="col-lg-6"
           />
           <Col xs={12}>
@@ -282,8 +450,8 @@ const CreatePageForm = () => {
             </div>
           </Col>
           <Col xs={12} className="text-end">
-            <Button variant="primary" type="submit" className="mb-0">
-              Create a page
+            <Button variant="primary" type="submit" disabled={isPending}>
+              {isPending ? "Creating..." : "Create a page"}
             </Button>
           </Col>
         </form>

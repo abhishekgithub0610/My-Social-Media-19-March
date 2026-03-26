@@ -50,6 +50,7 @@ export const useAuthStore = create<AuthState>()(
     { name: "auth-storage" }, // persists in localStorage
   ),
 );
+export const getAccessToken = () => useAuthStore.getState().accessToken;
 // // export const useAuthStore = create<AuthState>((set) => ({
 // //   user: null,
 // //   accessToken: null,

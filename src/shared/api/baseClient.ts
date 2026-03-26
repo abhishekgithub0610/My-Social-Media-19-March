@@ -1,6 +1,9 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { refreshTokenApi } from "@/features/account/services/accountApi";
-import { useAuthStore } from "@/features/account/store/authStore";
+import {
+  useAuthStore,
+  getAccessToken,
+} from "@/features/account/store/authStore";
 
 export const baseClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -9,10 +12,11 @@ export const baseClient = axios.create({
 
 // ✅ Attach access token
 baseClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const user = useAuthStore.getState().user;
+  const accessToken = getAccessToken();
+  // // const { accessToken } = useAuthStore.getState(); // ✅ FIX
 
-  if (user?.accessToken) {
-    config.headers.Authorization = `Bearer ${user.accessToken}`;
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
   }
 
   return config;

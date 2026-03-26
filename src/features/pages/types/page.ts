@@ -17,4 +17,5 @@ export type CreatePageFormValues = {
 
   aboutPage: string;
   category: string;
+  type: string[]; // ✅ ADD THIS
 };
