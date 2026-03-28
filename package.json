@@ -17,6 +17,7 @@
     "bootstrap": "^5.3.8",
     "clsx": "^2.1.1",
     "flatpickr": "^4.6.13",
+    "framer-motion": "^12.38.0",
     "glightbox": "^3.3.1",
     "next": "16.2.0",
     "nextjs-toploader": "^3.9.17",

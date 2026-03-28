@@ -1,7 +1,30 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  /* config options here */
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "7120",
+      },
+    ],
+  },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
+
+// // // const nextConfig: NextConfig = {
+// // //   /* config options here */
+// // // };
+// // const nextConfig: NextConfig = {
+// //   images: {
+// //     domains: ["localhost"],
+// //   },
+// // };
+// // export default nextConfig;
+
+// // /** @type {import('next').NextConfig} */
+
+// // //module.exports = nextConfig;
