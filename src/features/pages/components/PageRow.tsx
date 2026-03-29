@@ -3,8 +3,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import FollowButton from "@/shared/components/ui/FollowButton ";
-
-const PageRow = ({ page }: { page: any }) => {
+type PageType = {
+  id: string;
+  displayName: string;
+  aboutPage: string;
+  pageImageUrl?: string;
+};
+const PageRow = ({ page }: { page: PageType }) => {
   return (
     <div className="d-flex flex-column gap-2 py-2 border-bottom">
       {/* 🔹 ROW 1 */}
@@ -16,8 +21,8 @@ const PageRow = ({ page }: { page: any }) => {
               className="avatar-img rounded-circle"
               src={`http://localhost:7120/${page.pageImageUrl}`}
               alt="page"
-              width={42}
-              height={42}
+              width={52}
+              height={52}
               unoptimized
             />
           )}
@@ -25,9 +30,13 @@ const PageRow = ({ page }: { page: any }) => {
 
         {/* NAME */}
         <Link
-          href={`/pages/${page.id}`}
+          href={`/profile/profile-feed?pageId=${page.id}`}
           className="text-decoration-none flex-grow-1"
         >
+          {/* <Link
+          href={`/profile/pages/${page.id}`}
+          className="text-decoration-none flex-grow-1"
+        > */}
           <h6 className="mb-0 text-dark fw-semibold">{page.displayName}</h6>
         </Link>
 
@@ -36,7 +45,11 @@ const PageRow = ({ page }: { page: any }) => {
       </div>
 
       {/* 🔹 ROW 2 */}
-      <Link href={`/pages/${page.id}`} className="text-decoration-none">
+      <Link
+        href={`/profile/profile-feed?pageId=${page.id}`}
+        className="text-decoration-none"
+      >
+        {/* <Link href={`/profile/pages/${page.id}`} className="text-decoration-none"> */}
         <p
           className="mb-0 text-muted small text-truncate"
           title={page.aboutPage}

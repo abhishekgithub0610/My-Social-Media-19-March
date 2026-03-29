@@ -3,9 +3,9 @@ import { BsCloudDownloadFill } from "react-icons/bs";
 
 export const PROFILE_MENU_ITEMS: MenuItemType[] = [
   {
-    key: "profile-feed",
-    label: "Feed",
-    url: "/profile/feed",
+    key: "profile-posts",
+    label: "Posts",
+    url: "/profile/profile-feed",
     parentKey: "pages-profile",
   },
   {
@@ -14,16 +14,16 @@ export const PROFILE_MENU_ITEMS: MenuItemType[] = [
     url: "/profile/about",
     parentKey: "pages-profile",
   },
-  {
-    key: "profile-connections",
-    label: "Connections",
-    url: "/profile/connections",
-    badge: {
-      text: "300",
-      variant: "success",
-    },
-    parentKey: "pages-profile",
-  },
+  // {
+  //   key: "profile-connections",
+  //   label: "Connections",
+  //   url: "/profile/connections",
+  //   badge: {
+  //     text: "300",
+  //     variant: "success",
+  //   },
+  //   parentKey: "pages-profile",
+  // },
   {
     key: "profile-media",
     label: "Media",
@@ -42,12 +42,12 @@ export const PROFILE_MENU_ITEMS: MenuItemType[] = [
     url: "/profile/events",
     parentKey: "pages-profile",
   },
-  {
-    key: "profile-activity",
-    label: "Activity",
-    url: "/profile/activity",
-    parentKey: "pages-profile",
-  },
+  // {
+  //   key: "profile-activity",
+  //   label: "Activity",
+  //   url: "/profile/activity",
+  //   parentKey: "pages-profile",
+  // },
 ];
 
 export const APP_MENU_ITEMS: MenuItemType[] = [
