@@ -13,9 +13,11 @@ type User = {
 type AuthState = {
   user: User | null;
   accessToken: string | null;
+  isHydrated: boolean; // ✅ ADD THIS
 
   setUser: (user: User, token: string) => void;
   clearUser: () => void;
+  setHydrated: () => void;
 };
 // // type User = {
 // //   id: string;
@@ -33,23 +35,52 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      accessToken: null, // ✅ initialize
+      accessToken: null,
+      isHydrated: false,
 
       setUser: (user, token) =>
         set({
           user,
-          accessToken: token, // ✅ set token too
+          accessToken: token,
         }),
 
       clearUser: () =>
         set({
           user: null,
-          accessToken: null, // ✅ clear token too
+          accessToken: null,
         }),
+
+      setHydrated: () => set({ isHydrated: true }),
     }),
-    { name: "auth-storage" }, // persists in localStorage
+    {
+      name: "auth-storage",
+      onRehydrateStorage: () => (state) => {
+        state?.setHydrated(); // ✅ IMPORTANT
+      },
+    },
   ),
 );
+// export const useAuthStore = create<AuthState>()(
+//   persist(
+//     (set) => ({
+//       user: null,
+//       accessToken: null, // ✅ initialize
+
+//       setUser: (user, token) =>
+//         set({
+//           user,
+//           accessToken: token, // ✅ set token too
+//         }),
+
+//       clearUser: () =>
+//         set({
+//           user: null,
+//           accessToken: null, // ✅ clear token too
+//         }),
+//     }),
+//     { name: "auth-storage" }, // persists in localStorage
+//   ),
+// );
 export const getAccessToken = () => useAuthStore.getState().accessToken;
 // // export const useAuthStore = create<AuthState>((set) => ({
 // //   user: null,

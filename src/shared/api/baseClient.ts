@@ -14,9 +14,9 @@ export const baseClient = axios.create({
 baseClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const accessToken = getAccessToken();
   // // const { accessToken } = useAuthStore.getState(); // ✅ FIX
-
+  console.log("Attaching token to request:", accessToken);
   if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
+    config.headers.set("Authorization", `Bearer ${accessToken}`);
   }
 
   return config;
@@ -71,10 +71,11 @@ baseClient.interceptors.response.use(
 
       try {
         const res = await refreshTokenApi();
-        const newAccessToken = res.accessToken;
-
+        //const newAccessToken = res.accessToken;
+        const newAccessToken = res.result.accessToken;
         const { setUser, user } = useAuthStore.getState();
         if (user) {
+          console.log("New access token obtained:", newAccessToken);
           setUser(user, newAccessToken); // ✅ FIXED
         }
 
@@ -86,10 +87,11 @@ baseClient.interceptors.response.use(
       } catch (err) {
         processQueue(err as AxiosError, null);
 
+        // // window.location.href = "/sign-in";
         const { clearUser } = useAuthStore.getState();
         clearUser();
 
-        window.location.href = "/sign-in";
+        // ❌ DO NOT navigate here
 
         return Promise.reject(err);
       } finally {

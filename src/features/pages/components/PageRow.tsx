@@ -3,13 +3,18 @@
 import Link from "next/link";
 import Image from "next/image";
 import FollowButton from "@/shared/components/ui/FollowButton ";
+import { useAuthRedirect } from "@/features/account/hooks/useAuthRedirect";
+import { useAuthStore } from "@/features/account/store/authStore";
 type PageType = {
   id: string;
   displayName: string;
   aboutPage: string;
   pageImageUrl?: string;
+  isFollowing: boolean;
 };
 const PageRow = ({ page }: { page: PageType }) => {
+  useAuthRedirect();
+
   return (
     <div className="d-flex flex-column gap-2 py-2 border-bottom">
       {/* 🔹 ROW 1 */}

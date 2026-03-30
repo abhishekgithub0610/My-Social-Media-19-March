@@ -63,7 +63,6 @@ const ProfileDropdown = () => {
     clearUser(); // ✅ your method
     router.push("/sign-in");
   };
-  console.log("User in ProfileDropdown:", user); // Debugging line
   if (!user) return null;
   return (
     <Dropdown as="li" className="nav-item ms-2" drop="down" align="end">

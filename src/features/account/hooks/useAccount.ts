@@ -1,9 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
-import { registerUser, loginUser } from "../services/accountApi";
+import { registerUser } from "../services/accountApi";
 import { useRouter } from "next/navigation";
-import { LoginResponse } from "../types/account";
 import { baseClient } from "@/shared/api/baseClient";
 import { useAuthStore } from "../store/authStore";
+import { ApiResponse } from "@/shared/types/api";
+import { UserResult } from "../types/account";
 
 // ✅ Type added (fix for your error)
 type LoginRequest = {
@@ -18,14 +19,34 @@ export const useRegister = () => {
   });
 };
 
-export const loginApi = async (data: LoginRequest): Promise<LoginResponse> => {
-  const response = await baseClient.post("/auth/login", data, {
-    withCredentials: true, // ✅ IMPORTANT (for cookies)
-  });
+export const loginApi = async (
+  data: LoginRequest,
+): Promise<ApiResponse<UserResult>> => {
+  const response = await baseClient.post<ApiResponse<UserResult>>(
+    "/auth/login",
+    data,
+    { withCredentials: true },
+  );
 
-  //return response.data.data; // based on your ApiResponseResult
-  return response.data.data ?? response.data; //return response.data.data; // based on your ApiResponseResult
+  return response.data;
 };
+// export const loginApi = async (
+//   data: LoginRequest,
+// ): Promise<ApiResponse<LoginResponse>> => {
+//   const response = await baseClient.post("/auth/login", data, {
+//     withCredentials: true,
+//   });
+
+//   return response.data;
+// };
+// export const loginApi = async (data: LoginRequest): Promise<LoginResponse> => {
+//   const response = await baseClient.post("/auth/login", data, {
+//     withCredentials: true, // ✅ IMPORTANT (for cookies)
+//   });
+
+//   //return response.data.data; // based on your ApiResponseResult
+//   return response.data.data ?? response.data; //return response.data.data; // based on your ApiResponseResult
+// };
 
 // ✅ LOGIN
 export const useLogin = () => {
@@ -38,18 +59,35 @@ export const useLogin = () => {
     onSuccess: (data) => {
       if (!data.result) return; // safety
 
+      const user = data.result;
+
+      if (!user) {
+        console.error("User not found in response");
+        return;
+      }
+      console.log("login token :", user.accessToken); // 👈 ADD THIS
+
       setUser(
         {
-          id: data.result.id,
-          email: data.result.email,
-          role: data.result.role,
-          name: data.result.name,
-          avatar: data.result.avatar,
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          name: user.name,
+          avatar: user.avatar,
         },
-        data.result.accessToken, // token separate
+        user.accessToken,
       );
+      // setUser(
+      //   {
+      //     id: data.result.result.id,
+      //     email: data.result.result.email,
+      //     role: data.result.result.role,
+      //     name: data.result.result.name,
+      //     avatar: data.result.result.avatar,
+      //   },
+      //   data.result.result.accessToken, // token separate
+      // );
 
-      console.log("LOGIN RESPONSE (result):", data.result);
       // // onSuccess: (data) => {
       // //   setUser(
       // //     {
@@ -62,8 +100,16 @@ export const useLogin = () => {
       // //     data.accessToken, // ✅ token separate
       // //   );
       // //   console.log("LOGIN RESPONSE:", data); // 👈 ADD THIS
+      // ✅ CHECK Zustand state immediately
+      const state = useAuthStore.getState();
 
-      router.push("/feed");
+      console.log("Zustand AFTER setUser:", {
+        user: state.user,
+        accessToken: state.accessToken,
+      });
+      setTimeout(() => {
+        router.push("/feed");
+      }, 0);
     },
     // // onSuccess: (data) => {
     // //   // ✅ store in Zustand (NOT localStorage)

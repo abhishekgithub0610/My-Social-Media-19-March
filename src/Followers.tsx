@@ -6,8 +6,8 @@ import { Button, Card, CardBody, CardHeader, CardTitle } from "react-bootstrap";
 import { BsPersonCheckFill } from "react-icons/bs";
 import { FaPlus } from "react-icons/fa";
 
-const Followers = async () => {
-  const allFollowers = await getAllUsers();
+const Followers = () => {
+  const allFollowers = getAllUsers();
   return (
     <Card>
       <CardHeader className="pb-0 border-0">
@@ -15,7 +15,7 @@ const Followers = async () => {
       </CardHeader>
 
       <CardBody>
-        {allFollowers.slice(0, 5).map((follower, idx) => (
+        {/* {allFollowers.slice(0, 5).map((follower, idx) => (
           <div className="hstack gap-2 mb-3" key={idx}>
             <div
               className={clsx("avatar", { "avatar-story": follower.isStory })}
@@ -49,7 +49,7 @@ const Followers = async () => {
               </span>{" "}
             </Button>
           </div>
-        ))}
+        ))} */}
 
         <div className="d-grid mt-3">
           <Button variant="primary-soft" size="sm">

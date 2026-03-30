@@ -11,11 +11,14 @@ import FollowButton from "@/shared/components/ui/FollowButton ";
 export const metadata: Metadata = { title: "Connections" };
 
 import PageRow from "./PageRow";
+import { useAuthRedirect } from "@/features/account/hooks/useAuthRedirect";
+import { useAuthStore } from "@/features/account/store/authStore";
 type PageType = {
   id: string;
   displayName: string;
   aboutPage: string;
   pageImageUrl?: string;
+  isFollowing: boolean;
 };
 const PageList = async () => {
   const pages = await getPages();
@@ -27,7 +30,7 @@ const PageList = async () => {
       </CardHeader>
 
       <CardBody>
-        {pages.map((page: PageType) => (
+        {(pages ?? []).map((page: PageType) => (
           <PageRow key={page.id} page={page} />
         ))}
       </CardBody>

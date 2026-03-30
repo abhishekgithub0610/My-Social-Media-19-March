@@ -10,6 +10,7 @@ export const useAuthInit = () => {
     const initAuth = async () => {
       try {
         const res = await refreshTokenApi();
+        console.log("refresh token response:", res);
         setUser(
           {
             id: res.user.id,

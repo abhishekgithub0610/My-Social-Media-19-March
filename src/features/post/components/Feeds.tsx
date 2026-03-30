@@ -903,19 +903,19 @@ const Post3 = () => {
   );
 };
 
-const Feeds = async () => {
+const Feeds = () => {
   const postData = [
     { progress: 25, title: "We have cybersecurity insurance coverage" },
     { progress: 15, title: "Our dedicated staff will protect us" },
     { progress: 10, title: "We give regular training for best practices" },
     { progress: 55, title: "Third-party vendor protection" },
   ];
-  const allPosts = await getAllFeeds();
+  const allPosts = getAllFeeds();
   return (
     <>
-      {allPosts.map((post, idx) => (
+      {/* {allPosts..map((post, idx) => (
         <PostCard {...post} key={idx} />
-      ))}
+      ))} */}
 
       <SponsoredCard />
       <Post2 />

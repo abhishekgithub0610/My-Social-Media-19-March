@@ -5,9 +5,8 @@ import type { ChildrenType } from "@/types/component";
 import clsx from "clsx";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import Navbar from "@/shared/components/layout/Navbar";
-import Footer from "@/shared/components/layout/Footer";
 import {
   Button,
   Card,
@@ -51,53 +50,16 @@ import album2 from "@/assets/images/albums/02.jpg";
 import album3 from "@/assets/images/albums/03.jpg";
 import album4 from "@/assets/images/albums/04.jpg";
 import album5 from "@/assets/images/albums/05.jpg";
-
-const Experience = () => {
-  return (
-    <Card>
-      <CardHeader className="d-flex justify-content-between border-0">
-        <h5 className="card-title">Experience</h5>
-        <Button variant="primary-soft" size="sm">
-          {" "}
-          <FaPlus />{" "}
-        </Button>
-      </CardHeader>
-      <CardBody className="position-relative pt-0">
-        {experienceData.map((experience, idx) => (
-          <div className="d-flex" key={idx}>
-            <div className="avatar me-3">
-              <span role="button">
-                {" "}
-                <Image
-                  className="avatar-img rounded-circle"
-                  src={experience.logo}
-                  alt=""
-                />{" "}
-              </span>
-            </div>
-            <div>
-              <h6 className="card-title mb-0">
-                <Link href="#"> {experience.title} </Link>
-              </h6>
-              <p className="small">
-                {experience.description}{" "}
-                <Link className="btn btn-primary-soft btn-xs ms-2" href="#">
-                  Edit{" "}
-                </Link>
-              </p>
-            </div>
-          </div>
-        ))}
-      </CardBody>
-    </Card>
-  );
-};
+import { useEffect, useState } from "react";
+import { getPageById } from "@/features/pages/services/pagesApi";
+import { usePageId } from "@/shared/hooks/usePageId";
+import { PageType } from "@/shared/types/PageType";
 
 const Photos = () => {
   return (
     <Card>
       <CardHeader className="d-sm-flex justify-content-between border-0">
-        <CardTitle>Photos(Coming Soon)</CardTitle>
+        <CardTitle>Photos (Coming Soon...)</CardTitle>
         <Button variant="primary-soft" size="sm">
           {" "}
           See all photo
@@ -156,83 +118,27 @@ const Photos = () => {
   );
 };
 
-const Friends = () => {
-  const allFriends = useFetchData(getAllUsers);
-
-  return (
-    <Card>
-      <CardHeader className="d-sm-flex justify-content-between align-items-center border-0">
-        <CardTitle>
-          Friends{" "}
-          <span className="badge bg-danger bg-opacity-10 text-danger">230</span>
-        </CardTitle>
-        <Button variant="primary-soft" size="sm">
-          {" "}
-          See all friends
-        </Button>
-      </CardHeader>
-      <CardBody className="position-relative pt-0">
-        <Row className="g-3">
-          {allFriends?.slice(0, 4).map((friend, idx) => (
-            <Col xs={6} key={idx}>
-              <Card className="shadow-none text-center h-100">
-                <CardBody className="p-2 pb-0">
-                  <div
-                    className={clsx("avatar avatar-xl", {
-                      "avatar-story": friend.isStory,
-                    })}
-                  >
-                    <span role="button">
-                      <Image
-                        className="avatar-img rounded-circle"
-                        src={friend.avatar}
-                        alt=""
-                      />
-                    </span>
-                  </div>
-                  <h6 className="card-title mb-1 mt-3">
-                    {" "}
-                    <Link href="#"> {friend.name} </Link>
-                  </h6>
-                  <p className="mb-0 small lh-sm">
-                    {friend.mutualCount} mutual connections
-                  </p>
-                </CardBody>
-                <div className="card-footer p-2 border-0">
-                  <button
-                    className="btn btn-sm btn-primary me-1"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="top"
-                    title="Send message"
-                  >
-                    {" "}
-                    <BsChatLeftText />{" "}
-                  </button>
-                  <button
-                    className="btn btn-sm btn-danger"
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="top"
-                    title="Remove friend"
-                  >
-                    {" "}
-                    <BsPersonX />{" "}
-                  </button>
-                </div>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-      </CardBody>
-    </Card>
-  );
-};
-
 const ProfileLayout = ({ children }: ChildrenType) => {
   const pathName = usePathname();
+  const searchParams = useSearchParams();
+  const pageId = usePageId();
+
+  const [page, setPage] = useState<PageType | null>(null);
+  useEffect(() => {
+    if (pageId) {
+      getPageById(pageId).then((data) => {
+        setPage(data); // 👈 IMPORTANT
+      });
+    }
+  }, [pageId]);
+  // ✅ GUARD
+  if (!page) {
+    return <div className="text-center p-5">Loading page...</div>;
+  }
+  console.log("Page data:", page);
   return (
     <>
       <Navbar />
-
       <main>
         <Container>
           <Row className="g-4">
@@ -251,19 +157,24 @@ const ProfileLayout = ({ children }: ChildrenType) => {
                   <div className="d-sm-flex align-items-start text-center text-sm-start">
                     <div>
                       <div className="avatar avatar-xxl mt-n5 mb-3">
-                        <Image
-                          className="avatar-img rounded-circle border border-white border-3"
-                          src={avatar7}
-                          alt="avatar"
-                        />
+                        {page?.pageImageUrl && (
+                          <Image
+                            className="avatar-img rounded-circle border border-white border-3"
+                            src={`http://localhost:7120/${page.pageImageUrl}`}
+                            alt="avatar"
+                            width={120}
+                            height={120}
+                            unoptimized
+                          />
+                        )}
                       </div>
                     </div>
                     <div className="ms-sm-4 mt-sm-3">
                       <h1 className="mb-0 h5">
-                        Sam Lanson{" "}
-                        <BsPatchCheckFill className="text-success small" />
+                        {page?.displayName}{" "}
+                        {/* <BsPatchCheckFill className="text-success small" /> */}
                       </h1>
-                      <p>250 connections</p>
+                      {/* <p>250 connections</p> */}
                     </div>
                     <div className="d-flex mt-3 justify-content-center ms-sm-auto">
                       <Button
@@ -295,20 +206,25 @@ const ProfileLayout = ({ children }: ChildrenType) => {
                         >
                           <li>
                             <DropdownItem href="#">
+                              <b>Coming Soon...</b>
+                            </DropdownItem>
+                          </li>
+                          <li>
+                            <DropdownItem href="#">
                               {" "}
                               <BsBookmark size={22} className="fa-fw pe-2" />
                               Share profile in a message
                             </DropdownItem>
                           </li>
                           <li>
-                            <DropdownItem href="#">
+                            {/* <DropdownItem href="#">
                               {" "}
                               <BsFileEarmarkPdf
                                 size={22}
                                 className="fa-fw pe-2"
                               />
                               Save your profile to PDF
-                            </DropdownItem>
+                            </DropdownItem> */}
                           </li>
                           <li>
                             <DropdownItem href="#">
@@ -333,15 +249,15 @@ const ProfileLayout = ({ children }: ChildrenType) => {
                   </div>
                   <ul className="list-inline mb-0 text-center text-sm-start mt-3 mt-sm-0">
                     <li className="list-inline-item">
-                      <BsBriefcase className="me-1" /> Lead Developer
+                      <BsBriefcase className="me-1" /> {page?.aboutPage}
                     </li>
-                    <li className="list-inline-item">
+                    {/* <li className="list-inline-item">
                       <BsGeoAlt className="me-1" /> New Hampshire
-                    </li>
-                    <li className="list-inline-item">
+                    </li> */}
+                    {/* <li className="list-inline-item">
                       <BsCalendar2Plus className="me-1" /> Joined on Nov 26,
                       2019
-                    </li>
+                    </li> */}
                   </ul>
                 </CardBody>
                 <CardFooter className="card-footer mt-3 pt-2 pb-0">
@@ -384,7 +300,7 @@ const ProfileLayout = ({ children }: ChildrenType) => {
                 <Col md={6} lg={12}>
                   <Card>
                     <CardHeader className="border-0 pb-0">
-                      <CardTitle>About</CardTitle>
+                      <CardTitle>About (Coming Soon...)</CardTitle>
                     </CardHeader>
                     <CardBody className="position-relative pt-0">
                       <p>

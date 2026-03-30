@@ -1,9 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import Select from "react-select";
+import Select, { SingleValue } from "react-select";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuthStore } from "@/features/account/store/authStore";
+type Page = {
+  id: string; // 👈 IMPORTANT
+  isFollowing: boolean;
+};
 
+type FollowTypeOption = {
+  value: number;
+  label: string;
+};
 const pageTypeOptions = [
   { value: 0, label: "📅 Daily" },
   { value: 1, label: "📅 Daily+" },
@@ -16,21 +25,63 @@ const pageTypeOptions = [
   { value: 8, label: "🏆 Yearly" },
   { value: 9, label: "🏆 Yearly+" },
 ];
+type Props = {
+  page: Page;
+};
 
-const FollowButton = ({ page }: { page: any }) => {
+const FollowButton = ({ page }: Props) => {
+  // const FollowButton = ({ page }: { page: Page }) => {
   const [isFollowing, setIsFollowing] = useState(page.isFollowing);
-  const [selectedType, setSelectedType] = useState<any>(null);
+  const [selectedType, setSelectedType] = useState<FollowTypeOption | null>(
+    null,
+  );
 
-  const handleChange = (val: any) => {
+  const handleChange = async (val: SingleValue<FollowTypeOption>) => {
+    if (!val) return;
+
     setSelectedType(val);
     setIsFollowing(true);
+
+    const token = useAuthStore.getState().accessToken;
+    console.log("Follow API called with token:", token, "and type:", val); // 🔥 DEBUG
+    if (!token) {
+      console.error("No access token found");
+      return;
+    }
+
+    await fetch(`http://localhost:7120/api/pages/${page.id}/follow`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // ✅ ADDED
+      },
+      body: JSON.stringify({ pageTypeId: val.value }),
+      credentials: "include", // ✅ if using cookies
+    });
   };
 
-  const handleUnfollow = () => {
+  const handleUnfollow = async () => {
     setIsFollowing(false);
     setSelectedType(null);
+
+    const token = useAuthStore.getState().accessToken;
+    console.log("Unfollow API called with token:", token); // 🔥 DEBUG
+    await fetch(`http://localhost:7120/api/pages/${page.id}/follow`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: "include", // ✅ if you are using cookies too
+    });
   };
 
+  //pending: fetch selected type on mount if already following
+  // useEffect(() => {
+  //   if (page.isFollowing) {
+  //     // optional: fetch selected type from API later
+  //   }
+  // }, [page]);
   return (
     <div style={{ minWidth: 140 }}>
       <AnimatePresence mode="wait">

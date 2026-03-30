@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Card,
   CardBody,
@@ -13,8 +15,9 @@ import CreatePostCard from "@/features/post/components/CreatePostCard";
 import Link from "next/link";
 import LoadContentButton from "@/LoadContentButton"; // to be confirmed/deleted
 import type { Metadata } from "next";
+import { useAuthStore } from "@/features/account/store/authStore";
 
-export const metadata: Metadata = { title: "Default Home" };
+//export const metadata: Metadata = { title: "Default Home" };
 
 const Home = () => {
   return (
