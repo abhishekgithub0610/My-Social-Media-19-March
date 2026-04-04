@@ -7,7 +7,7 @@ import { ToastContainer } from "react-toastify";
 import { DEFAULT_PAGE_TITLE } from "@/context/constants";
 import { NotificationProvider } from "@/context/useNotificationContext";
 import type { ChildrenType } from "@/types/component";
-import { ChatProvider } from "@/context/useChatContext";
+// import { ChatProvider } from "@/context/useChatContext";
 
 const LayoutProvider = dynamic(
   () => import("@/context/useLayoutContext").then((mod) => mod.LayoutProvider),
@@ -51,12 +51,12 @@ const AppProvidersWrapper = ({ children }: ChildrenType) => {
   return (
     // <SessionProvider>
     <LayoutProvider>
-      <ChatProvider>
-        <NotificationProvider>
-          {children}
-          <ToastContainer theme="colored" />
-        </NotificationProvider>
-      </ChatProvider>
+      {/* <ChatProvider> */}
+      <NotificationProvider>
+        {children}
+        <ToastContainer theme="colored" />
+      </NotificationProvider>
+      {/* </ChatProvider> */}
     </LayoutProvider>
     // </SessionProvider>
   );

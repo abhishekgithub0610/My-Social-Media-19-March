@@ -8,7 +8,7 @@ import {
   Col,
   Row,
 } from "react-bootstrap";
-import Stories from "@/features/post/components/Stories";
+// import Stories from "@/features/post/components/Stories";
 import Feeds from "@/features/post/components/Feeds";
 import Followers from "@/Followers"; // to be confirmed/deleted
 import CreatePostCard from "@/features/post/components/CreatePostCard";
@@ -29,7 +29,7 @@ const Home = () => {
   return (
     <>
       <Col md={8} lg={6} className="vstack gap-4">
-        <Stories />
+        {/* <Stories /> */}
         <CreatePostCard />
         <Feeds />
       </Col>

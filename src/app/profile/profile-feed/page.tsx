@@ -1,5 +1,5 @@
 import { Col } from "react-bootstrap";
-import Stories from "@/features/post/components/Stories";
+// import Stories from "@/features/post/components/Stories";
 import Feeds from "@/features/post/components/Feeds";
 import CreatePostCard from "@/features/post/components/CreatePostCard";
 

@@ -5,7 +5,7 @@ import { ToastContainer } from "react-toastify";
 
 import { DEFAULT_PAGE_TITLE } from "@/shared/constants/appConstants";
 import { NotificationProvider } from "@/context/useNotificationContext";
-import { ChatProvider } from "@/context/useChatContext";
+// import { ChatProvider } from "@/context/useChatContext";
 
 import AuthProvider from "@/providers/AuthProvider";
 import QueryProvider from "@/providers/QueryProvider";
@@ -48,12 +48,12 @@ const AppProvidersWrapper = ({ children }: { children: React.ReactNode }) => {
     <AuthProvider>
       <QueryProvider>
         <LayoutProvider>
-          <ChatProvider>
-            <NotificationProvider>
-              {children}
-              <ToastContainer theme="colored" />
-            </NotificationProvider>
-          </ChatProvider>
+          {/* <ChatProvider> */}
+          <NotificationProvider>
+            {children}
+            <ToastContainer theme="colored" />
+          </NotificationProvider>
+          {/* </ChatProvider> */}
         </LayoutProvider>
       </QueryProvider>
     </AuthProvider>

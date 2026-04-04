@@ -36,7 +36,7 @@ import { FaSlidersH } from "react-icons/fa";
 import type { ChildrenType } from "@/types/component";
 import ProfilePanel from "@/shared/components/layout/ProfilePanel";
 import { profilePanelLinksData1 } from "@/assets/data/layout";
-import Messaging from "@/Messaging"; // to be confirmed/deleted
+// import Messaging from "@/Messaging"; // to be confirmed/deleted
 import useViewPort from "@/useViewPort"; // to be confirmed/deleted
 import Navbar from "@/shared/components/layout/Navbar"; // ✅ add Navbar
 
@@ -204,7 +204,7 @@ const FeedLayout = ({ children }: ChildrenType) => {
                 <BsSearch className="fs-5" />
               </button>
             </form>
-            <Messaging />
+            {/* <Messaging /> */}
           </div>
         </Offcanvas>
       </div>
