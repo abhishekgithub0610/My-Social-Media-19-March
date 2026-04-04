@@ -5,9 +5,6 @@ import CreatePageButton from "@/shared/components/ui/CreatePageButton"; // ✅ N
 const Pages = () => {
   return (
     <Col md={10} lg={8} className="vstack gap-4">
-      {/* 🔥 CLIENT BUTTON */}
-      <CreatePageButton />
-
       {/* 📄 SERVER COMPONENT */}
       <PageList />
     </Col>

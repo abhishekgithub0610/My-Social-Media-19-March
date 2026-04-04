@@ -26,8 +26,8 @@ const PageRow = ({ page }: { page: PageType }) => {
               className="avatar-img rounded-circle"
               src={`http://localhost:7120/${page.pageImageUrl}`}
               alt="page"
-              width={52}
-              height={52}
+              width={62}
+              height={62}
               unoptimized
             />
           )}

@@ -1,3 +1,4 @@
+"use client";
 import { getAllUserConnections } from "@/helpers/data";
 import clsx from "clsx";
 import Image from "next/image";
@@ -13,6 +14,8 @@ export const metadata: Metadata = { title: "Connections" };
 import PageRow from "./PageRow";
 import { useAuthRedirect } from "@/features/account/hooks/useAuthRedirect";
 import { useAuthStore } from "@/features/account/store/authStore";
+import CreatePageButton from "@/shared/components/ui/CreatePageButton";
+import { useEffect, useState } from "react";
 type PageType = {
   id: string;
   displayName: string;
@@ -20,13 +23,32 @@ type PageType = {
   pageImageUrl?: string;
   isFollowing: boolean;
 };
-const PageList = async () => {
-  const pages = await getPages();
+const PageList = () => {
+  //const PageList = async () => {
+  const state = useAuthStore.getState();
+  const [pages, setPages] = useState<PageType[]>([]);
+  console.log("Zustand AFTER setUser:", {
+    user: state.user,
+    accessToken: state.accessToken,
+  });
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getPages();
+      setPages(data);
+    };
+
+    fetchData();
+  }, []);
+  //const pages = await getPages();
 
   return (
     <Card>
-      <CardHeader className="border-0 pb-0">
-        <CardTitle>Pages</CardTitle>
+      {/* 🔥 FLEX HEADER */}
+      <CardHeader className="border-0 pb-0 d-flex justify-content-between align-items-center">
+        <CardTitle className="mb-0">Pages</CardTitle>
+
+        {/* 👉 Button on right */}
+        <CreatePageButton />
       </CardHeader>
 
       <CardBody>

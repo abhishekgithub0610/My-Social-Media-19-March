@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { useAuthStore } from "@/features/account/store/authStore";
 import {
   Button,
   Card,
@@ -38,9 +39,10 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import useToggle from "@/shared/hooks/useToggle"; //to be confirmed/deleted
 import DropzoneFormInput from "@/shared/components/ui/DropzoneFormInput";
-import TextFormInput from "@/shared/components/ui/DropzoneFormInput";
-import TextAreaFormInput from "@/shared/components/ui/DropzoneFormInput";
-import DateFormInput from "@/shared/components/ui/DropzoneFormInput";
+import TextFormInput from "@/shared/components/ui/TextFormInput";
+import TextAreaFormInput from "@/shared/components/ui/TextAreaFormInput";
+import DateFormInput from "@/shared/components/ui/DateFormInput";
+import { toast } from "react-toastify";
 
 import avatar1 from "@/assets/images/avatar/01.jpg";
 import avatar2 from "@/assets/images/avatar/02.jpg";
@@ -49,9 +51,19 @@ import avatar4 from "@/assets/images/avatar/04.jpg";
 import avatar5 from "@/assets/images/avatar/05.jpg";
 import avatar6 from "@/assets/images/avatar/06.jpg";
 import avatar7 from "@/assets/images/avatar/07.jpg";
-import ChoicesFormInput from "@/shared/components/ui/DropzoneFormInput";
 import Link from "next/link";
+import SelectInput from "@/shared/components/ui/SelectInput";
+import { useEffect, useMemo, useState } from "react";
+import { PageType } from "@/shared/types/PageType";
 
+type EventForm = {
+  title: string;
+  description: string;
+  duration: string;
+  location: string;
+  guest: string;
+  privacy: string; // ✅ ADD THIS
+};
 const CreatePostCard = () => {
   const guests = [
     avatar1,
@@ -62,11 +74,15 @@ const CreatePostCard = () => {
     avatar6,
     avatar7,
   ];
-  const { isTrue: isOpenPhoto, toggle: togglePhotoModel } = useToggle();
-  const { isTrue: isOpenVideo, toggle: toggleVideoModel } = useToggle();
+  const { isTrue: isOpenMedia, toggle: toggleTextModal } = useToggle();
+  const [loading, setLoading] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
   const { isTrue: isOpenEvent, toggle: toggleEvent } = useToggle();
-  const { isTrue: isOpenPost, toggle: togglePost } = useToggle();
 
+  const { isTrue: isOpenPost, toggle: togglePost } = useToggle();
+  const [activeModal, setActiveModal] = useState<"photo" | "video" | null>(
+    null,
+  );
   const eventFormSchema = yup.object({
     title: yup.string().required("Please enter event title"),
     description: yup.string().required("Please enter event description"),
@@ -76,11 +92,84 @@ const CreatePostCard = () => {
       .string()
       .email("Please enter valid email")
       .required("Please enter event guest email"),
+    privacy: yup.string().required("Please select privacy"), // ✅ ADD
+  });
+  const [text, setText] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const { control, handleSubmit, watch } = useForm<EventForm>({
+    resolver: yupResolver(eventFormSchema),
+    defaultValues: {
+      privacy: "PB",
+    },
   });
 
-  const { control, handleSubmit } = useForm({
-    resolver: yupResolver(eventFormSchema),
-  });
+  useEffect(() => {
+    if (!preview) return;
+
+    return () => {
+      URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
+  //const privacy = watch("privacy"); // ✅ auto updates
+  const privacy = useMemo(() => watch("privacy"), [watch]);
+  const handleCreatePost = async () => {
+    console.log("Creating post...");
+    try {
+      setLoading(true);
+      console.log("Creating post..22.");
+      const state = useAuthStore.getState();
+      console.log("Zustand AFTER setUser:", {
+        user: state.user,
+        accessToken: state.accessToken,
+      });
+      const formData = new FormData();
+      formData.append("content", text);
+      formData.append("privacy", privacy);
+
+      if (file) {
+        formData.append("file", file); // ✅ SINGLE field
+      }
+      const res = await fetch("http://localhost:7120/api/posts", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${state.accessToken}`, // ✅ IMPORTANT
+        },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const error = await res.text();
+        console.error("API Error:", error);
+        setLoading(false); // ✅ FIX
+        return;
+      }
+
+      const data = await res.json();
+      console.log("Post created:", data);
+
+      // reset UI
+      setText("");
+      setFile(null);
+      setPreview(null);
+
+      setTimeout(() => {
+        toggleTextModal();
+      }, 300);
+
+      setLoading(false);
+      toast.success("Post added successfully 🚀");
+    } catch (err) {
+      console.error("Post error:", err);
+      setLoading(false);
+      toast.error("Failed to add post. Please try again.");
+    }
+  };
+  const openModal = () => {
+    setText("");
+    setFile(null);
+    setPreview(null);
+    toggleTextModal();
+  };
   return (
     <>
       <Card className="card-body">
@@ -109,25 +198,13 @@ const CreatePostCard = () => {
 
         <ul className="nav nav-pills nav-stack small fw-normal">
           <li className="nav-item">
-            <a
-              className="nav-link bg-light py-1 px-2 mb-0"
-              onClick={togglePhotoModel}
-            >
+            <a className="nav-link bg-light py-1 px-2 mb-0" onClick={openModal}>
               {" "}
               <BsImageFill size={20} className="text-success pe-2" />
-              Photo
+              Photo/Video
             </a>
           </li>
-          <li className="nav-item">
-            <a
-              className="nav-link bg-light py-1 px-2 mb-0"
-              onClick={toggleVideoModel}
-            >
-              {" "}
-              <BsCameraReelsFill size={20} className="text-info pe-2" />
-              Video
-            </a>
-          </li>
+
           <li className="nav-item">
             <a
               className="nav-link bg-light py-1 px-2 mb-0"
@@ -138,16 +215,7 @@ const CreatePostCard = () => {
               Event{" "}
             </a>
           </li>
-          <li className="nav-item">
-            <a
-              className="nav-link bg-light py-1 px-2 mb-0"
-              onClick={togglePost}
-            >
-              {" "}
-              <BsEmojiSmileFill size={20} className="text-warning pe-2" />
-              Feeling /Activity
-            </a>
-          </li>
+
           <Dropdown drop="start" className="nav-item ms-lg-auto">
             <DropdownToggle
               as="a"
@@ -191,11 +259,13 @@ const CreatePostCard = () => {
           </Dropdown>
         </ul>
       </Card>
-
       {/* photo */}
       <Modal
-        show={isOpenPhoto}
-        onHide={togglePhotoModel}
+        show={isOpenMedia}
+        onHide={() => {
+          setLoading(false); // ✅ reset loading
+          toggleTextModal();
+        }}
         centered
         className="fade"
         id="feedActionPhoto"
@@ -205,7 +275,7 @@ const CreatePostCard = () => {
       >
         <ModalHeader closeButton>
           <h5 className="modal-title" id="feedActionPhotoLabel">
-            Add post photo
+            Add post
           </h5>
         </ModalHeader>
         <ModalBody>
@@ -217,91 +287,83 @@ const CreatePostCard = () => {
                 alt=""
               />
             </div>
-            <form className="w-100">
-              <textarea
-                className="form-control pe-4 fs-3 lh-1 border-0"
-                rows={2}
-                placeholder="Share your thoughts..."
-                defaultValue={""}
-              />
-            </form>
+            {/* <form className="w-100"> */}
+            <textarea
+              className="form-control pe-4 fs-3 lh-1 border-0"
+              rows={2}
+              placeholder="Share your thoughts..."
+              value={text} // ✅ ADDED: bind with state
+              onChange={(e) => setText(e.target.value)} // ✅ ADDED: update state
+            />
+            {/* </form> */}
           </div>
           <div>
             <label className="form-label">Upload attachment</label>
             <DropzoneFormInput
-              icon={BsImages}
+              label="Upload photo/video"
+              icon={BsCameraReels}
               showPreview
               text="Drag here or click to upload photo."
+              onFileUpload={(files) => {
+                if (files?.length) {
+                  const selected = files[0];
+
+                  // ✅ VALIDATION
+                  if (
+                    !selected.type.startsWith("image") &&
+                    !selected.type.startsWith("video")
+                  ) {
+                    alert("Only image/video allowed");
+                    return;
+                  }
+
+                  setFile(selected);
+
+                  const url = URL.createObjectURL(selected);
+                  setPreview(url);
+                }
+              }}
             />
+            {/* ✅ ADDED: Preview section (image/video preview like Instagram) */}
+            {preview && (
+              <div className="mt-3">
+                {file?.type.startsWith("image") ? (
+                  <img src={preview} className="img-fluid rounded" />
+                ) : (
+                  <video src={preview} controls className="w-100 rounded" />
+                )}
+              </div>
+            )}
           </div>
         </ModalBody>
         <ModalFooter>
           <button
             type="button"
             className="btn btn-danger-soft me-2"
-            data-bs-dismiss="modal"
+            // data-bs-dismiss="modal"
+            onClick={() => {
+              setLoading(false); // ✅ stop loader
+              toggleTextModal(); // ✅ close modal
+            }}
           >
             Cancel
           </button>
-          <button type="button" className="btn btn-success-soft">
-            Post
+          <button
+            type="button"
+            className="btn btn-success-soft"
+            onClick={handleCreatePost} // ✅ ADDED
+            disabled={loading || (!text && !file)}
+          >
+            {loading ? "Posting..." : "Post"}
           </button>
-        </ModalFooter>
-      </Modal>
-
-      {/* video */}
-      <Modal
-        centered
-        show={isOpenVideo}
-        onHide={toggleVideoModel}
-        className="fade"
-        id="feedActionVideo"
-        tabIndex={-1}
-      >
-        <ModalHeader closeButton>
-          <h5 className="modal-title" id="feedActionVideoLabel">
-            Add post video
-          </h5>
-        </ModalHeader>
-        <ModalBody>
-          <div className="d-flex mb-3">
-            <div className="avatar avatar-xs me-2">
-              <Image
-                className="avatar-img rounded-circle"
-                src={avatar3}
-                alt=""
-              />
-            </div>
-            <form className="w-100">
-              <textarea
-                className="form-control pe-4 fs-3 lh-1 border-0"
-                rows={2}
-                placeholder="Share your thoughts..."
-                defaultValue={""}
-              />
-            </form>
-          </div>
-          <div>
-            <DropzoneFormInput
-              label="Upload attachment"
-              icon={BsCameraReels}
-              showPreview
-              text="Drag here or click to upload video."
-            />
-          </div>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="danger-soft" type="button" className="me-2">
-            <BsCameraVideoFill className="pe-1" /> Live video
-          </Button>
-          <Button variant="soft-success" type="button">
+          {/* <button type="button" className="btn btn-success-soft">
             Post
-          </Button>
+          </button> */}
         </ModalFooter>
       </Modal>
 
       {/* event */}
-      <Modal
+      {/* <Modal
         show={isOpenEvent}
         onHide={toggleEvent}
         centered
@@ -414,122 +476,7 @@ const CreatePostCard = () => {
             </Button>
           </ModalFooter>
         </form>
-      </Modal>
-
-      {/* feeling/activity */}
-      <Modal
-        show={isOpenPost}
-        onHide={togglePost}
-        className="fade"
-        centered
-        id="modalCreateFeed"
-        tabIndex={-1}
-      >
-        <ModalHeader closeButton>
-          <h5 className="modal-title" id="modalLabelCreateFeed">
-            Create post
-          </h5>
-        </ModalHeader>
-        <ModalBody>
-          <div className="d-flex mb-3">
-            <div className="avatar avatar-xs me-2">
-              <Image
-                className="avatar-img rounded-circle"
-                src={avatar3}
-                alt=""
-              />
-            </div>
-            <form className="w-100">
-              <textarea
-                className="form-control pe-4 fs-3 lh-1 border-0"
-                rows={4}
-                placeholder="Share your thoughts..."
-                defaultValue={""}
-              />
-            </form>
-          </div>
-          <div className="hstack gap-2">
-            <OverlayTrigger overlay={<Tooltip>Photo</Tooltip>}>
-              <Link
-                className="icon-md bg-success bg-opacity-10 text-success rounded-circle"
-                href="#"
-              >
-                {" "}
-                <BsImageFill />{" "}
-              </Link>
-            </OverlayTrigger>
-            <OverlayTrigger overlay={<Tooltip>Video</Tooltip>}>
-              <Link
-                className="icon-md bg-info bg-opacity-10 text-info rounded-circle"
-                href="#"
-              >
-                {" "}
-                <BsCameraReelsFill />{" "}
-              </Link>
-            </OverlayTrigger>
-            <OverlayTrigger overlay={<Tooltip>Events</Tooltip>}>
-              <Link
-                className="icon-md bg-danger bg-opacity-10 text-danger rounded-circle"
-                href="#"
-              >
-                {" "}
-                <BsCalendar2EventFill />{" "}
-              </Link>
-            </OverlayTrigger>
-            <OverlayTrigger overlay={<Tooltip>Feeling/Activity</Tooltip>}>
-              <Link
-                className="icon-md bg-warning bg-opacity-10 text-warning rounded-circle"
-                href="#"
-              >
-                {" "}
-                <BsEmojiSmileFill />{" "}
-              </Link>
-            </OverlayTrigger>
-            <OverlayTrigger overlay={<Tooltip>Check in</Tooltip>}>
-              <Link
-                className="icon-md bg-light text-secondary rounded-circle"
-                href="#"
-              >
-                {" "}
-                <BsGeoAltFill />{" "}
-              </Link>
-            </OverlayTrigger>
-            <OverlayTrigger overlay={<Tooltip>Tag people on top</Tooltip>}>
-              <Link
-                className="icon-md bg-primary bg-opacity-10 text-primary rounded-circle"
-                href="#"
-              >
-                {" "}
-                <BsTagFill />{" "}
-              </Link>
-            </OverlayTrigger>
-          </div>
-        </ModalBody>
-        <ModalFooter className="row justify-content-between">
-          <Col lg={3}>
-            <ChoicesFormInput
-              options={{ searchEnabled: false }}
-              className="form-select js-choice choice-select-text-none"
-              data-position="top"
-              data-search-enabled="false"
-            >
-              <option value="PB">Public</option>
-              <option value="PV">Friends</option>
-              <option value="PV">Only me</option>
-              <option value="PV">Custom</option>
-            </ChoicesFormInput>
-          </Col>
-          <Col lg={8} className="text-sm-end">
-            <Button variant="danger-soft" type="button" className="me-2">
-              {" "}
-              <BsCameraVideoFill className="pe-1" /> Live video
-            </Button>
-            <Button variant="success-soft" type="button">
-              Post
-            </Button>
-          </Col>
-        </ModalFooter>
-      </Modal>
+      </Modal> */}
     </>
   );
 };

@@ -20,6 +20,12 @@ import { useAuthStore } from "@/features/account/store/authStore";
 //export const metadata: Metadata = { title: "Default Home" };
 
 const Home = () => {
+  const state = useAuthStore.getState();
+
+  console.log("Zustand AFTER setUser:", {
+    user: state.user,
+    accessToken: state.accessToken,
+  });
   return (
     <>
       <Col md={8} lg={6} className="vstack gap-4">

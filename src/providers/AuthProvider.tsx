@@ -8,7 +8,7 @@ export default function AuthProvider({
 }: {
   children: React.ReactNode;
 }) {
-  useAuthInit(); // ✅ now valid (client side)
+  //useAuthInit(); // ✅ now valid (client side)
 
   const isHydrated = useAuthStore((s) => s.isHydrated);
 

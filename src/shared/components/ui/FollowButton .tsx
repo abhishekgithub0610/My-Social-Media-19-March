@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import Select, { SingleValue } from "react-select";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/features/account/store/authStore";
+import { useState } from "react";
+
 type Page = {
   id: string; // 👈 IMPORTANT
   isFollowing: boolean;
+  followTypeId?: number; // ✅ ADD THIS
 };
 
 type FollowTypeOption = {
@@ -31,9 +33,12 @@ type Props = {
 
 const FollowButton = ({ page }: Props) => {
   // const FollowButton = ({ page }: { page: Page }) => {
+
   const [isFollowing, setIsFollowing] = useState(page.isFollowing);
   const [selectedType, setSelectedType] = useState<FollowTypeOption | null>(
-    null,
+    page.followTypeId
+      ? pageTypeOptions.find((x) => x.value === page.followTypeId) || null
+      : null,
   );
 
   const handleChange = async (val: SingleValue<FollowTypeOption>) => {
@@ -97,7 +102,7 @@ const FollowButton = ({ page }: Props) => {
           >
             <Select
               options={pageTypeOptions}
-              placeholder="➕ Follow"
+              placeholder="Follow"
               value={selectedType}
               onChange={handleChange}
               isSearchable={false}
@@ -108,57 +113,58 @@ const FollowButton = ({ page }: Props) => {
               styles={{
                 control: (base) => ({
                   ...base,
-                  minHeight: "34px",
-                  height: "34px",
-                  borderRadius: "20px",
-                  fontSize: "12px",
+                  minHeight: "30px", // 👈 reduce height
+                  height: "30px",
+                  borderRadius: "16px",
+                  fontSize: "13px", // 👈 increase text size
                   cursor: "pointer",
                   background: "linear-gradient(135deg, #6366f1, #3b82f6)",
                   border: "none",
-                  boxShadow: "0 3px 10px rgba(99,102,241,0.3)",
+                  boxShadow: "0 2px 6px rgba(99,102,241,0.25)",
                   color: "white",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }),
 
-                menuPortal: (base) => ({
+                valueContainer: (base) => ({
                   ...base,
-                  zIndex: 9999,
-                }),
-
-                menu: (base) => ({
-                  ...base,
-                  zIndex: 9999,
-                  borderRadius: "12px",
-                  overflow: "hidden",
-                  boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-                }),
-
-                singleValue: (base) => ({
-                  ...base,
-                  color: "white",
-                  fontWeight: 500,
+                  padding: "0 8px", // 👈 better spacing
+                  justifyContent: "center",
                 }),
 
                 placeholder: (base) => ({
                   ...base,
                   color: "white",
                   fontWeight: 500,
+                  fontSize: "13px", // 👈 match control
+                  textAlign: "center",
+                  width: "100%",
+                }),
+
+                singleValue: (base) => ({
+                  ...base,
+                  color: "white",
+                  fontWeight: 500,
+                  fontSize: "13px",
+                  textAlign: "center",
+                  width: "100%",
                 }),
 
                 dropdownIndicator: (base) => ({
                   ...base,
                   color: "white",
+                  padding: "0 4px", // 👈 tighter arrow spacing
+                }),
+
+                indicatorsContainer: (base) => ({
+                  ...base,
+                  position: "absolute",
+                  right: 4,
                 }),
 
                 indicatorSeparator: () => ({
                   display: "none",
-                }),
-
-                option: (base, state) => ({
-                  ...base,
-                  fontSize: "13px",
-                  backgroundColor: state.isFocused ? "#eef2ff" : "white",
-                  color: "#111827",
-                  cursor: "pointer",
                 }),
               }}
             />
