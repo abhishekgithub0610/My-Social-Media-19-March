@@ -37,20 +37,38 @@ export type CommentType = {
   children?: CommentType[];
 };
 
+// export type SocialPostType = {
+//   id: IdType;
+//   socialUserId: UserType["id"];
+//   image?: StaticImageData;
+//   socialUser?: UserType;
+//   caption?: string;
+//   createdAt: Date;
+//   likesCount: number;
+//   commentsCount?: number;
+//   liked?: boolean;
+//   comments?: CommentType[];
+//   photos?: StaticImageData[];
+//   isVideo?: boolean;
+//   isSponsored?: boolean;
+// };
+
 export type SocialPostType = {
-  id: IdType;
-  socialUserId: UserType["id"];
-  image?: StaticImageData;
-  socialUser?: UserType;
-  caption?: string;
-  createdAt: Date;
+  id: string;
+  caption: string;
+  image?: string;
+  isVideo: boolean;
+  createdAt: string;
+  //photos?: string[];
   likesCount: number;
-  commentsCount?: number;
-  liked?: boolean;
+  commentsCount: number;
   comments?: CommentType[];
-  photos?: StaticImageData[];
-  isVideo?: boolean;
-  isSponsored?: boolean;
+  socialUser: {
+    id: string; // ✅ instead of separate socialUserId
+    name: string;
+    avatar: string;
+  };
+  IsLikedByCurrentUse?: boolean;
 };
 
 export type VideoType = {

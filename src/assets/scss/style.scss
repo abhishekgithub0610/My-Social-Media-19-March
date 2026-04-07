@@ -4,9 +4,9 @@
 @import "bootstrap/scss/functions";
 @import "bootstrap/scss/variables";
 
-// @import "variables";
-// @import "variables-dark";
-// @import "user-variables";
+@import "variables";
+@import "variables-dark";
+@import "user-variables";
 
 @import "bootstrap/scss/bootstrap";
 
@@ -112,27 +112,3 @@
 
 // // // In this scss you can write your scss/css
 // // @import "user";
-
-
-
-
-
-#splash-screen {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  background: white;
-  display: flex;
-  height: 100%;
-  width: 100%;
-  transform: translate(-50%, -50%);
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  transition: all 0.7s ease;
-}
-
-#splash-screen.remove {
-  opacity: 0;
-  visibility: hidden;
-}

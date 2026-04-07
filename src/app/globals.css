@@ -14,11 +14,11 @@ html {
   height: 100%;
 }
 
-html,
+/* html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
-}
+} */
 
 body {
   min-height: 100%;
@@ -46,4 +46,18 @@ a {
   html {
     color-scheme: dark;
   }
+}
+
+html,
+body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+.modal-open {
+  overflow: hidden !important;
+}
+body.modal-open {
+  overflow-y: scroll !important;
+  padding-right: 0 !important;
 }

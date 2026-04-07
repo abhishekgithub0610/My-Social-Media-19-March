@@ -135,14 +135,15 @@ const ProfileLayout = ({ children }: ChildrenType) => {
   if (!page) {
     return <div className="text-center p-5">Loading page...</div>;
   }
-  console.log("Page data:", page);
+  // console.log("Page data:", page);
   return (
     <>
       <Navbar />
       <main>
         <Container>
           <Row className="g-4">
-            <Col lg={8} className="vstack gap-4">
+            <Col lg={8} className="d-flex flex-column gap-4">
+              {/* <Col lg={8} className="vstack gap-4"> */}
               <Card>
                 <div
                   className="h-200px rounded-top"
@@ -154,7 +155,8 @@ const ProfileLayout = ({ children }: ChildrenType) => {
                   }}
                 />
                 <CardBody className="py-0">
-                  <div className="d-sm-flex align-items-start text-center text-sm-start">
+                  {/* <div className="d-sm-flex align-items-start text-center text-sm-start"> */}
+                  <div className="d-sm-flex align-items-start text-center text-sm-start w-100">
                     <div>
                       <div className="avatar avatar-xxl mt-n5 mb-3">
                         {page?.pageImageUrl && (
@@ -169,11 +171,15 @@ const ProfileLayout = ({ children }: ChildrenType) => {
                         )}
                       </div>
                     </div>
-                    <div className="ms-sm-4 mt-sm-3">
-                      <h1 className="mb-0 h5">
-                        {page?.displayName}{" "}
-                        {/* <BsPatchCheckFill className="text-success small" /> */}
+                    {/* <div className="ms-sm-4 mt-sm-3"> */}
+                    <div className="ms-sm-4 mt-sm-3 flex-grow-1 min-w-0">
+                      <h1 className="mb-0 h5 text-nowrap">
+                        {page?.displayName}
                       </h1>
+                      {/* <h1 className="mb-0 h5">
+                        {page?.displayName}{" "} */}
+                      {/* <BsPatchCheckFill className="text-success small" /> */}
+                      {/* </h1> */}
                       {/* <p>250 connections</p> */}
                     </div>
                     <div className="d-flex mt-3 justify-content-center ms-sm-auto">

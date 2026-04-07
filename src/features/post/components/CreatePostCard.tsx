@@ -55,6 +55,7 @@ import Link from "next/link";
 import SelectInput from "@/shared/components/ui/SelectInput";
 import { useEffect, useMemo, useState } from "react";
 import { PageType } from "@/shared/types/PageType";
+import { SocialPostType } from "@/types/data";
 
 type EventForm = {
   title: string;
@@ -64,7 +65,27 @@ type EventForm = {
   guest: string;
   privacy: string; // ✅ ADD THIS
 };
-const CreatePostCard = () => {
+type CreatePostCardProps = {
+  onPostCreated?: (post: SocialPostType) => void;
+};
+type ApiPost = {
+  id: string;
+  content: string;
+  createdAt: string;
+  likesCount: number;
+  commentsCount: number;
+  media?: {
+    url: string;
+    type: "image" | "video";
+  }[];
+  user: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+};
+// const CreatePostCard = () => {
+const CreatePostCard = ({ onPostCreated }: CreatePostCardProps) => {
   const guests = [
     avatar1,
     avatar2,
@@ -76,7 +97,7 @@ const CreatePostCard = () => {
   ];
   const { isTrue: isOpenMedia, toggle: toggleTextModal } = useToggle();
   const [loading, setLoading] = useState(false);
-  const [preview, setPreview] = useState<string | null>(null);
+  //const [preview, setPreview] = useState<string | null>(null);
   const { isTrue: isOpenEvent, toggle: toggleEvent } = useToggle();
 
   const { isTrue: isOpenPost, toggle: togglePost } = useToggle();
@@ -95,21 +116,31 @@ const CreatePostCard = () => {
     privacy: yup.string().required("Please select privacy"), // ✅ ADD
   });
   const [text, setText] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  //const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const { control, handleSubmit, watch } = useForm<EventForm>({
     resolver: yupResolver(eventFormSchema),
     defaultValues: {
       privacy: "PB",
     },
   });
-
+  // useEffect(() => {
+  //   return () => {
+  //     previews.forEach((url) => URL.revokeObjectURL(url));
+  //   };
+  // }, [previews]);
   useEffect(() => {
-    if (!preview) return;
-
     return () => {
-      URL.revokeObjectURL(preview);
+      previews.forEach((url) => URL.revokeObjectURL(url));
     };
-  }, [preview]);
+  }, []); // ✅ only once
+  // useEffect(() => {
+  //   if (!preview) return;
+  //   return () => {
+  //     URL.revokeObjectURL(preview);
+  //   };
+  // }, [preview]);
   //const privacy = watch("privacy"); // ✅ auto updates
   const privacy = useMemo(() => watch("privacy"), [watch]);
   const handleCreatePost = async () => {
@@ -126,9 +157,9 @@ const CreatePostCard = () => {
       formData.append("content", text);
       formData.append("privacy", privacy);
 
-      if (file) {
-        formData.append("file", file); // ✅ SINGLE field
-      }
+      files.forEach((file) => {
+        formData.append("files", file); // ✅ IMPORTANT: same key
+      });
       const res = await fetch("http://localhost:7120/api/posts", {
         method: "POST",
         headers: {
@@ -144,13 +175,20 @@ const CreatePostCard = () => {
         return;
       }
 
-      const data = await res.json();
-      console.log("Post created:", data);
+      // const data = await res.json();
+      // console.log("Post created:", data);
+      // onPostCreated?.(mapToFeedPost(data));
+      const json = await res.json();
+      const post = json.result ?? json;
+      console.log("Post created:", post);
+
+      onPostCreated?.(mapToFeedPost(post));
+      console.log("STEP 2: mapped post", mapToFeedPost(post));
 
       // reset UI
       setText("");
-      setFile(null);
-      setPreview(null);
+      setFiles([]); // ✅ FIX
+      setPreviews([]); // ✅ FIX
 
       setTimeout(() => {
         toggleTextModal();
@@ -164,10 +202,30 @@ const CreatePostCard = () => {
       toast.error("Failed to add post. Please try again.");
     }
   };
+  const mapToFeedPost = (p: ApiPost): SocialPostType => {
+    const firstMedia = p.media?.[0];
+    console.log("Mapping API post to feed post:", p);
+    return {
+      id: p.id,
+      caption: p.content,
+      image: firstMedia?.url,
+      isVideo: firstMedia?.type === "video",
+      createdAt: p.createdAt,
+      likesCount: p.likesCount,
+      commentsCount: p.commentsCount,
+      socialUser: {
+        id: p.user.id,
+        name: p.user.name,
+        avatar: p.user.avatar || "/default-avatar.png",
+      },
+    };
+  };
   const openModal = () => {
     setText("");
-    setFile(null);
-    setPreview(null);
+    // setFile(null);
+    // setPreview(null);
+    setFiles([]); // ✅ FIX
+    setPreviews([]); // ✅ FIX
     toggleTextModal();
   };
   return (
@@ -272,6 +330,7 @@ const CreatePostCard = () => {
         tabIndex={-1}
         aria-labelledby="feedActionPhotoLabel"
         aria-hidden="true"
+        container={typeof window !== "undefined" ? document.body : undefined}
       >
         <ModalHeader closeButton>
           <h5 className="modal-title" id="feedActionPhotoLabel">
@@ -304,28 +363,74 @@ const CreatePostCard = () => {
               icon={BsCameraReels}
               showPreview
               text="Drag here or click to upload photo."
-              onFileUpload={(files) => {
-                if (files?.length) {
-                  const selected = files[0];
+              //   onFileUpload={(files) => {
+              //     if (files?.length) {
+              //       const selected = files[0];
 
-                  // ✅ VALIDATION
+              //       // ✅ VALIDATION
+              //       if (
+              //         !selected.type.startsWith("image") &&
+              //         !selected.type.startsWith("video")
+              //       ) {
+              //         alert("Only image/video allowed");
+              //         return;
+              //       }
+
+              //       setFile(selected);
+
+              //       const url = URL.createObjectURL(selected);
+              //       setPreview(url);
+              //     }
+              //   }}
+              onFileUpload={(uploadedFiles) => {
+                if (!uploadedFiles?.length) return;
+
+                const newFiles = [...files, ...uploadedFiles];
+
+                if (newFiles.length > 10) {
+                  alert("Max 10 files allowed");
+                  return;
+                }
+
+                const validFiles: File[] = [];
+                const previewUrls: string[] = [];
+
+                for (const file of uploadedFiles) {
                   if (
-                    !selected.type.startsWith("image") &&
-                    !selected.type.startsWith("video")
+                    file.type.startsWith("image") &&
+                    file.size > 30 * 1024 * 1024
                   ) {
-                    alert("Only image/video allowed");
-                    return;
+                    alert("Image must be < 30MB");
+                    continue;
                   }
 
-                  setFile(selected);
+                  if (
+                    file.type.startsWith("video") &&
+                    file.size > 4 * 1024 * 1024 * 1024
+                  ) {
+                    alert("Video must be < 4GB");
+                    continue;
+                  }
 
-                  const url = URL.createObjectURL(selected);
-                  setPreview(url);
+                  validFiles.push(file);
+                  previewUrls.push(URL.createObjectURL(file));
                 }
+
+                setFiles((prev) => [...prev, ...validFiles]);
+                setPreviews((prev) => [...prev, ...previewUrls]);
               }}
             />
             {/* ✅ ADDED: Preview section (image/video preview like Instagram) */}
-            {preview && (
+            {previews.map((preview, index) => (
+              <div key={index} className="mt-2">
+                {files[index]?.type.startsWith("image") ? (
+                  <img src={preview} className="img-fluid rounded" />
+                ) : (
+                  <video src={preview} controls className="w-100 rounded" />
+                )}
+              </div>
+            ))}
+            {/* {preview && (
               <div className="mt-3">
                 {file?.type.startsWith("image") ? (
                   <img src={preview} className="img-fluid rounded" />
@@ -333,7 +438,7 @@ const CreatePostCard = () => {
                   <video src={preview} controls className="w-100 rounded" />
                 )}
               </div>
-            )}
+            )} */}
           </div>
         </ModalBody>
         <ModalFooter>
@@ -352,7 +457,7 @@ const CreatePostCard = () => {
             type="button"
             className="btn btn-success-soft"
             onClick={handleCreatePost} // ✅ ADDED
-            disabled={loading || (!text && !file)}
+            disabled={loading || (!text && files.length === 0)}
           >
             {loading ? "Posting..." : "Post"}
           </button>

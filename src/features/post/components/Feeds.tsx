@@ -1,10 +1,21 @@
+"use client";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import type { CommentType, SocialPostType } from "@/types/data"; // to be deleted/confirmed
 import { timeSince } from "@/utils/date"; // to be deleted/confirmed
 import Image from "next/image";
-import { getAllFeeds } from "@/helpers/data"; // to be deleted/confirmed
+//import { getAllFeeds } from "@/helpers/data"; // to be deleted/confirmed
 import GlightBox from "@/shared/components/ui/GlightBox"; // to be deleted/confirmed
+import { useEffect, useState } from "react";
+import { getFeed } from "@/features/post/services/postApi";
+import { useRef } from "react";
+
+import {
+  ApiResponseResult,
+  PagedResult,
+  PostFeedDto,
+} from "@/features/post/types/post";
+
 import {
   Button,
   Card,
@@ -132,6 +143,8 @@ const CommentItem = ({
                   className="avatar-img rounded-circle"
                   src={socialUser.avatar}
                   alt={socialUser.name + "-avatar"}
+                  width={40}
+                  height={40}
                 />
               </span>
             </div>
@@ -199,9 +212,11 @@ const PostCard = ({
   commentsCount,
   image,
   socialUser,
-  photos,
+  //photos,
   isVideo,
 }: SocialPostType) => {
+  console.log("PostCard received image:", image, "isVideo:", isVideo); //
+
   return (
     <Card>
       <CardHeader className="border-0 pb-0">
@@ -215,6 +230,8 @@ const PostCard = ({
                     className="avatar-img rounded-circle"
                     src={socialUser.avatar}
                     alt={socialUser.name}
+                    width={40}
+                    height={40}
                   />{" "}
                 </span>
               )}
@@ -234,13 +251,49 @@ const PostCard = ({
           <ActionMenu name={socialUser?.name} />
         </div>
       </CardHeader>
-
       <CardBody>
         {caption && <p>{caption}</p>}
-
-        {image && <Image className="card-img" src={image} alt="Post" />}
-        {isVideo && <VideoPlayer />}
-
+        {/* {image && image.startsWith("http") && !isVideo && (
+          <Image
+            className="card-img"
+            src={image}
+            alt="Post"
+            width={500}
+            height={500}
+          />
+        )} */}
+        {image && !isVideo && (
+          <Image
+            className="card-img"
+            src={image}
+            alt="Post"
+            width={500}
+            height={500}
+            unoptimized
+          />
+        )}
+        {/* {image && !isVideo && (
+          <Image
+            className="card-img"
+            src={image}
+            alt="Post"
+            width={40}
+            height={40}
+          />
+        )} */}
+        {isVideo && image && (
+          <video controls className="w-100">
+            <source src={image} />
+          </video>
+        )}
+        {/* {isVideo && (
+          <video controls className="w-100">
+            <source src={image} />
+          </video>
+        )} */}
+        {/* {image && <Image className="card-img" src={image} alt="Post" />}
+        {isVideo && <VideoPlayer />} */}
+        {/* 
         {photos && (
           <div className="d-flex justify-content-between">
             <Row className="g-3">
@@ -291,7 +344,7 @@ const PostCard = ({
               </Col>
             </Row>
           </div>
-        )}
+        )} */}
         <ul className="nav nav-stack py-3 small">
           <li className="nav-item">
             <Link
@@ -420,7 +473,6 @@ const PostCard = ({
           </>
         )}
       </CardBody>
-
       <CardFooter className="border-0 pt-0">
         {comments && <LoadContentButton name=" Load more comments" />}
       </CardFooter>
@@ -902,21 +954,149 @@ const Post3 = () => {
     </Card>
   );
 };
+type FeedsProps = {
+  posts: SocialPostType[];
+  setPosts: React.Dispatch<React.SetStateAction<SocialPostType[]>>;
+};
+// const Feeds = () => {
+const Feeds = ({ posts, setPosts }: FeedsProps) => {
+  //const [posts, setPosts] = useState<SocialPostType[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-const Feeds = () => {
+  const fetchPosts = async () => {
+    if (loading || !hasMore) return;
+
+    setLoading(true);
+    const currentPage = page;
+
+    try {
+      const res = await getFeed(page, 5);
+      console.log("Fetched posts:", res); // Debug log
+      const mappedPosts = res.result.items.map((p) => {
+        const firstMedia = p.media?.[0];
+
+        const imageUrl = firstMedia?.url;
+
+        return {
+          id: p.id,
+          caption: p.content,
+
+          image:
+            imageUrl && imageUrl.startsWith("http")
+              ? imageUrl
+              : imageUrl
+                ? `${"http://localhost:7120/"}${imageUrl}`
+                : undefined,
+
+          isVideo: firstMedia?.type === "video",
+
+          createdAt: p.createdAt,
+          likesCount: p.likesCount,
+          commentsCount: p.commentsCount,
+
+          socialUser: {
+            id: p.user.id,
+            name: p.user.name,
+            avatar: p.user.avatar || "/default-avatar.png",
+          },
+        };
+      });
+      // const mappedPosts = res.result.items.map((p) => ({
+      //   id: p.id,
+      //   caption: p.content,
+      //   image: p.media?.[0]?.url,
+      //   isVideo: p.media?.[0]?.type === "video",
+      //   // image: p.mediaUrl,
+      //   // isVideo: p.mediaType === "video",
+      //   createdAt: p.createdAt,
+      //   likesCount: p.likesCount,
+      //   commentsCount: p.commentsCount,
+      //   socialUser: {
+      //     id: p.user.id,
+      //     name: p.user.name,
+      //     avatar: p.user.avatar || "/default-avatar.png",
+      //   },
+      // }));
+
+      //setPosts((prev) => [...prev, ...mappedPosts]);
+      setPosts((prev) => {
+        const existingIds = new Set(prev.map((p) => p.id));
+
+        const newPosts = mappedPosts.filter((p) => !existingIds.has(p.id));
+
+        return [...prev, ...newPosts];
+      });
+      setHasMore(res.result.hasMore);
+      //setPage((prev) => prev + 1);
+      //setPage(currentPage + 1);
+      setPage((prev) => prev + 1);
+    } catch (err) {
+      console.error(err);
+    }
+
+    setLoading(false);
+  };
+  console.log("Rendering Feeds with posts:", posts); // Debug log
+  //const hasFetched = useRef(false);
+  useEffect(() => {
+    const loadPosts = async () => {
+      await fetchPosts();
+    };
+
+    loadPosts();
+  }, []);
+  // useEffect(() => {
+  //   const load = async () => {
+  //     setPosts([]); // 🔥 reset old posts
+  //     setPage(1);
+  //     setHasMore(true);
+
+  //     await fetchPosts(); // fetch fresh data
+  //   };
+
+  //   load();
+  // }, [refreshFeed]); // 🔥 KEY CHANGE
+  // useEffect(() => {
+  //   const load = async () => {
+  //     await fetchPosts();
+  //   };
+
+  //   load();
+  // }, []);
+  // useEffect(() => {
+  //   if (hasFetched.current) return;
+
+  //   hasFetched.current = true;
+  //   fetchPosts();
+  // }, []);
+  // useEffect(() => {
+  //   const load = async () => {
+  //     await fetchPosts();
+  //   };
+
+  //   load();
+  // }, []);
   const postData = [
     { progress: 25, title: "We have cybersecurity insurance coverage" },
     { progress: 15, title: "Our dedicated staff will protect us" },
     { progress: 10, title: "We give regular training for best practices" },
     { progress: 55, title: "Third-party vendor protection" },
   ];
-  const allPosts = getAllFeeds();
+  // const allPosts = getAllFeeds();
   return (
     <>
       {/* {allPosts..map((post, idx) => (
         <PostCard {...post} key={idx} />
       ))} */}
-
+      {posts.map(
+        (post, idx) => (
+          console.log("Rendering PostCard for post:", post),
+          (<PostCard {...post} key={post.id} />)
+        ),
+        // <PostCard {...post} key={post.id || idx} />
+      )}
       <SponsoredCard />
       <Post2 />
       <People />
@@ -977,7 +1157,7 @@ const Feeds = () => {
             {postData.map((item, idx) => (
               <div
                 className="d-flex align-items-center justify-content-between"
-                key={idx}
+                key={item.title}
               >
                 <div className="overflow-hidden w-100 me-3">
                   <div
@@ -1007,7 +1187,14 @@ const Feeds = () => {
       <Post3 />
 
       <SuggestedStories />
-      <LoadMoreButton />
+      {hasMore && (
+        <div className="text-center">
+          <Button onClick={fetchPosts} disabled={loading}>
+            {loading ? "Loading..." : "Load More"}
+          </Button>
+        </div>
+      )}
+      {/* <LoadMoreButton /> */}
     </>
   );
 };
