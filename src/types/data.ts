@@ -58,7 +58,8 @@ export type SocialPostType = {
   caption: string;
   image?: string;
   isVideo: boolean;
-  createdAt: string;
+  createdAt: Date;
+  //createdAt: string;
   //photos?: string[];
   likesCount: number;
   commentsCount: number;

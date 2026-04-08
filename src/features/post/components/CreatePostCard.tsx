@@ -43,7 +43,6 @@ import TextFormInput from "@/shared/components/ui/TextFormInput";
 import TextAreaFormInput from "@/shared/components/ui/TextAreaFormInput";
 import DateFormInput from "@/shared/components/ui/DateFormInput";
 import { toast } from "react-toastify";
-
 import avatar1 from "@/assets/images/avatar/01.jpg";
 import avatar2 from "@/assets/images/avatar/02.jpg";
 import avatar3 from "@/assets/images/avatar/03.jpg";
@@ -56,7 +55,6 @@ import SelectInput from "@/shared/components/ui/SelectInput";
 import { useEffect, useMemo, useState } from "react";
 import { PageType } from "@/shared/types/PageType";
 import { SocialPostType } from "@/types/data";
-
 type EventForm = {
   title: string;
   description: string;

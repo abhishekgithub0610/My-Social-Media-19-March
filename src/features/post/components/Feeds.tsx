@@ -991,8 +991,9 @@ const Feeds = ({ posts, setPosts }: FeedsProps) => {
                 : undefined,
 
           isVideo: firstMedia?.type === "video",
+          createdAt: new Date(p.createdAt), // ✅ FIX HERE
 
-          createdAt: p.createdAt,
+          //createdAt: p.createdAt,
           likesCount: p.likesCount,
           commentsCount: p.commentsCount,
 
@@ -1090,8 +1091,8 @@ const Feeds = ({ posts, setPosts }: FeedsProps) => {
       {/* {allPosts..map((post, idx) => (
         <PostCard {...post} key={idx} />
       ))} */}
-      {posts.map(
-        (post, idx) => (
+      {posts?.map(
+        (post) => (
           console.log("Rendering PostCard for post:", post),
           (<PostCard {...post} key={post.id} />)
         ),
