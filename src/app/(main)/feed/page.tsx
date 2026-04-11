@@ -16,11 +16,14 @@ import Link from "next/link";
 import LoadContentButton from "@/LoadContentButton"; // to be confirmed/deleted
 import type { Metadata } from "next";
 import { useAuthStore } from "@/features/account/store/authStore";
+import { SocialPostType } from "@/types/data";
+import { useState } from "react";
 
 //export const metadata: Metadata = { title: "Default Home" };
 
 const Home = () => {
   const state = useAuthStore.getState();
+  const [posts, setPosts] = useState<SocialPostType[]>([]);
 
   console.log("Zustand AFTER setUser:", {
     user: state.user,
@@ -31,7 +34,7 @@ const Home = () => {
       <Col md={8} lg={6} className="vstack gap-4">
         {/* <Stories /> */}
         <CreatePostCard />
-        <Feeds />
+        <Feeds posts={posts} setPosts={setPosts} />
       </Col>
 
       <Col lg={3}>

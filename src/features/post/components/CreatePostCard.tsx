@@ -69,7 +69,7 @@ type CreatePostCardProps = {
 type ApiPost = {
   id: string;
   content: string;
-  createdAt: string;
+  createdAt: Date;
   likesCount: number;
   commentsCount: number;
   media?: {

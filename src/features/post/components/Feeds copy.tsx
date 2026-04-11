@@ -1,0 +1,979 @@
+// "use client";
+// import type { ReactNode } from "react";
+// import Link from "next/link";
+// import type { CommentType, SocialPostType } from "@/types/data"; // to be deleted/confirmed
+// import { timeSince } from "@/utils/date"; // to be deleted/confirmed
+// import Image from "next/image";
+// //import { getAllFeeds } from "@/helpers/data"; // to be deleted/confirmed
+// import GlightBox from "@/shared/components/ui/GlightBox"; // to be deleted/confirmed
+// import { useEffect, useState } from "react";
+// import { getFeed } from "@/features/post/services/postApi";
+// import { useRef } from "react";
+
+// import {
+//   ApiResponseResult,
+//   PagedResult,
+//   PostFeedDto,
+// } from "@/features/post/types/post";
+
+// import {
+//   Button,
+//   Card,
+//   CardBody,
+//   CardFooter,
+//   CardHeader,
+//   Col,
+//   Dropdown,
+//   DropdownDivider,
+//   DropdownItem,
+//   DropdownMenu,
+//   DropdownToggle,
+//   Row,
+// } from "react-bootstrap";
+// import {
+//   BsBookmark,
+//   BsBookmarkCheck,
+//   BsChatFill,
+//   BsEnvelope,
+//   BsFlag,
+//   BsHandThumbsUpFill,
+//   BsHeart,
+//   BsHeartFill,
+//   BsInfoCircle,
+//   BsLink,
+//   BsPencilSquare,
+//   BsPersonX,
+//   BsReplyFill,
+//   BsSendFill,
+//   BsShare,
+//   BsSlashCircle,
+//   BsThreeDots,
+//   BsXCircle,
+// } from "react-icons/bs";
+// import People from "@/People"; //to be deleted/confirmed
+// import SuggestedStories from "@/SuggestedStories"; //to be deleted/confirmed
+// import VideoPlayer from "@/VideoPlayer"; //to be deleted/confirmed
+// import LoadContentButton from "@/LoadContentButton"; //to be deleted/confirmed
+// import LoadMoreButton from "@/shared/components/ui/LoadMoreButton"; //to be deleted/confirmed
+
+// import avatar4 from "@/assets/images/avatar/04.jpg";
+// import avatar12 from "@/assets/images/avatar/12.jpg";
+// import postImg1 from "@/assets/images/post/3by2/01.jpg";
+// import postImg2 from "@/assets/images/post/3by2/02.jpg";
+// import postImg3 from "@/assets/images/post/1by1/03.jpg";
+// import postImg4 from "@/assets/images/post/3by2/03.jpg";
+// import logo11 from "@/assets/images/logo/11.svg";
+// import logo12 from "@/assets/images/logo/12.svg";
+// import logo13 from "@/assets/images/logo/13.svg";
+
+// const ActionMenu = ({ name }: { name?: string }) => {
+//   return (
+//     <Dropdown>
+//       <DropdownToggle
+//         as="a"
+//         className="text-secondary btn btn-secondary-soft-hover py-1 px-2 content-none cursor-pointer"
+//         id="cardFeedAction"
+//       >
+//         <BsThreeDots />
+//       </DropdownToggle>
+
+//       <DropdownMenu
+//         className="dropdown-menu-end"
+//         aria-labelledby="cardFeedAction"
+//       >
+//         <li>
+//           <DropdownItem href="#">
+//             {" "}
+//             <BsBookmark size={22} className="fa-fw pe-2" />
+//             Save post
+//           </DropdownItem>
+//         </li>
+//         <li>
+//           <DropdownItem href="#">
+//             {" "}
+//             <BsPersonX size={22} className="fa-fw pe-2" />
+//             Unfollow {name}{" "}
+//           </DropdownItem>
+//         </li>
+//         <li>
+//           <DropdownItem href="#">
+//             {" "}
+//             <BsXCircle size={22} className="fa-fw pe-2" />
+//             Hide post
+//           </DropdownItem>
+//         </li>
+//         <li>
+//           <DropdownItem href="#">
+//             {" "}
+//             <BsSlashCircle size={22} className="fa-fw pe-2" />
+//             Block
+//           </DropdownItem>
+//         </li>
+//         <li>
+//           <DropdownDivider />
+//         </li>
+//         <li>
+//           <DropdownItem href="#">
+//             {" "}
+//             <BsFlag size={22} className="fa-fw pe-2" />
+//             Report post
+//           </DropdownItem>
+//         </li>
+//       </DropdownMenu>
+//     </Dropdown>
+//   );
+// };
+
+// const CommentItem = ({
+//   comment,
+//   likesCount,
+//   children,
+//   socialUser,
+//   createdAt,
+//   image,
+// }: CommentType) => {
+//   return (
+//     <li className="comment-item">
+//       {socialUser && (
+//         <>
+//           <div className="d-flex position-relative">
+//             <div className="avatar avatar-xs">
+//               <span role="button">
+//                 <Image
+//                   className="avatar-img rounded-circle"
+//                   src={socialUser.avatar}
+//                   alt={socialUser.name + "-avatar"}
+//                   width={40}
+//                   height={40}
+//                 />
+//               </span>
+//             </div>
+//             <div className="ms-2">
+//               <div className="bg-light rounded-start-top-0 p-3 rounded">
+//                 <div className="d-flex justify-content-between">
+//                   <h6 className="mb-1">
+//                     {" "}
+//                     <Link href="#"> {socialUser.name} </Link>
+//                   </h6>
+//                   <small className="ms-2">{timeSince(createdAt)}</small>
+//                 </div>
+//                 <p className="small mb-0">{comment}</p>
+//                 {image && (
+//                   <Card className="p-2 border border-2 rounded mt-2 shadow-none">
+//                     <Image width={172} height={277} src={image} alt="" />
+//                   </Card>
+//                 )}
+//               </div>
+
+//               <ul className="nav nav-divider py-2 small">
+//                 <li className="nav-item">
+//                   <Link className="nav-link" href="#">
+//                     {" "}
+//                     Like ({likesCount})
+//                   </Link>
+//                 </li>
+//                 <li className="nav-item">
+//                   <Link className="nav-link" href="#">
+//                     {" "}
+//                     Reply
+//                   </Link>
+//                 </li>
+//                 {children?.length && children?.length > 0 && (
+//                   <li className="nav-item">
+//                     <Link className="nav-link" href="#">
+//                       {" "}
+//                       View {children?.length} replies
+//                     </Link>
+//                   </li>
+//                 )}
+//               </ul>
+//             </div>
+//           </div>
+
+//           <ul className="comment-item-nested list-unstyled">
+//             {children?.map((childComment) => (
+//               <CommentItem key={childComment.id} {...childComment} />
+//             ))}
+//           </ul>
+//           {children?.length === 2 && (
+//             <LoadContentButton name="Load more replies" className="mb-3 ms-5" />
+//           )}
+//         </>
+//       )}
+//     </li>
+//   );
+// };
+
+// const PostCard = ({
+//   createdAt,
+//   likesCount,
+//   caption,
+//   comments,
+//   commentsCount,
+//   image,
+//   socialUser,
+//   //photos,
+//   isVideo,
+// }: SocialPostType) => {
+//   console.log("PostCard received image:", image, "isVideo:", isVideo); //
+
+//   return (
+//     <Card>
+//       <CardHeader className="border-0 pb-0">
+//         <div className="d-flex align-items-center justify-content-between">
+//           <div className="d-flex align-items-center">
+//             <div className="avatar avatar-story me-2">
+//               {socialUser?.avatar && (
+//                 <span role="button">
+//                   {" "}
+//                   <Image
+//                     className="avatar-img rounded-circle"
+//                     src={socialUser.avatar}
+//                     alt={socialUser.name}
+//                     width={40}
+//                     height={40}
+//                   />{" "}
+//                 </span>
+//               )}
+//             </div>
+
+//             <div>
+//               <div className="nav nav-divider">
+//                 <h6 className="nav-item card-title mb-0">
+//                   {" "}
+//                   <Link href="#">{socialUser?.name} </Link>
+//                 </h6>
+//                 <span className="nav-item small"> {timeSince(createdAt)}</span>
+//               </div>
+//               <p className="mb-0 small">Web Developer at StackBros</p>
+//             </div>
+//           </div>
+//           <ActionMenu name={socialUser?.name} />
+//         </div>
+//       </CardHeader>
+//       <CardBody>
+//         {caption && <p>{caption}</p>}
+//         {/* {image && image.startsWith("http") && !isVideo && (
+//           <Image
+//             className="card-img"
+//             src={image}
+//             alt="Post"
+//             width={500}
+//             height={500}
+//           />
+//         )} */}
+//         {image && !isVideo && (
+//           <Image
+//             className="card-img"
+//             src={image}
+//             alt="Post"
+//             width={500}
+//             height={500}
+//             unoptimized
+//           />
+//         )}
+//         {/* {image && !isVideo && (
+//           <Image
+//             className="card-img"
+//             src={image}
+//             alt="Post"
+//             width={40}
+//             height={40}
+//           />
+//         )} */}
+//         {isVideo && image && (
+//           <video controls className="w-100">
+//             <source src={image} />
+//           </video>
+//         )}
+//         {/* {isVideo && (
+//           <video controls className="w-100">
+//             <source src={image} />
+//           </video>
+//         )} */}
+//         {/* {image && <Image className="card-img" src={image} alt="Post" />}
+//         {isVideo && <VideoPlayer />} */}
+//         {/*
+//         {photos && (
+//           <div className="d-flex justify-content-between">
+//             <Row className="g-3">
+//               <Col xs={6}>
+//                 <GlightBox
+//                   className="h-100"
+//                   href={postImg3.src}
+//                   data-gallery="image-popup"
+//                 >
+//                   <Image
+//                     className="rounded img-fluid"
+//                     src={postImg3}
+//                     alt="Image"
+//                   />
+//                 </GlightBox>
+//               </Col>
+//               <Col xs={6}>
+//                 <GlightBox
+//                   href={postImg1.src}
+//                   data-glightbox
+//                   data-gallery="image-popup"
+//                 >
+//                   <Image
+//                     className="rounded img-fluid"
+//                     src={postImg1}
+//                     alt="Image"
+//                   />
+//                 </GlightBox>
+//                 <div className="position-relative bg-dark mt-3 rounded">
+//                   <div className="hover-actions-item position-absolute top-50 start-50 translate-middle z-index-9">
+//                     <Link className="btn btn-link text-white" href="#">
+//                       {" "}
+//                       View all{" "}
+//                     </Link>
+//                   </div>
+//                   <GlightBox
+//                     href={postImg2.src}
+//                     data-glightbox
+//                     data-gallery="image-popup"
+//                   >
+//                     <Image
+//                       className="img-fluid opacity-50 rounded"
+//                       src={postImg2}
+//                       alt="image"
+//                     />
+//                   </GlightBox>
+//                 </div>
+//               </Col>
+//             </Row>
+//           </div>
+//         )} */}
+//         <ul className="nav nav-stack py-3 small">
+//           <li className="nav-item">
+//             <Link
+//               className="nav-link active"
+//               href="#"
+//               data-bs-container="body"
+//               data-bs-toggle="tooltip"
+//               data-bs-placement="top"
+//               data-bs-html="true"
+//               data-bs-custom-class="tooltip-text-start"
+//               data-bs-title="Frances Guerrero<br> Lori Stevens<br> Billy Vasquez<br> Judy Nguyen<br> Larry Lawson<br> Amanda Reed<br> Louis Crawford"
+//             >
+//               {" "}
+//               <BsHandThumbsUpFill size={18} className="pe-1" />
+//               Liked ({likesCount})
+//             </Link>
+//           </li>
+//           <li className="nav-item">
+//             <Link className="nav-link" href="#">
+//               {" "}
+//               <BsChatFill size={18} className="pe-1" />
+//               Comments ({commentsCount})
+//             </Link>
+//           </li>
+
+//           <Dropdown className="nav-item ms-sm-auto">
+//             <DropdownToggle
+//               as="a"
+//               className="nav-link mb-0 content-none cursor-pointer"
+//               id="cardShareAction"
+//               data-bs-toggle="dropdown"
+//               aria-expanded="false"
+//             >
+//               <BsReplyFill size={16} className="flip-horizontal ps-1" />
+//               Share (3)
+//             </DropdownToggle>
+
+//             <DropdownMenu
+//               className="dropdown-menu-end"
+//               aria-labelledby="cardShareAction"
+//             >
+//               <li>
+//                 <DropdownItem href="#">
+//                   {" "}
+//                   <BsEnvelope size={20} className="fa-fw pe-2" />
+//                   Send via Direct Message
+//                 </DropdownItem>
+//               </li>
+//               <li>
+//                 <DropdownItem href="#">
+//                   {" "}
+//                   <BsBookmarkCheck size={20} className="fa-fw pe-2" />
+//                   Bookmark{" "}
+//                 </DropdownItem>
+//               </li>
+//               <li>
+//                 <DropdownItem href="#">
+//                   {" "}
+//                   <BsLink size={20} className="fa-fw pe-2" />
+//                   Copy link to post
+//                 </DropdownItem>
+//               </li>
+//               <li>
+//                 <DropdownItem href="#">
+//                   {" "}
+//                   <BsShare size={20} className="fa-fw pe-2" />
+//                   Share post via …
+//                 </DropdownItem>
+//               </li>
+//               <li>
+//                 <DropdownDivider />
+//               </li>
+//               <li>
+//                 <DropdownItem href="#">
+//                   {" "}
+//                   <BsPencilSquare size={20} className="fa-fw pe-2" />
+//                   Share to News Feed
+//                 </DropdownItem>
+//               </li>
+//             </DropdownMenu>
+//           </Dropdown>
+//         </ul>
+//         {comments && (
+//           <>
+//             <div className="d-flex mb-3">
+//               <div className="avatar avatar-xs me-2">
+//                 <span role="button">
+//                   {" "}
+//                   <Image
+//                     className="avatar-img rounded-circle"
+//                     src={avatar12}
+//                     alt="avatar12"
+//                   />{" "}
+//                 </span>
+//               </div>
+
+//               <form className="w-100 position-relative">
+//                 <textarea
+//                   data-autoresize
+//                   className="form-control pe-4 bg-light"
+//                   rows={1}
+//                   placeholder="Add a comment..."
+//                   defaultValue={""}
+//                 />
+//                 <div className="position-absolute top-0 end-0">
+//                   <button className="btn" type="button">
+//                     🙂
+//                   </button>
+//                 </div>
+//                 <Button
+//                   variant="primary"
+//                   size="sm"
+//                   className="mb-0 rounded mt-2"
+//                   type="button"
+//                 >
+//                   Post
+//                 </Button>
+//               </form>
+//             </div>
+
+//             <ul className="comment-wrap list-unstyled">
+//               {comments.map((comment) => (
+//                 <CommentItem {...comment} key={comment.id} />
+//               ))}
+//             </ul>
+//           </>
+//         )}
+//       </CardBody>
+//       <CardFooter className="border-0 pt-0">
+//         {comments && <LoadContentButton name=" Load more comments" />}
+//       </CardFooter>
+//     </Card>
+//   );
+// };
+
+// const SponsoredCard = () => {
+//   return (
+//     <Card>
+//       <CardHeader>
+//         <div className="d-flex align-items-center justify-content-between">
+//           <div className="d-flex align-items-center">
+//             <div className="avatar me-2">
+//               <span role="button">
+//                 {" "}
+//                 <Image
+//                   className="avatar-img rounded-circle"
+//                   src={logo12}
+//                   alt="image"
+//                 />{" "}
+//               </span>
+//             </div>
+
+//             <div>
+//               <h6 className="card-title mb-0">
+//                 <Link href="#"> Bootstrap: Front-end framework </Link>
+//               </h6>
+//               <span role="button" className="mb-0 text-body">
+//                 Sponsored{" "}
+//                 <BsInfoCircle
+//                   className="ps-1"
+//                   data-bs-container="body"
+//                   data-bs-toggle="popover"
+//                   data-bs-placement="top"
+//                   data-bs-content="You're seeing this ad because your activity meets the intended audience of our site."
+//                 />{" "}
+//               </span>
+//             </div>
+//           </div>
+//           <ActionMenu />
+//         </div>
+//       </CardHeader>
+
+//       <CardBody>
+//         <p className="mb-0">
+//           Quickly design and customize responsive mobile-first sites with
+//           Bootstrap.
+//         </p>
+//       </CardBody>
+//       <Image src={postImg2} alt="post-image" />
+
+//       <CardFooter className="border-0 d-flex justify-content-between align-items-center">
+//         <p className="mb-0">Currently v5.1.3 </p>
+//         <Button variant="primary-soft" size="sm">
+//           {" "}
+//           Download now{" "}
+//         </Button>
+//       </CardFooter>
+//     </Card>
+//   );
+// };
+
+// const Post2 = () => {
+//   return (
+//     <Card>
+//       <CardHeader className="border-0 pb-0">
+//         <div className="d-flex align-items-center justify-content-between">
+//           <div className="d-flex align-items-center">
+//             <div className="avatar me-2">
+//               <span role="button">
+//                 {" "}
+//                 <Image
+//                   className="avatar-img rounded-circle"
+//                   src={logo13}
+//                   alt="logo"
+//                 />{" "}
+//               </span>
+//             </div>
+
+//             <div>
+//               <h6 className="card-title mb-0">
+//                 {" "}
+//                 <Link href="#"> Apple Education </Link>
+//               </h6>
+//               <p className="mb-0 small">9 November at 23:29</p>
+//             </div>
+//           </div>
+//           <ActionMenu />
+//         </div>
+//       </CardHeader>
+//       <CardBody className="pb-0">
+//         <p>
+//           Find out how you can save time in the classroom this year. Earn
+//           recognition while you learn new skills on iPad and Mac. Start
+//           recognition your first Apple Teacher badge today!
+//         </p>
+
+//         <ul className="nav nav-stack pb-2 small">
+//           <li className="nav-item">
+//             <Link className="nav-link active text-secondary" href="#">
+//               <span className="me-1 icon-xs bg-danger text-white rounded-circle">
+//                 <BsHeartFill size={10} />
+//               </span>{" "}
+//               Louis, Billy and 126 others{" "}
+//             </Link>
+//           </li>
+//           <li className="nav-item ms-sm-auto">
+//             <Link className="nav-link" href="#">
+//               {" "}
+//               <BsChatFill size={18} className="pe-1" />
+//               Comments (12)
+//             </Link>
+//           </li>
+//         </ul>
+//       </CardBody>
+
+//       <CardFooter className="py-3">
+//         <ul className="nav nav-fill nav-stack small">
+//           <li className="nav-item">
+//             <Link className="nav-link mb-0 active" href="#">
+//               {" "}
+//               <BsHeart className="pe-1" size={18} />
+//               Liked (56)
+//             </Link>
+//           </li>
+
+//           <Dropdown className="nav-item">
+//             <DropdownToggle
+//               as="a"
+//               className="nav-link mb-0 content-none cursor-pointer"
+//               id="cardShareAction6"
+//               aria-expanded="false"
+//             >
+//               <BsReplyFill className="flip-horizontal ps-1" size={18} />
+//               Share (3)
+//             </DropdownToggle>
+
+//             <DropdownMenu
+//               className="dropdown-menu-end"
+//               aria-labelledby="cardShareAction6"
+//             >
+//               <li>
+//                 <DropdownItem href="#">
+//                   {" "}
+//                   <BsEnvelope className="fa-fw pe-2" />
+//                   Send via Direct Message
+//                 </DropdownItem>
+//               </li>
+//               <li>
+//                 <DropdownItem href="#">
+//                   {" "}
+//                   <BsBookmarkCheck className="fa-fw pe-2" />
+//                   Bookmark{" "}
+//                 </DropdownItem>
+//               </li>
+//               <li>
+//                 <DropdownItem href="#">
+//                   {" "}
+//                   <BsLink className="fa-fw pe-2" />
+//                   Copy link to post
+//                 </DropdownItem>
+//               </li>
+//               <li>
+//                 <DropdownItem href="#">
+//                   {" "}
+//                   <BsShare className="fa-fw pe-2" />
+//                   Share post via …
+//                 </DropdownItem>
+//               </li>
+//               <li>
+//                 <DropdownDivider />
+//               </li>
+//               <li>
+//                 <DropdownItem href="#">
+//                   {" "}
+//                   <BsPencilSquare className="fa-fw pe-2" />
+//                   Share to News Feed
+//                 </DropdownItem>
+//               </li>
+//             </DropdownMenu>
+//           </Dropdown>
+
+//           <li className="nav-item">
+//             <Link className="nav-link mb-0" href="#">
+//               {" "}
+//               <BsSendFill className="pe-1" size={18} />
+//               Send
+//             </Link>
+//           </li>
+//         </ul>
+//       </CardFooter>
+//     </Card>
+//   );
+// };
+
+// const CommonPost = ({ children }: { children: ReactNode }) => {
+//   return (
+//     <Card>
+//       <CardHeader className="border-0 pb-0">
+//         <div className="d-flex align-items-center justify-content-between">
+//           <div className="d-flex align-items-center">
+//             <div className="avatar me-2">
+//               <span role="button">
+//                 {" "}
+//                 <Image
+//                   className="avatar-img rounded-circle"
+//                   src={avatar4}
+//                   alt="image-4"
+//                 />{" "}
+//               </span>
+//             </div>
+
+//             <div>
+//               <h6 className="card-title mb-0">
+//                 {" "}
+//                 <Link href="#"> All in the Mind </Link>
+//               </h6>
+//               <p className="mb-0 small">9 November at 23:29</p>
+//             </div>
+//           </div>
+//           <ActionMenu />
+//         </div>
+//       </CardHeader>
+
+//       <CardBody className="pb-0">
+//         <p>How do you protect your business against cyber-crime?</p>
+
+//         {children}
+
+//         <ul className="nav nav-divider mt-2 mb-0">
+//           <li className="nav-item">
+//             <Link className="nav-link" href="#">
+//               263 votes
+//             </Link>
+//           </li>
+//           <li className="nav-item">
+//             <Link className="nav-link" href="#">
+//               2d left
+//             </Link>
+//           </li>
+//         </ul>
+
+//         <ul className="nav nav-stack pb-2 small">
+//           <li className="nav-item">
+//             <Link className="nav-link active text-secondary" href="#">
+//               <span className="me-1 icon-xs bg-danger text-white rounded-circle">
+//                 <BsHeartFill size={10} />
+//               </span>{" "}
+//               Louis, Billy and 126 others{" "}
+//             </Link>
+//           </li>
+//           <li className="nav-item ms-sm-auto">
+//             <Link className="nav-link" href="#">
+//               {" "}
+//               <BsChatFill size={18} className="pe-1" />
+//               Comments (12)
+//             </Link>
+//           </li>
+//         </ul>
+//       </CardBody>
+
+//       <div className="card-footer py-3">
+//         <ul className="nav nav-fill nav-stack small">
+//           <li className="nav-item">
+//             <Link className="nav-link mb-0 active" href="#">
+//               {" "}
+//               <BsHeart className="pe-1" size={18} />
+//               Liked (56)
+//             </Link>
+//           </li>
+
+//           <Dropdown className="nav-item">
+//             <DropdownToggle
+//               as="a"
+//               className="nav-link mb-0 content-none cursor-pointer"
+//               id="cardShareAction6"
+//               aria-expanded="false"
+//             >
+//               <BsReplyFill className="flip-horizontal ps-1" size={18} />
+//               Share (3)
+//             </DropdownToggle>
+
+//             <DropdownMenu
+//               className="dropdown-menu-end"
+//               aria-labelledby="cardShareAction6"
+//             >
+//               <li>
+//                 <DropdownItem href="#">
+//                   {" "}
+//                   <BsEnvelope size={20} className="fa-fw pe-2" />
+//                   Send via Direct Message
+//                 </DropdownItem>
+//               </li>
+//               <li>
+//                 <DropdownItem href="#">
+//                   {" "}
+//                   <BsBookmarkCheck size={20} className="fa-fw pe-2" />
+//                   Bookmark{" "}
+//                 </DropdownItem>
+//               </li>
+//               <li>
+//                 <DropdownItem href="#">
+//                   {" "}
+//                   <BsLink size={20} className="fa-fw pe-2" />
+//                   Copy link to post
+//                 </DropdownItem>
+//               </li>
+//               <li>
+//                 <DropdownItem href="#">
+//                   {" "}
+//                   <BsShare size={20} className="fa-fw pe-2" />
+//                   Share post via …
+//                 </DropdownItem>
+//               </li>
+//               <li>
+//                 <DropdownDivider />
+//               </li>
+//               <li>
+//                 <DropdownItem href="#">
+//                   {" "}
+//                   <BsPencilSquare size={20} className="fa-fw pe-2" />
+//                   Share to News Feed
+//                 </DropdownItem>
+//               </li>
+//             </DropdownMenu>
+//           </Dropdown>
+
+//           <li className="nav-item">
+//             <Link className="nav-link mb-0" href="#">
+//               {" "}
+//               <BsSendFill className="pe-1" size={18} />
+//               Send
+//             </Link>
+//           </li>
+//         </ul>
+//       </div>
+//     </Card>
+//   );
+// };
+
+// type FeedsProps = {
+//   posts: SocialPostType[];
+//   setPosts: React.Dispatch<React.SetStateAction<SocialPostType[]>>;
+// };
+// // const Feeds = () => {
+// const Feeds = ({ posts, setPosts }: FeedsProps) => {
+//   //const [posts, setPosts] = useState<SocialPostType[]>([]);
+//   const [page, setPage] = useState(1);
+//   const [hasMore, setHasMore] = useState(true);
+//   const [loading, setLoading] = useState(false);
+
+//   const fetchPosts = async () => {
+//     if (loading || !hasMore) return;
+
+//     setLoading(true);
+//     const currentPage = page;
+
+//     try {
+//       const res = await getFeed(page, 5);
+//       console.log("Fetched posts:", res); // Debug log
+//       const mappedPosts = res.result.items.map((p) => {
+//         const firstMedia = p.media?.[0];
+
+//         const imageUrl = firstMedia?.url;
+
+//         return {
+//           id: p.id,
+//           caption: p.content,
+
+//           image:
+//             imageUrl && imageUrl.startsWith("http")
+//               ? imageUrl
+//               : imageUrl
+//                 ? `${"http://localhost:7120/"}${imageUrl}`
+//                 : undefined,
+
+//           isVideo: firstMedia?.type === "video",
+//           createdAt: new Date(p.createdAt), // ✅ FIX HERE
+
+//           //createdAt: p.createdAt,
+//           likesCount: p.likesCount,
+//           commentsCount: p.commentsCount,
+
+//           socialUser: {
+//             id: p.user.id,
+//             name: p.user.name,
+//             avatar: p.user.avatar || "/default-avatar.png",
+//           },
+//         };
+//       });
+//       // const mappedPosts = res.result.items.map((p) => ({
+//       //   id: p.id,
+//       //   caption: p.content,
+//       //   image: p.media?.[0]?.url,
+//       //   isVideo: p.media?.[0]?.type === "video",
+//       //   // image: p.mediaUrl,
+//       //   // isVideo: p.mediaType === "video",
+//       //   createdAt: p.createdAt,
+//       //   likesCount: p.likesCount,
+//       //   commentsCount: p.commentsCount,
+//       //   socialUser: {
+//       //     id: p.user.id,
+//       //     name: p.user.name,
+//       //     avatar: p.user.avatar || "/default-avatar.png",
+//       //   },
+//       // }));
+
+//       //setPosts((prev) => [...prev, ...mappedPosts]);
+//       setPosts((prev) => {
+//         const existingIds = new Set(prev.map((p) => p.id));
+
+//         const newPosts = mappedPosts.filter((p) => !existingIds.has(p.id));
+
+//         return [...prev, ...newPosts];
+//       });
+//       setHasMore(res.result.hasMore);
+//       //setPage((prev) => prev + 1);
+//       //setPage(currentPage + 1);
+//       setPage((prev) => prev + 1);
+//     } catch (err) {
+//       console.error(err);
+//     }
+
+//     setLoading(false);
+//   };
+//   console.log("Rendering Feeds with posts:", posts); // Debug log
+//   //const hasFetched = useRef(false);
+//   useEffect(() => {
+//     const loadPosts = async () => {
+//       await fetchPosts();
+//     };
+
+//     loadPosts();
+//   }, []);
+//   // useEffect(() => {
+//   //   const load = async () => {
+//   //     setPosts([]); // 🔥 reset old posts
+//   //     setPage(1);
+//   //     setHasMore(true);
+
+//   //     await fetchPosts(); // fetch fresh data
+//   //   };
+
+//   //   load();
+//   // }, [refreshFeed]); // 🔥 KEY CHANGE
+//   // useEffect(() => {
+//   //   const load = async () => {
+//   //     await fetchPosts();
+//   //   };
+
+//   //   load();
+//   // }, []);
+//   // useEffect(() => {
+//   //   if (hasFetched.current) return;
+
+//   //   hasFetched.current = true;
+//   //   fetchPosts();
+//   // }, []);
+//   // useEffect(() => {
+//   //   const load = async () => {
+//   //     await fetchPosts();
+//   //   };
+
+//   //   load();
+//   // }, []);
+//   const postData = [
+//     { progress: 25, title: "We have cybersecurity insurance coverage" },
+//     { progress: 15, title: "Our dedicated staff will protect us" },
+//     { progress: 10, title: "We give regular training for best practices" },
+//     { progress: 55, title: "Third-party vendor protection" },
+//   ];
+//   // const allPosts = getAllFeeds();
+//   return (
+//     <>
+//       {/* {allPosts..map((post, idx) => (
+//         <PostCard {...post} key={idx} />
+//       ))} */}
+//       {posts?.map(
+//         (post) => (
+//           console.log("Rendering PostCard for post:", post),
+//           (<PostCard {...post} key={post.id} />)
+//         ),
+//         // <PostCard {...post} key={post.id || idx} />
+//       )}
+//       <SponsoredCard />
+//       {/* <Post2 /> */}
+//       {/* <People /> */}
+
+//       {/* <Post3 /> */}
+
+//       {/* <SuggestedStories /> */}
+//       {hasMore && (
+//         <div className="text-center">
+//           <Button onClick={fetchPosts} disabled={loading}>
+//             {loading ? "Loading..." : "Load More"}
+//           </Button>
+//         </div>
+//       )}
+//       {/* <LoadMoreButton /> */}
+//     </>
+//   );
+// };
+// export default Feeds;
