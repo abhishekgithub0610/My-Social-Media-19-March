@@ -7,7 +7,7 @@ export type Page = {
 };
 
 export type CreatePageFormValues = {
-  pageImage: File;
+  pageImage?: File | null; // ✅ FIX
   pageName: string;
   displayName: string;
 

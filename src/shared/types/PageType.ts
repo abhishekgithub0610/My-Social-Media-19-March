@@ -7,4 +7,7 @@ export type PageType = {
   pageImageUrl?: string;
   types: string[];
   isFollowing: boolean;
+  email: string;
+  url: string;
+  phoneNo: number;
 };

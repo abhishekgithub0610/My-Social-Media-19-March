@@ -33,3 +33,14 @@ export const getPageById = async (id: string): Promise<PageType> => {
   const res = await baseClient.get<ApiResponse<PageType>>(`/pages/${id}`);
   return res.data.result;
 };
+
+export const updatePageApi = async ({
+  id,
+  formData,
+}: {
+  id: string;
+  formData: FormData;
+}) => {
+  const response = await baseClient.put(`/pages/${id}`, formData);
+  return response.data.data;
+};

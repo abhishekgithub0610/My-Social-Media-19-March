@@ -7,8 +7,9 @@ import type { CreatePageFormValues } from "../types/page";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useState, useRef } from "react";
-import { useCreatePage } from "../hooks/usePages";
+import { useCreatePage, useUpdatePage } from "../hooks/usePages";
 import Image from "next/image";
+import { useEffect } from "react"; // ✅ NEW
 import { Controller } from "react-hook-form";
 import Select from "react-select";
 import { toast } from "react-toastify";
@@ -29,7 +30,7 @@ import {
   BsPinterest,
   BsTwitter,
 } from "react-icons/bs";
-import { AxiosError } from "axios";
+import { PageType } from "@/shared/types/PageType";
 
 const TYPE_OPTIONS = [
   "daily",
@@ -48,7 +49,11 @@ type OptionType = {
   label: string;
   value: string;
 };
-
+// ✅ NEW
+type Props = {
+  initialData?: PageType;
+  isEdit?: boolean;
+};
 const Option = (props: OptionProps<OptionType, true>) => {
   return (
     <components.Option {...props}>
@@ -63,8 +68,12 @@ const Option = (props: OptionProps<OptionType, true>) => {
   );
 };
 
-const CreatePageForm = () => {
-  const { mutate, isPending } = useCreatePage();
+// const CreatePageForm = () => {
+const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
+  // const { mutate, isPending } = useCreatePage();
+  const { mutate: createPage, isPending: isCreating } = useCreatePage();
+  const { mutate: updatePage, isPending: isUpdating } = useUpdatePage();
+  const isPending = isCreating || isUpdating;
   const handleTypeChange = (selected: string[]) => {
     if (!selected.length) {
       setValue("type", []);
@@ -82,8 +91,14 @@ const CreatePageForm = () => {
     setValue("type", updated, { shouldValidate: true });
   };
   const createFormSchema: yup.ObjectSchema<CreatePageFormValues> = yup.object({
-    pageImage: yup.mixed<File>().required("Page image is required"),
-
+    // pageImage: yup.mixed<File>().required("Page image is required"),
+    pageImage: yup
+      .mixed<File>()
+      .nullable() // ✅ MUST MATCH TYPE
+      .test("fileRequired", "Page image is required", function (value) {
+        if (isEdit) return true;
+        return !!value;
+      }),
     pageName: yup.string().required("Page name is required"),
 
     displayName: yup.string().required("Display name is required"),
@@ -91,14 +106,14 @@ const CreatePageForm = () => {
     // ✅ optional email (valid if provided)
     email: yup
       .string()
-      .transform((v) => (v === "" ? null : v))
+      .transform((v) => (v === "" ? undefined : v)) // ✅ FIX (no null)
       .nullable()
       .email("Please enter a valid email"),
 
     // ✅ optional URL
     url: yup
       .string()
-      .transform((v) => (v === "" ? null : v))
+      .transform((v) => (v === "" ? undefined : v)) // ✅ FIX
       .nullable()
       .url("Please enter a valid URL"),
 
@@ -121,7 +136,11 @@ const CreatePageForm = () => {
       .required("Type is required"),
   });
   const [preview, setPreview] = useState<string | null>(null);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // inside component
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -133,7 +152,6 @@ const CreatePageForm = () => {
       return;
     }
     setValue("pageImage", file, { shouldValidate: true });
-    setValue("pageImage", file);
 
     const imageUrl = URL.createObjectURL(file);
     setPreview(imageUrl);
@@ -150,6 +168,30 @@ const CreatePageForm = () => {
       type: [], // ✅ IMPORTANT
     },
   });
+
+  useEffect(() => {
+    if (initialData) {
+      reset({
+        pageName: initialData.pageName,
+        displayName: initialData.displayName,
+        email: initialData.email,
+        url: initialData.url,
+        phoneNo: initialData.phoneNo,
+        aboutPage: initialData.aboutPage,
+        category: initialData.category,
+
+        // ✅ IMPORTANT: map types correctly
+        type: initialData.types || [],
+      });
+
+      // ✅ show existing image
+
+      // ✅ derived preview
+      const preview = localPreview || initialData?.pageImageUrl || null;
+      //setPreview(initialData.pageImageUrl);
+    }
+  }, [initialData, reset]);
+
   const onSubmit = (data: CreatePageFormValues) => {
     const formData = new FormData();
 
@@ -163,27 +205,80 @@ const CreatePageForm = () => {
     formData.append("aboutPage", data.aboutPage);
     formData.append("category", data.category);
 
-    // ✅ IMAGE (IMPORTANT)
-    formData.append("pageImage", data.pageImage);
+    // ✅ FIX: only send image if it's a File (not URL)
+    if (data.pageImage instanceof File) {
+      formData.append("pageImage", data.pageImage);
+    }
+
     data.type.forEach((t, i) => {
-      formData.append(`Types[${i}]`, t); // ✅ MATCH BACKEND PROPERTY
+      formData.append(`Types[${i}]`, t);
     });
-    mutate(formData, {
-      onSuccess: () => {
-        toast.success("Page created successfully 🚀");
-        reset();
-        setPreview(null);
-      },
-      onError: (err: unknown) => {
-        toast.error(getErrorMessage(err as AxiosError<{ message?: string }>));
-      },
-    });
+
+    // ✅ NEW: conditional logic
+    if (isEdit && initialData?.id) {
+      updatePage(
+        { id: initialData.id, formData },
+        {
+          onSuccess: () => {
+            toast.success("Page updated successfully 🚀");
+          },
+          onError: (err: unknown) => {
+            toast.error(getErrorMessage(err));
+          },
+        },
+      );
+    } else {
+      createPage(formData, {
+        onSuccess: () => {
+          toast.success("Page created successfully 🚀");
+          reset();
+          setPreview(null);
+        },
+        onError: (err: unknown) => {
+          toast.error(getErrorMessage(err));
+        },
+      });
+    }
   };
+  // const onSubmit = (data: CreatePageFormValues) => {
+  //   const formData = new FormData();
+
+  //   formData.append("pageName", data.pageName);
+  //   formData.append("displayName", data.displayName);
+
+  //   if (data.email) formData.append("email", data.email);
+  //   if (data.url) formData.append("url", data.url);
+  //   if (data.phoneNo) formData.append("phoneNo", String(data.phoneNo));
+
+  //   formData.append("aboutPage", data.aboutPage);
+  //   formData.append("category", data.category);
+
+  //   // ✅ IMAGE (IMPORTANT)
+  //   formData.append("pageImage", data.pageImage);
+  //   data.type.forEach((t, i) => {
+  //     formData.append(`Types[${i}]`, t); // ✅ MATCH BACKEND PROPERTY
+  //   });
+  //   mutate(formData, {
+  //     onSuccess: () => {
+  //       toast.success("Page created successfully 🚀");
+  //       reset();
+  //       setPreview(null);
+  //     },
+  //     onError: (err: unknown) => {
+  //       toast.error(getErrorMessage(err as AxiosError<{ message?: string }>));
+  //     },
+  //   });
+  // };
   return (
     <Card>
       <CardHeader className="border-0 pb-0">
-        <h1 className="h4 card-title mb-0">Create a page</h1>
+        <h1 className="h4 card-title mb-0">
+          {isEdit ? "Edit Page" : "Create a page"}
+        </h1>
       </CardHeader>
+      {/* <CardHeader className="border-0 pb-0">
+        <h1 className="h4 card-title mb-0">Create a page</h1>
+      </CardHeader> */}
       <CardBody>
         <form className="row g-3" onSubmit={handleSubmit(onSubmit)}>
           {" "}
@@ -451,8 +546,17 @@ const CreatePageForm = () => {
           </Col>
           <Col xs={12} className="text-end">
             <Button variant="primary" type="submit" disabled={isPending}>
-              {isPending ? "Creating..." : "Create a page"}
+              {isPending
+                ? isEdit
+                  ? "Updating..."
+                  : "Creating..."
+                : isEdit
+                  ? "Update Page"
+                  : "Create a page"}
             </Button>
+            {/* <Button variant="primary" type="submit" disabled={isPending}>
+              {isPending ? "Creating..." : "Create a page"}
+            </Button> */}
           </Col>
         </form>
       </CardBody>
