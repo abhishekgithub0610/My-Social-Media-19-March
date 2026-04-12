@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createPageApi, updatePageApi } from "../services/pagesApi";
 
 import { queryKeys } from "@/config/queryKeys";
+import { toast } from "react-toastify";
 
 // ✅ CREATE
 export const useCreatePage = () => {
@@ -37,11 +38,16 @@ export const useUpdatePage = () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.page(variables.id),
       });
+
       //use later if you want to update the cache directly instead of invalidating
       // queryClient.setQueryData(
       //   queryKeys.page(variables.id),
       //   updatedPage
       // );
+
+      toast.success("Page updated successfully 🚀");
+
+      onSuccess?.(updatedPage); // ✅ VERY IMPORTANT
     },
   });
 };

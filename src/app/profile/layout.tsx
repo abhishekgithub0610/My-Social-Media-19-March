@@ -5,7 +5,7 @@ import type { ChildrenType } from "@/types/component";
 import clsx from "clsx";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/shared/components/layout/Navbar";
 import {
   Button,
@@ -122,8 +122,9 @@ const ProfileLayout = ({ children }: ChildrenType) => {
   const pathName = usePathname();
   const searchParams = useSearchParams();
   const pageId = usePageId();
-
+  const router = useRouter();
   const [page, setPage] = useState<PageType | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false); // ✅ NEW
   useEffect(() => {
     if (pageId) {
       getPageById(pageId).then((data) => {
@@ -186,12 +187,27 @@ const ProfileLayout = ({ children }: ChildrenType) => {
                       <Button
                         variant="danger-soft"
                         className="me-2"
+                        onClick={() => router.push(`/pages/${page.id}/edit`)}
+                      >
+                        <BsPencilFill size={19} className="pe-1" /> Edit profile
+                      </Button>
+                      {/* <Button
+                        variant="danger-soft"
+                        className="me-2"
+                        type="button"
+                        onClick={() => setIsEditOpen(true)} // ✅ OPEN MODAL
+                      >
+                        <BsPencilFill size={19} className="pe-1" /> Edit profile
+                      </Button> */}
+                      {/* <Button
+                        variant="danger-soft"
+                        className="me-2"
                         type="button"
                       >
                         {" "}
                         <BsPencilFill size={19} className="pe-1" /> Edit
                         profile{" "}
-                      </Button>
+                      </Button> */}
                       <Dropdown>
                         <DropdownToggle
                           as="a"

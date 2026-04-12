@@ -1,18 +1,11 @@
 "use client";
-import { getAllUserConnections } from "@/helpers/data";
-import clsx from "clsx";
-import Image from "next/image";
-import { Button, Card, CardBody, CardHeader, CardTitle } from "react-bootstrap";
-import LoadMoreButton from "@/shared/components/ui/LoadMoreButton";
-import Link from "next/link";
+import { Card, CardBody, CardHeader, CardTitle } from "react-bootstrap";
 import type { Metadata } from "next";
 // PageList.tsx
 import { getPages } from "@/features/pages/services/pagesApi";
-import FollowButton from "@/shared/components/ui/FollowButton ";
 export const metadata: Metadata = { title: "Connections" };
 
 import PageRow from "./PageRow";
-import { useAuthRedirect } from "@/features/account/hooks/useAuthRedirect";
 import { useAuthStore } from "@/features/account/store/authStore";
 import CreatePageButton from "@/shared/components/ui/CreatePageButton";
 import { useEffect, useState } from "react";

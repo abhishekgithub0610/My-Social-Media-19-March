@@ -31,20 +31,32 @@ import {
   BsTwitter,
 } from "react-icons/bs";
 import { PageType } from "@/shared/types/PageType";
+import { useRouter } from "next/navigation";
 
+// const TYPE_OPTIONS = [
+//   "daily",
+//   "daily+",
+//   "weekly",
+//   "weekly+",
+//   "bi-weekly",
+//   "bi-weekly+",
+//   "monthly",
+//   "monthly+",
+//   "yearly",
+//   "yearly+",
+// ];
 const TYPE_OPTIONS = [
-  "daily",
-  "daily+",
-  "weekly",
-  "weekly+",
-  "bi-weekly",
-  "bi-weekly+",
-  "monthly",
-  "monthly+",
-  "yearly",
-  "yearly+",
+  { label: "Daily", value: "Daily" },
+  { label: "Daily+", value: "DailyPlus" },
+  { label: "Weekly", value: "Weekly" },
+  { label: "Weekly+", value: "WeeklyPlus" },
+  { label: "Bi-Weekly", value: "BiWeekly" },
+  { label: "Bi-Weekly+", value: "BiWeeklyPlus" },
+  { label: "Monthly", value: "Monthly" },
+  { label: "Monthly+", value: "MonthlyPlus" },
+  { label: "Yearly", value: "Yearly" },
+  { label: "Yearly+", value: "YearlyPlus" },
 ];
-
 type OptionType = {
   label: string;
   value: string;
@@ -53,6 +65,8 @@ type OptionType = {
 type Props = {
   initialData?: PageType;
   isEdit?: boolean;
+  onClose?: () => void; // ✅ NEW
+  onSuccess?: (data: PageType) => void; // ✅ NEW
 };
 const Option = (props: OptionProps<OptionType, true>) => {
   return (
@@ -74,22 +88,24 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
   const { mutate: createPage, isPending: isCreating } = useCreatePage();
   const { mutate: updatePage, isPending: isUpdating } = useUpdatePage();
   const isPending = isCreating || isUpdating;
-  const handleTypeChange = (selected: string[]) => {
-    if (!selected.length) {
-      setValue("type", []);
-      return;
-    }
+  const router = useRouter();
 
-    // find lowest index (earliest in list)
-    const minIndex = Math.min(
-      ...selected.map((val) => TYPE_OPTIONS.indexOf(val)),
-    );
+  // const handleTypeChange = (selected: string[]) => {
+  //   if (!selected.length) {
+  //     setValue("type", []);
+  //     return;
+  //   }
 
-    // ✅ select from selected → end
-    const updated = TYPE_OPTIONS.slice(minIndex);
+  //   // find lowest index (earliest in list)
+  //   const minIndex = Math.min(
+  //     ...selected.map((val) => TYPE_OPTIONS.indexOf(val)),
+  //   );
 
-    setValue("type", updated, { shouldValidate: true });
-  };
+  //   // ✅ select from selected → end
+  //   const updated = TYPE_OPTIONS.slice(minIndex);
+
+  //   setValue("type", updated, { shouldValidate: true });
+  // };
   const createFormSchema: yup.ObjectSchema<CreatePageFormValues> = yup.object({
     // pageImage: yup.mixed<File>().required("Page image is required"),
     pageImage: yup
@@ -136,12 +152,64 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
       .required("Type is required"),
   });
   const [preview, setPreview] = useState<string | null>(null);
-  const [localPreview, setLocalPreview] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // inside component
 
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    reset, // ✅ ADD THIS
+    formState: { errors },
+  } = useForm<CreatePageFormValues>({
+    resolver: yupResolver(createFormSchema),
+    defaultValues: {
+      type: [], // ✅ IMPORTANT
+    },
+  });
+  const imagePreview =
+    preview ||
+    (initialData?.pageImageUrl
+      ? `http://localhost:7120/${initialData.pageImageUrl}`
+      : null);
+
+  useEffect(() => {
+    if (initialData) {
+      reset({
+        pageName: initialData.pageName,
+        displayName: initialData.displayName,
+        email: initialData.email,
+        url: initialData.url,
+        phoneNo: initialData.phoneNo
+          ? Number(initialData.phoneNo) // ✅ FIX phone type
+          : undefined,
+        aboutPage: initialData.aboutPage,
+        category: initialData.category,
+        type: initialData.types || [],
+      });
+    }
+  }, [initialData, reset]);
+  // useEffect(() => {
+  //   if (initialData) {
+  //     reset({
+  //       pageName: initialData.pageName,
+  //       displayName: initialData.displayName,
+  //       email: initialData.email,
+  //       url: initialData.url,
+  //       phoneNo: initialData.phoneNo,
+  //       aboutPage: initialData.aboutPage,
+  //       category: initialData.category,
+  //       type: initialData.types || [],
+  //     });
+
+  //     // ✅ FIX: set preview properly
+  //     if (initialData.pageImageUrl) {
+  //       setPreview(`http://localhost:7120/${initialData.pageImageUrl}`);
+  //     }
+  //   }
+  // }, [initialData, reset]);
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -156,42 +224,6 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
     const imageUrl = URL.createObjectURL(file);
     setPreview(imageUrl);
   };
-  const {
-    control,
-    handleSubmit,
-    setValue,
-    reset, // ✅ ADD THIS
-    formState: { errors },
-  } = useForm<CreatePageFormValues>({
-    resolver: yupResolver(createFormSchema),
-    defaultValues: {
-      type: [], // ✅ IMPORTANT
-    },
-  });
-
-  useEffect(() => {
-    if (initialData) {
-      reset({
-        pageName: initialData.pageName,
-        displayName: initialData.displayName,
-        email: initialData.email,
-        url: initialData.url,
-        phoneNo: initialData.phoneNo,
-        aboutPage: initialData.aboutPage,
-        category: initialData.category,
-
-        // ✅ IMPORTANT: map types correctly
-        type: initialData.types || [],
-      });
-
-      // ✅ show existing image
-
-      // ✅ derived preview
-      const preview = localPreview || initialData?.pageImageUrl || null;
-      //setPreview(initialData.pageImageUrl);
-    }
-  }, [initialData, reset]);
-
   const onSubmit = (data: CreatePageFormValues) => {
     const formData = new FormData();
 
@@ -215,12 +247,28 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
     });
 
     // ✅ NEW: conditional logic
+    // if (isEdit && initialData?.id) {
+    //   updatePage(
+    //     { id: initialData.id, formData },
+    //     {
+    //       onSuccess: () => {
+    //         toast.success("Page updated successfully 🚀");
+    //       },
+    //       onError: (err: unknown) => {
+    //         toast.error(getErrorMessage(err));
+    //       },
+    //     },
+    //   );
+    // }
     if (isEdit && initialData?.id) {
       updatePage(
         { id: initialData.id, formData },
         {
           onSuccess: () => {
             toast.success("Page updated successfully 🚀");
+
+            // ✅ REDIRECT AFTER SUCCESS
+            router.push(`/profile/profile-feed?pageId=${initialData.id}`);
           },
           onError: (err: unknown) => {
             toast.error(getErrorMessage(err));
@@ -295,13 +343,13 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
               }}
               onClick={() => fileInputRef.current?.click()}
             >
-              {preview ? (
+              {imagePreview ? (
                 <Image
-                  src={preview}
+                  src={imagePreview}
                   alt="Page preview"
                   width={120}
                   height={120}
-                  unoptimized // ✅ avoids optimization issues for local blob
+                  unoptimized
                   style={{ objectFit: "cover", borderRadius: "50%" }}
                 />
               ) : (
@@ -387,32 +435,40 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
                   isMulti
                   closeMenuOnSelect={false}
                   hideSelectedOptions={false}
-                  components={{ Option }}
-                  options={TYPE_OPTIONS.map((item) => ({
-                    label: item,
-                    value: item,
-                  }))}
+                  // components={{ Option }}
+                  options={TYPE_OPTIONS}
+                  // options={TYPE_OPTIONS.map((item) => ({
+                  //   label: item,
+                  //   value: item,
+                  // }))}
                   value={TYPE_OPTIONS.filter((opt) =>
-                    field.value?.includes(opt),
-                  ).map((v) => ({ label: v, value: v }))}
-                  onChange={(val, actionMeta) => {
-                    // ✅ handle clear (when user clicks cross icon)
-                    if (actionMeta.action === "clear") {
-                      field.onChange([]);
-                      return;
-                    }
-
-                    // ❗ safety check
-                    if (!actionMeta.option) return;
-
-                    const clickedValue = actionMeta.option.value;
-                    const index = TYPE_OPTIONS.indexOf(clickedValue);
-
-                    // ✅ always select clicked → bottom
-                    const updated = TYPE_OPTIONS.slice(index);
-
-                    field.onChange(updated);
+                    field.value?.includes(opt.value),
+                  )}
+                  // value={TYPE_OPTIONS.filter((opt) =>
+                  //   field.value?.includes(opt),
+                  // ).map((v) => ({ label: v, value: v }))}
+                  onChange={(val) => {
+                    const values = val ? val.map((v) => v.value) : [];
+                    field.onChange(values);
                   }}
+                  // onChange={(val, actionMeta) => {
+                  //   // ✅ handle clear (when user clicks cross icon)
+                  //   if (actionMeta.action === "clear") {
+                  //     field.onChange([]);
+                  //     return;
+                  //   }
+
+                  //   // ❗ safety check
+                  //   if (!actionMeta.option) return;
+
+                  //   const clickedValue = actionMeta.option.value;
+                  //   const index = TYPE_OPTIONS.indexOf(clickedValue);
+
+                  //   // ✅ always select clicked → bottom
+                  //   const updated = TYPE_OPTIONS.slice(index);
+
+                  //   field.onChange(updated);
+                  // }}
                 />
                 // <Select
                 //   {...field}
