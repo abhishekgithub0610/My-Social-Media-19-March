@@ -1,6 +1,4 @@
 "use client";
-
-import { useAuthInit } from "@/features/account/hooks/useAuthInit";
 import { useAuthStore } from "@/features/account/store/authStore";
 
 export default function AuthProvider({

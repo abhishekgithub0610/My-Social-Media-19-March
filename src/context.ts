@@ -27,6 +27,7 @@ export type LayoutType = LayoutState & {
   mobileMenu: DialogControlType;
   startOffcanvas: DialogControlType;
   messagingOffcanvas: DialogControlType;
+  closeAllOffcanvas: () => void;
 };
 
 // export type ChatContextType = {

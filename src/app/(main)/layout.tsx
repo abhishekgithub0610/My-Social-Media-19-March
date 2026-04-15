@@ -9,7 +9,7 @@ export default function MainLayout({
   return (
     <>
       <Navbar />
-      <main style={{ marginTop: "5px" }}>{children}</main>
+      <main style={{ marginTop: "0px" }}>{children}</main>
       {/* <div className="main-container">{children}</div> */}
     </>
   );

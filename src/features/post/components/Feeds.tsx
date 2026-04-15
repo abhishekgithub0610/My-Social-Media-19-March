@@ -477,7 +477,7 @@ const Feeds = ({ posts, setPosts }: FeedsProps) => {
       {posts && posts.length > 0 ? (
         posts.map((post) => <PostCard {...post} key={post.id} />)
       ) : (
-        <div className="text-center mt-4">
+        <div className="text-center">
           <h5>No posts available</h5>
         </div>
       )}

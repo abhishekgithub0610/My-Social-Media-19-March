@@ -6,11 +6,11 @@ export const currency: CurrencyType = "$";
 
 export const currentYear = new Date().getFullYear();
 
-export const developedByLink = "https://stackbros.in/";
+export const developedByLink = "www.google.com";
 
-export const developedBy = "StackBros";
+export const developedBy = "Tech savvy";
 
-export const contactUs = "mailto:stackbros07@gmail.com";
+export const contactUs = "mailto:test@example.com";
 
 export const buyLink = "";
 

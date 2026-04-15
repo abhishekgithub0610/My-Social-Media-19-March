@@ -79,6 +79,7 @@ const FeedLayout = ({ children }: ChildrenType) => {
                     onHide={startOffcanvas.toggle}
                     tabIndex={-1}
                     id="offcanvasSideNavbar"
+                    className="w-75"
                   >
                     <OffcanvasHeader closeButton />
 

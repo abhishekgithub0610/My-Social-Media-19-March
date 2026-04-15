@@ -2,18 +2,29 @@
 import dynamic from "next/dynamic";
 import { useEffect } from "react";
 import { ToastContainer } from "react-toastify";
-
 import { DEFAULT_PAGE_TITLE } from "@/shared/constants/appConstants";
 import { NotificationProvider } from "@/context/useNotificationContext";
+import { usePathname } from "next/navigation";
 // import { ChatProvider } from "@/context/useChatContext";
 
 import AuthProvider from "@/providers/AuthProvider";
 import QueryProvider from "@/providers/QueryProvider";
+import { useLayoutContext } from "@/context/useLayoutContext";
 
 const LayoutProvider = dynamic(
   () => import("@/context/useLayoutContext").then((mod) => mod.LayoutProvider),
   { ssr: false },
 );
+const InnerWrapper = ({ children }: { children: React.ReactNode }) => {
+  const pathname = usePathname();
+  const { closeAllOffcanvas } = useLayoutContext(); // ✅ use context
+
+  useEffect(() => {
+    closeAllOffcanvas(); // ✅ CLOSE on route change
+  }, [pathname]);
+
+  return <>{children}</>;
+};
 
 const AppProvidersWrapper = ({ children }: { children: React.ReactNode }) => {
   const handleChangeTitle = () => {
@@ -50,7 +61,7 @@ const AppProvidersWrapper = ({ children }: { children: React.ReactNode }) => {
         <LayoutProvider>
           {/* <ChatProvider> */}
           <NotificationProvider>
-            {children}
+            <InnerWrapper>{children}</InnerWrapper>
             <ToastContainer theme="colored" />
           </NotificationProvider>
           {/* </ChatProvider> */}

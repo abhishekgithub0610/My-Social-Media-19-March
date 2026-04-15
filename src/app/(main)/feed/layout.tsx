@@ -25,10 +25,6 @@ import {
   OffcanvasHeader,
   OffcanvasTitle,
   Row,
-  Toast,
-  ToastBody,
-  ToastContainer,
-  ToastHeader,
 } from "react-bootstrap";
 import { FaXmark } from "react-icons/fa6";
 import { useLayoutContext } from "@/context/useLayoutContext";
@@ -38,7 +34,6 @@ import ProfilePanel from "@/shared/components/layout/ProfilePanel";
 import { profilePanelLinksData1 } from "@/assets/data/layout";
 // import Messaging from "@/Messaging"; // to be confirmed/deleted
 import useViewPort from "@/useViewPort"; // to be confirmed/deleted
-import Navbar from "@/shared/components/layout/Navbar"; // ✅ add Navbar
 
 const FeedLayout = ({ children }: ChildrenType) => {
   const { messagingOffcanvas, startOffcanvas } = useLayoutContext();
@@ -51,13 +46,22 @@ const FeedLayout = ({ children }: ChildrenType) => {
             <Col lg={3}>
               <div className="d-flex align-items-center d-lg-none">
                 <button
+                  onClick={() => {
+                    console.log("CLICKED");
+                    startOffcanvas.toggle();
+                  }}
+                  className="border-0 bg-transparent"
+                  type="button"
+                  aria-controls="offcanvasSideNavbar"
+                >
+                  {/* <button
                   onClick={startOffcanvas.toggle}
                   className="border-0 bg-transparent"
                   type="button"
                   data-bs-toggle="offcanvas"
                   data-bs-target="#offcanvasSideNavbar"
                   aria-controls="offcanvasSideNavbar"
-                >
+                > */}
                   <span className="btn btn-primary">
                     <FaSlidersH />
                   </span>
@@ -68,7 +72,24 @@ const FeedLayout = ({ children }: ChildrenType) => {
               </div>
 
               <nav className="navbar navbar-expand-lg mx-0">
-                {width >= 992 ? (
+                <div className="d-none d-lg-block">
+                  <ProfilePanel links={profilePanelLinksData1} />
+                </div>
+
+                <div className="d-lg-none">
+                  <Offcanvas
+                    show={startOffcanvas.open}
+                    onHide={startOffcanvas.toggle}
+                    placement="start"
+                    className="w-75"
+                  >
+                    <OffcanvasHeader closeButton />
+                    <OffcanvasBody>
+                      <ProfilePanel links={profilePanelLinksData1} />
+                    </OffcanvasBody>
+                  </Offcanvas>
+                </div>
+                {/* {width >= 992 ? (
                   <div className="d-block px-2 px-lg-0">
                     <ProfilePanel links={profilePanelLinksData1} />
                   </div>
@@ -88,7 +109,7 @@ const FeedLayout = ({ children }: ChildrenType) => {
                       </div>
                     </OffcanvasBody>
                   </Offcanvas>
-                )}
+                )} */}
               </nav>
             </Col>
             {children}
@@ -110,7 +131,7 @@ const FeedLayout = ({ children }: ChildrenType) => {
           show={messagingOffcanvas.open}
           onHide={messagingOffcanvas.toggle}
           placement="end"
-          className="offcanvas-end"
+          className="offcanvas-end w-75"
           data-bs-scroll="true"
           data-bs-backdrop="false"
           tabIndex={-1}

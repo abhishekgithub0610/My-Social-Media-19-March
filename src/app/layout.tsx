@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 import { Inter } from "next/font/google";
 import Image from "next/image";
 import NextTopLoader from "nextjs-toploader";
 import Footer from "@/shared/components/layout/Footer";
-
 import logo from "@/assets/images/logo.svg";
 import { DEFAULT_PAGE_TITLE } from "@/shared/constants/appConstants";
-
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@/assets/scss/style.scss";
 import AppProvidersWrapper from "@/shared/components/wrappers/AppProvidersWrapper";
@@ -59,7 +56,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>{/* <style>{splashScreenStyles}</style> */}</head>
+      <head>
+        <style>{splashScreenStyles}</style>
+      </head>
 
       <body className={inter.className}>
         {/* Splash Screen */}
@@ -75,7 +74,7 @@ export default function RootLayout({
         </div>
 
         {/* Loader */}
-        <NextTopLoader color="#1c84ee" showSpinner={false} />
+        <NextTopLoader color="#1c84ee" showSpinner={true} />
 
         {/* App */}
         <div id="__next_splash">

@@ -1,5 +1,5 @@
-import { createContext, use, useMemo, useState } from "react";
-
+import { createContext, use, useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import type { ChildrenType } from "@/types/component";
 import { toggleDocumentAttribute } from "@/utils/layout";
 import type {
@@ -71,25 +71,61 @@ const LayoutProvider = ({ children }: ChildrenType) => {
   };
 
   const toggleMessagingOffcanvas: DialogControlType["toggle"] = () => {
-    setOffcanvasStates({
-      ...offcanvasStates,
-      showMessagingOffcanvas: !offcanvasStates.showMessagingOffcanvas,
-    });
+    setOffcanvasStates((prev) => ({
+      ...prev,
+      showMessagingOffcanvas: !prev.showMessagingOffcanvas,
+    }));
+    // setOffcanvasStates({
+    //   ...offcanvasStates,
+    //   showMessagingOffcanvas: !offcanvasStates.showMessagingOffcanvas,
+    // });
   };
 
   const toggleMobileMenu: DialogControlType["toggle"] = () => {
-    setOffcanvasStates({
-      ...offcanvasStates,
-      showMobileMenu: !offcanvasStates.showMobileMenu,
-    });
+    setOffcanvasStates((prev) => ({
+      ...prev,
+      showMobileMenu: !prev.showMobileMenu,
+    }));
+    // setOffcanvasStates({
+    //   ...offcanvasStates,
+    //   showMobileMenu: !offcanvasStates.showMobileMenu,
+    // });
   };
   const toggleStartOffcanvas: DialogControlType["toggle"] = () => {
-    setOffcanvasStates({
-      ...offcanvasStates,
-      showStartOffcanvas: !offcanvasStates.showStartOffcanvas,
+    setOffcanvasStates((prev) => ({
+      ...prev,
+      showStartOffcanvas: !prev.showStartOffcanvas,
+    }));
+    // setOffcanvasStates({
+    //   ...offcanvasStates,
+    //   showStartOffcanvas: !offcanvasStates.showStartOffcanvas,
+    // });
+  };
+  // ✅ Helper to close all (NEW - useful for navigation handling in components)
+  // const closeAllOffcanvas = () => {
+  //   setOffcanvasStates({
+  //     showMobileMenu: false,
+  //     showMessagingOffcanvas: false,
+  //     showStartOffcanvas: false,
+  //   });
+  // };
+  const closeAllOffcanvas = () => {
+    setOffcanvasStates((prev) => {
+      if (
+        !prev.showMobileMenu &&
+        !prev.showMessagingOffcanvas &&
+        !prev.showStartOffcanvas
+      ) {
+        return prev;
+      }
+
+      return {
+        showMobileMenu: false,
+        showMessagingOffcanvas: false,
+        showStartOffcanvas: false,
+      };
     });
   };
-
   const messagingOffcanvas: LayoutType["messagingOffcanvas"] = {
     open: offcanvasStates.showMessagingOffcanvas,
     toggle: toggleMessagingOffcanvas,
@@ -99,23 +135,53 @@ const LayoutProvider = ({ children }: ChildrenType) => {
     open: offcanvasStates.showMobileMenu,
     toggle: toggleMobileMenu,
   };
-  const startOffcanvas: LayoutType["messagingOffcanvas"] = {
+  // const startOffcanvas: LayoutType["messagingOffcanvas"] = {
+  //   open: offcanvasStates.showStartOffcanvas,
+  //   toggle: toggleStartOffcanvas,
+  // };
+
+  const startOffcanvas: LayoutType["startOffcanvas"] = {
     open: offcanvasStates.showStartOffcanvas,
     toggle: toggleStartOffcanvas,
   };
+  // useEffect(() => {
+  //   setOffcanvasStates((prev) => {
+  //     if (
+  //       !prev.showMobileMenu &&
+  //       !prev.showMessagingOffcanvas &&
+  //       !prev.showStartOffcanvas
+  //     ) {
+  //       return prev; // ✅ no change → no re-render
+  //     }
 
+  //     return {
+  //       showMobileMenu: false,
+  //       showMessagingOffcanvas: false,
+  //       showStartOffcanvas: false,
+  //     };
+  //   });
+  // }, [pathname]);
   return (
     <LayoutContext.Provider
-      value={useMemo(
-        () => ({
-          ...settings,
-          updateTheme,
-          messagingOffcanvas,
-          mobileMenu,
-          startOffcanvas,
-        }),
-        [settings, offcanvasStates],
-      )}
+      value={{
+        ...settings,
+        updateTheme,
+        messagingOffcanvas,
+        mobileMenu,
+        startOffcanvas,
+        closeAllOffcanvas, // ✅ NEW: exposed helper
+      }}
+      //   value={useMemo(
+      //     () => ({
+      //       ...settings,
+      //       updateTheme,
+      //       messagingOffcanvas,
+      //       mobileMenu,
+      //       startOffcanvas,
+      //     }),
+      //     [settings, offcanvasStates],
+      //   )
+      // }
     >
       {children}
     </LayoutContext.Provider>

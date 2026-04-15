@@ -23,7 +23,7 @@ export const profilePanelLinksData1: ProfilePanelLink[] = [
   {
     image: homeImg,
     name: "Feed",
-    link: "/profile/feed",
+    link: "/feed",
   },
   {
     image: personImg,
