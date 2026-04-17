@@ -10,4 +10,5 @@ export type PageType = {
   email: string;
   url: string;
   phoneNo: number;
+  isOwner: boolean;
 };

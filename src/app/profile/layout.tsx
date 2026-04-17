@@ -1,6 +1,6 @@
 "use client";
 import GlightBox from "@/shared/components/ui/GlightBox";
-import { useFetchData } from "@/useFetchData";
+import { PageContext } from "@/context/PageContext";
 import type { ChildrenType } from "@/types/component";
 import clsx from "clsx";
 import Image from "next/image";
@@ -120,14 +120,14 @@ const Photos = () => {
 
 const ProfileLayout = ({ children }: ChildrenType) => {
   const pathName = usePathname();
-  const searchParams = useSearchParams();
   const pageId = usePageId();
   const router = useRouter();
   const [page, setPage] = useState<PageType | null>(null);
-  const [isEditOpen, setIsEditOpen] = useState(false); // ✅ NEW
+  //const [isEditOpen, setIsEditOpen] = useState(false); // ✅ NEW
   useEffect(() => {
     if (pageId) {
       getPageById(pageId).then((data) => {
+        console.log("Fetched page data:", data);
         setPage(data); // 👈 IMPORTANT
       });
     }
@@ -184,13 +184,23 @@ const ProfileLayout = ({ children }: ChildrenType) => {
                       {/* <p>250 connections</p> */}
                     </div>
                     <div className="d-flex mt-3 justify-content-center ms-sm-auto">
-                      <Button
+                      {page?.isOwner && (
+                        <Button
+                          variant="danger-soft"
+                          className="me-2"
+                          onClick={() => router.push(`/pages/${page.id}/edit`)}
+                        >
+                          <BsPencilFill size={19} className="pe-1" /> Edit
+                          profile
+                        </Button>
+                      )}
+                      {/* <Button
                         variant="danger-soft"
                         className="me-2"
                         onClick={() => router.push(`/pages/${page.id}/edit`)}
                       >
                         <BsPencilFill size={19} className="pe-1" /> Edit profile
-                      </Button>
+                      </Button> */}
                       {/* <Button
                         variant="danger-soft"
                         className="me-2"
@@ -315,7 +325,9 @@ const ProfileLayout = ({ children }: ChildrenType) => {
                   </ul>
                 </CardFooter>
               </Card>
-              {children}
+              <PageContext.Provider value={page}>
+                {children}
+              </PageContext.Provider>{" "}
             </Col>
             <Col lg={4}>
               <Row className="g-4">

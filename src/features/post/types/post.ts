@@ -3,6 +3,11 @@ export interface Post {
   content: string;
   authorId: string;
 }
+export interface FeedPageDto {
+  name: string;
+  avatar: string;
+  id: string;
+}
 export interface FeedUserDto {
   name: string;
   avatar: string;
@@ -24,6 +29,7 @@ export interface PostFeedDto {
   likesCount: number;
   commentsCount: number;
   user: FeedUserDto;
+  pageDetails: FeedPageDto;
 }
 
 export interface PagedResult<T> {
