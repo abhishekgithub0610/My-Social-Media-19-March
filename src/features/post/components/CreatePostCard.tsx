@@ -48,6 +48,7 @@ type EventForm = {
 };
 type CreatePostCardProps = {
   onPostCreated?: (post: SocialPostType) => void;
+  isUserProfile?: boolean;
 };
 type ApiPost = {
   id: string;
@@ -66,7 +67,10 @@ type ApiPost = {
   };
 };
 // const CreatePostCard = () => {
-const CreatePostCard = ({ onPostCreated }: CreatePostCardProps) => {
+const CreatePostCard = ({
+  onPostCreated,
+  isUserProfile = false,
+}: CreatePostCardProps) => {
   const guests = [
     avatar1,
     avatar2,
@@ -123,7 +127,8 @@ const CreatePostCard = ({ onPostCreated }: CreatePostCardProps) => {
   //   };
   // }, [preview]);
   //const privacy = watch("privacy"); // ✅ auto updates
-  const privacy = useMemo(() => watch("privacy"), [watch]);
+  //const privacy = useMemo(() => watch("privacy"), [watch]);
+  const privacy = watch("privacy");
   const searchParams = useSearchParams();
 
   const handleCreatePost = async () => {
@@ -140,14 +145,17 @@ const CreatePostCard = ({ onPostCreated }: CreatePostCardProps) => {
       formData.append("content", text);
       formData.append("privacy", privacy);
 
-      const pageId = searchParams.get("pageId");
-      if (pageId) {
-        formData.append("pageId", pageId); // ✅ from URL
+      if (!isUserProfile) {
+        const pageId = searchParams.get("pageId");
+
+        if (pageId) {
+          formData.append("pageId", pageId);
+        }
       }
       files.forEach((file) => {
         formData.append("files", file); // ✅ IMPORTANT: same key
       });
-      const res = await fetch("http://localhost:7120/api/posts", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${state.accessToken}`, // ✅ IMPORTANT

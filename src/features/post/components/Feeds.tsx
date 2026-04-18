@@ -4,7 +4,9 @@ import type { CommentType, SocialPostType } from "@/types/data"; // to be delete
 import { timeSince } from "@/utils/date"; // to be deleted/confirmed
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { getFeed } from "@/features/post/services/postApi";
+import { getFeed, getUserFeed } from "@/features/post/services/postApi";
+import { useParams } from "next/navigation";
+
 import {
   Button,
   Card,
@@ -199,9 +201,9 @@ const PostCard = ({
                     src={
                       pageinfo?.avatar
                         ? `http://localhost:7120/${pageinfo.avatar}`
-                        : "/default-avatar.png"
+                        : socialUser?.avatar || "/default-avatar.png"
                     }
-                    alt={pageinfo?.name || "page-avatar"}
+                    alt="post-avatar"
                     width={40}
                     height={40}
                     unoptimized
@@ -213,7 +215,6 @@ const PostCard = ({
             <div>
               <div className="nav nav-divider">
                 <h6 className="nav-item card-title mb-0">
-                  {" "}
                   {pageinfo ? (
                     <Link href={`/profile/profile-feed?pageId=${pageinfo.id}`}>
                       {pageinfo.name}
@@ -221,7 +222,6 @@ const PostCard = ({
                   ) : (
                     <Link href="#">{socialUser?.name}</Link>
                   )}
-                  {/* <Link href="#">{socialUser?.name} </Link> */}
                 </h6>
                 <span className="nav-item small"> {timeSince(createdAt)}</span>
               </div>
@@ -404,18 +404,27 @@ const PostCard = ({
 type FeedsProps = {
   posts: SocialPostType[];
   setPosts: React.Dispatch<React.SetStateAction<SocialPostType[]>>;
+  isUserProfile?: boolean;
 };
 // const Feeds = () => {
-const Feeds = ({ posts, setPosts }: FeedsProps) => {
+const Feeds = ({ posts, setPosts, isUserProfile = false }: FeedsProps) => {
   //const [posts, setPosts] = useState<SocialPostType[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const params = useParams();
+  const userId = params?.userId as string;
   const fetchPosts = async () => {
     if (loading || !hasMore) return;
     setLoading(true);
     try {
-      const res = await getFeed(page, 5);
+      let res;
+
+      if (isUserProfile && userId) {
+        res = await getUserFeed(userId, page, 5);
+      } else {
+        res = await getFeed(page, 5);
+      }
       console.log("Fetched posts:", res); // Debug log
       const mappedPosts = res.result.items.map((p) => {
         const firstMedia = p.media?.[0];
@@ -438,13 +447,14 @@ const Feeds = ({ posts, setPosts }: FeedsProps) => {
             name: p.user.name,
             avatar: p.user.avatar || "/default-avatar.png",
           },
-          pageinfo: p.pageDetails
-            ? {
-                id: p.pageDetails.id,
-                name: p.pageDetails.name,
-                avatar: p.pageDetails.avatar || "/default-avatar.png",
-              }
-            : undefined,
+          pageinfo:
+            !isUserProfile && p.pageDetails
+              ? {
+                  id: p.pageDetails.id,
+                  name: p.pageDetails.name,
+                  avatar: p.pageDetails.avatar || "/default-avatar.png",
+                }
+              : undefined,
         };
       });
       console.log("Mapped posts:", mappedPosts); // Debug log

@@ -108,7 +108,7 @@ const Photos = () => {
   );
 };
 
-const ProfileLayout = ({ children }: ChildrenType) => {
+const PageProfileLayout = ({ children }: ChildrenType) => {
   const pathName = usePathname();
   const pageId = usePageId();
   const router = useRouter();
@@ -378,7 +378,7 @@ const ProfileLayout = ({ children }: ChildrenType) => {
   );
 };
 
-export default ProfileLayout;
+export default PageProfileLayout;
 
 // // "use client";
 // // import GlightBox from "@/shared/components/ui/GlightBox";

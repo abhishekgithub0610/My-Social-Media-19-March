@@ -6,7 +6,7 @@ import CreatePostCard from "@/features/post/components/CreatePostCard";
 import { useState } from "react";
 import { SocialPostType } from "@/types/data";
 import { usePage } from "@/context/PageContext";
-const ProfileFeed = ({ params }: { params: { pageId: string } }) => {
+const PageProfileFeed = ({ params }: { params: { pageId: string } }) => {
   const [posts, setPosts] = useState<SocialPostType[]>([]);
   console.log("ProfileFeed received post details:", posts);
   const page = usePage();
@@ -35,4 +35,4 @@ const ProfileFeed = ({ params }: { params: { pageId: string } }) => {
   );
 };
 
-export default ProfileFeed;
+export default PageProfileFeed;
