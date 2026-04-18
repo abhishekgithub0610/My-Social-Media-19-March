@@ -179,6 +179,7 @@ const PostCard = ({
   commentsCount,
   image,
   socialUser,
+  pageinfo,
   //photos,
   isVideo,
 }: SocialPostType) => {
@@ -195,10 +196,15 @@ const PostCard = ({
                   {" "}
                   <Image
                     className="avatar-img rounded-circle"
-                    src={socialUser.avatar}
-                    alt={socialUser.name}
+                    src={
+                      pageinfo?.avatar
+                        ? `http://localhost:7120/${pageinfo.avatar}`
+                        : "/default-avatar.png"
+                    }
+                    alt={pageinfo?.name || "page-avatar"}
                     width={40}
                     height={40}
+                    unoptimized
                   />{" "}
                 </span>
               )}
@@ -208,7 +214,14 @@ const PostCard = ({
               <div className="nav nav-divider">
                 <h6 className="nav-item card-title mb-0">
                   {" "}
-                  <Link href="#">{socialUser?.name} </Link>
+                  {pageinfo ? (
+                    <Link href={`/profile/profile-feed?pageId=${pageinfo.id}`}>
+                      {pageinfo.name}
+                    </Link>
+                  ) : (
+                    <Link href="#">{socialUser?.name}</Link>
+                  )}
+                  {/* <Link href="#">{socialUser?.name} </Link> */}
                 </h6>
                 <span className="nav-item small"> {timeSince(createdAt)}</span>
               </div>
@@ -243,7 +256,7 @@ const PostCard = ({
           <Image
             className="card-img"
             src={image}
-            alt="Post"
+            alt="Post"onPostCreated
             width={40}
             height={40}
           />
@@ -425,6 +438,13 @@ const Feeds = ({ posts, setPosts }: FeedsProps) => {
             name: p.user.name,
             avatar: p.user.avatar || "/default-avatar.png",
           },
+          pageinfo: p.pageDetails
+            ? {
+                id: p.pageDetails.id,
+                name: p.pageDetails.name,
+                avatar: p.pageDetails.avatar || "/default-avatar.png",
+              }
+            : undefined,
         };
       });
       console.log("Mapped posts:", mappedPosts); // Debug log
@@ -488,11 +508,6 @@ const Feeds = ({ posts, setPosts }: FeedsProps) => {
           <h5>No posts available</h5>
         </div>
       )} */}
-
-      {/* 🔥 Posts */}
-      {posts?.map((post) => (
-        <PostCard {...post} key={post.id} />
-      ))}
 
       {/* 🔥 Load More */}
       {hasMore && posts?.length > 0 && (

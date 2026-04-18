@@ -5,7 +5,7 @@ import type { ChildrenType } from "@/types/component";
 import clsx from "clsx";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Navbar from "@/shared/components/layout/Navbar";
 import {
   Button,
@@ -25,25 +25,15 @@ import {
 import {
   BsBookmark,
   BsBriefcase,
-  BsCalendar2Plus,
   BsCalendarDate,
-  BsChatLeftText,
   BsEnvelope,
-  BsFileEarmarkPdf,
   BsGear,
-  BsGeoAlt,
   BsHeart,
   BsLock,
-  BsPatchCheckFill,
   BsPencilFill,
-  BsPersonX,
   BsThreeDots,
 } from "react-icons/bs";
-import { FaPlus } from "react-icons/fa6";
 import { PROFILE_MENU_ITEMS } from "@/assets/data/menu-items";
-import { getAllUsers } from "@/helpers/data";
-import { experienceData } from "@/experiencedata";
-import avatar7 from "@/assets/images/avatar/07.jpg";
 import background5 from "@/assets/images/bg/05.jpg";
 import album1 from "@/assets/images/albums/01.jpg";
 import album2 from "@/assets/images/albums/02.jpg";
@@ -139,7 +129,7 @@ const ProfileLayout = ({ children }: ChildrenType) => {
   // console.log("Page data:", page);
   return (
     <>
-      <Navbar />Q
+      <Navbar />
       <main>
         <Container>
           <Row className="g-4">

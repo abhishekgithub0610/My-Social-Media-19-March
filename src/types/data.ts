@@ -69,6 +69,11 @@ export type SocialPostType = {
     name: string;
     avatar: string;
   };
+  pageinfo?: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
   IsLikedByCurrentUse?: boolean;
 };
 

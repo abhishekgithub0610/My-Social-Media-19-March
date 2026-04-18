@@ -139,7 +139,7 @@ const ProfileLayout = ({ children }: ChildrenType) => {
   // console.log("Page data:", page);
   return (
     <>
-      <Navbar />Q
+      <Navbar />
       <main>
         <Container>
           <Row className="g-4">

@@ -35,26 +35,26 @@ export const profilePanelLinksData1: ProfilePanelLink[] = [
     name: "Pages",
     link: "/pages",
   },
-  {
-    image: earthImg,
-    name: "Latest News",
-    link: "/blogs",
-  },
-  {
-    image: calendarImg,
-    name: "Events",
-    link: "/profile/events",
-  },
-  {
-    image: chatImg,
-    name: "Groups",
-    link: "/feed/groups",
-  },
-  {
-    image: notificationImg,
-    name: "Notifications",
-    link: "/notifications",
-  },
+  // {
+  //   image: earthImg,
+  //   name: "Latest News",
+  //   link: "/blogs",
+  // },
+  // {
+  //   image: calendarImg,
+  //   name: "Events",
+  //   link: "/profile/events",
+  // },
+  // {
+  //   image: chatImg,
+  //   name: "Groups",
+  //   link: "/feed/groups",
+  // },
+  // {
+  //   image: notificationImg,
+  //   name: "Notifications",
+  //   link: "/notifications",
+  // },
   {
     image: cogImg,
     name: "Settings",

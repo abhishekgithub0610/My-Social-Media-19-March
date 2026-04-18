@@ -9,12 +9,15 @@ import {
 import type { ProfilePanelLink } from "@/features/profile/types/profile";
 import avatar7 from "@/assets/images/avatar/07.jpg";
 import bgBannerImg from "@/assets/images/bg/01.jpg";
+import { useAuthStore } from "@/features/account/store/authStore";
 
 type ProfilePanelProps = {
   links: ProfilePanelLink[];
 };
 
 const ProfilePanel = ({ links }: ProfilePanelProps) => {
+  const { user } = useAuthStore();
+
   return (
     <>
       <Card className="overflow-hidden h-100">
@@ -91,22 +94,22 @@ const ProfilePanel = ({ links }: ProfilePanelProps) => {
         </CardBody>
 
         <CardFooter className="text-center py-2">
-          <Button variant="link" size="sm" href="/profile/feed">
+          <Button variant="link" size="sm" href={`/profile/user/${user?.id}`}>
             View Profile{" "}
           </Button>
         </CardFooter>
       </Card>
       <ul className="nav small mt-4 justify-content-center lh-1">
-        <li className="nav-item">
+        {/* <li className="nav-item">
           <Link className="nav-link" href="/profile/about">
             About
           </Link>
-        </li>
-        <li className="nav-item">
+        </li> */}
+        {/* <li className="nav-item">
           <Link className="nav-link" href="/settings/account">
             Settings
           </Link>
-        </li>
+        </li> */}
         <li className="nav-item">
           <Link
             className="nav-link"
@@ -117,21 +120,21 @@ const ProfilePanel = ({ links }: ProfilePanelProps) => {
             Support{" "}
           </Link>
         </li>
-        <li className="nav-item">
+        {/* <li className="nav-item">
           <Link className="nav-link" target="_blank" rel="noreferrer" href="#">
             Docs{" "}
           </Link>
-        </li>
+        </li> */}
         <li className="nav-item">
           <Link className="nav-link" href="/help">
             Help
           </Link>
         </li>
-        <li className="nav-item">
+        {/* <li className="nav-item">
           <Link className="nav-link" href="/privacy-terms">
             Privacy &amp; terms
           </Link>
-        </li>
+        </li> */}
       </ul>
 
       <p className="small text-center mt-1">

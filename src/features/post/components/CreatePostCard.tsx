@@ -1,10 +1,9 @@
 "use client";
 import Image from "next/image";
 import { useAuthStore } from "@/features/account/store/authStore";
+import { useSearchParams } from "next/navigation";
 import {
-  Button,
   Card,
-  Col,
   Dropdown,
   DropdownDivider,
   DropdownItem,
@@ -14,24 +13,14 @@ import {
   ModalBody,
   ModalFooter,
   ModalHeader,
-  OverlayTrigger,
-  Row,
-  Tooltip,
 } from "react-bootstrap";
 import {
   BsBookmarkCheck,
   BsCalendar2EventFill,
   BsCameraReels,
-  BsCameraReelsFill,
-  BsCameraVideoFill,
-  BsEmojiSmileFill,
   BsEnvelope,
-  BsFileEarmarkText,
-  BsGeoAltFill,
   BsImageFill,
-  BsImages,
   BsPencilSquare,
-  BsTagFill,
   BsThreeDots,
 } from "react-icons/bs";
 import * as yup from "yup";
@@ -39,9 +28,6 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import useToggle from "@/shared/hooks/useToggle"; //to be confirmed/deleted
 import DropzoneFormInput from "@/shared/components/ui/DropzoneFormInput";
-import TextFormInput from "@/shared/components/ui/TextFormInput";
-import TextAreaFormInput from "@/shared/components/ui/TextAreaFormInput";
-import DateFormInput from "@/shared/components/ui/DateFormInput";
 import { toast } from "react-toastify";
 import avatar1 from "@/assets/images/avatar/01.jpg";
 import avatar2 from "@/assets/images/avatar/02.jpg";
@@ -50,10 +36,7 @@ import avatar4 from "@/assets/images/avatar/04.jpg";
 import avatar5 from "@/assets/images/avatar/05.jpg";
 import avatar6 from "@/assets/images/avatar/06.jpg";
 import avatar7 from "@/assets/images/avatar/07.jpg";
-import Link from "next/link";
-import SelectInput from "@/shared/components/ui/SelectInput";
 import { useEffect, useMemo, useState } from "react";
-import { PageType } from "@/shared/types/PageType";
 import { SocialPostType } from "@/types/data";
 type EventForm = {
   title: string;
@@ -97,7 +80,7 @@ const CreatePostCard = ({ onPostCreated }: CreatePostCardProps) => {
   const [loading, setLoading] = useState(false);
   //const [preview, setPreview] = useState<string | null>(null);
   const { isTrue: isOpenEvent, toggle: toggleEvent } = useToggle();
-
+  const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
   const { isTrue: isOpenPost, toggle: togglePost } = useToggle();
   const [activeModal, setActiveModal] = useState<"photo" | "video" | null>(
     null,
@@ -141,6 +124,8 @@ const CreatePostCard = ({ onPostCreated }: CreatePostCardProps) => {
   // }, [preview]);
   //const privacy = watch("privacy"); // ✅ auto updates
   const privacy = useMemo(() => watch("privacy"), [watch]);
+  const searchParams = useSearchParams();
+
   const handleCreatePost = async () => {
     console.log("Creating post...");
     try {
@@ -155,6 +140,10 @@ const CreatePostCard = ({ onPostCreated }: CreatePostCardProps) => {
       formData.append("content", text);
       formData.append("privacy", privacy);
 
+      const pageId = searchParams.get("pageId");
+      if (pageId) {
+        formData.append("pageId", pageId); // ✅ from URL
+      }
       files.forEach((file) => {
         formData.append("files", file); // ✅ IMPORTANT: same key
       });
@@ -202,11 +191,16 @@ const CreatePostCard = ({ onPostCreated }: CreatePostCardProps) => {
   };
   const mapToFeedPost = (p: ApiPost): SocialPostType => {
     const firstMedia = p.media?.[0];
+    const fullImageUrl = firstMedia?.url
+      ? firstMedia.url.startsWith("http")
+        ? firstMedia.url
+        : `http://localhost:7120/${firstMedia.url}`
+      : undefined;
     console.log("Mapping API post to feed post:", p);
     return {
       id: p.id,
       caption: p.content,
-      image: firstMedia?.url,
+      image: fullImageUrl,
       isVideo: firstMedia?.type === "video",
       createdAt: p.createdAt,
       likesCount: p.likesCount,
