@@ -52,15 +52,9 @@ import album4 from "@/assets/images/albums/04.jpg";
 import album5 from "@/assets/images/albums/05.jpg";
 import { useEffect, useState } from "react";
 import { getUserById } from "@/features/users/services/userApi";
+import { UserProfileType } from "@/features/users/types/user";
 //import { usePageId } from "@/shared/hooks/usePageId";
 //import { PageType } from "@/shared/types/PageType";
-type UserProfileType = {
-  id: string;
-  fullName: string;
-  email: string;
-  profilePictureUrl?: string;
-  isOwner: boolean;
-};
 
 const Photos = () => {
   return (
@@ -133,11 +127,9 @@ const UserProfileLayout = ({ children }: ChildrenType) => {
   //const [isEditOpen, setIsEditOpen] = useState(false); // ✅ NEW
   const params = useParams();
   const userId = params?.userId as string;
-  console.log("current userrId from params:", userId);
   useEffect(() => {
     if (userId) {
       getUserById(userId).then((data) => {
-        console.log("Fetched user data:", data);
         setUser(data);
       });
     }
@@ -170,10 +162,10 @@ const UserProfileLayout = ({ children }: ChildrenType) => {
                   <div className="d-sm-flex align-items-start text-center text-sm-start w-100">
                     <div>
                       <div className="avatar avatar-xxl mt-n5 mb-3">
-                        {user.profilePictureUrl && (
+                        {user.profilePicture && (
                           <Image
                             className="avatar-img rounded-circle border border-white border-3"
-                            src={`http://localhost:7120/${user.profilePictureUrl}`}
+                            src={`http://localhost:7120/${user.profilePicture}`}
                             alt="avatar"
                             width={120}
                             height={120}

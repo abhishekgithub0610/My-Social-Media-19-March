@@ -12,10 +12,6 @@ export const createPageApi = async (formData: FormData) => {
 export const getPages = async (): Promise<PageType[]> => {
   const state = useAuthStore.getState();
 
-  console.log("Zustand AFTER setUser:", {
-    user: state.user,
-    accessToken: state.accessToken,
-  });
   const res = await baseClient.get<ApiResponse<PageType[]>>("/pages");
 
   if (!res.data.isSuccess || !res.data.result) {

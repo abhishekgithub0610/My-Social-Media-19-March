@@ -8,7 +8,6 @@ import { SocialPostType } from "@/types/data";
 import { usePage } from "@/context/PageContext";
 const PageProfileFeed = ({ params }: { params: { pageId: string } }) => {
   const [posts, setPosts] = useState<SocialPostType[]>([]);
-  console.log("ProfileFeed received post details:", posts);
   const page = usePage();
   return (
     <>
@@ -16,7 +15,6 @@ const PageProfileFeed = ({ params }: { params: { pageId: string } }) => {
         {page?.isOwner && (
           <CreatePostCard
             onPostCreated={(newPost) => {
-              console.log("STEP 4: parent received", newPost);
               setPosts((prev) => [newPost, ...prev]);
             }}
           />
@@ -27,7 +25,7 @@ const PageProfileFeed = ({ params }: { params: { pageId: string } }) => {
             setPosts((prev) => [newPost, ...prev]);
           }}
         /> */}
-        <Feeds posts={posts} setPosts={setPosts} />
+        <Feeds posts={posts} setPosts={setPosts} feedType="page" />
         {/* <CreatePostCard />
         <Feeds /> */}
       </Col>

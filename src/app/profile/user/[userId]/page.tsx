@@ -8,13 +8,8 @@ import { usePage } from "@/context/PageContext";
 import { SocialPostType } from "@/types/data";
 import { useParams } from "next/navigation";
 import { getUserById } from "@/features/users/services/userApi";
-type UserProfileType = {
-  id: string;
-  fullName: string;
-  email: string;
-  profilePictureUrl?: string;
-  isOwner: boolean;
-};
+import { UserProfileType } from "@/features/users/types/user";
+
 //const UserProfileFeed = ({ params }: { params: { pageId: string } }) => {
 const UserProfileFeed = () => {
   const [posts, setPosts] = useState<SocialPostType[]>([]);
@@ -24,18 +19,14 @@ const UserProfileFeed = () => {
   useEffect(() => {
     if (userId) {
       getUserById(userId).then((data) => {
-        console.log("Fetched user for profile feed:", data);
         setUser(data);
       });
     }
   }, [userId]);
 
-  console.log("User ProfileFeed received post details:", posts);
-
   if (!user) {
     return <div className="text-center p-5">Loading feed...</div>;
   }
-  console.log("ProfileFeed received post details:", posts);
   //const page = usePage();
   return (
     <>
@@ -44,7 +35,6 @@ const UserProfileFeed = () => {
           <CreatePostCard
             isUserProfile={true} // CHANGED: tells CreatePostCard this is user profile
             onPostCreated={(newPost) => {
-              console.log("STEP 4: parent received", newPost);
               setPosts((prev) => [newPost, ...prev]);
             }}
           />
@@ -55,7 +45,12 @@ const UserProfileFeed = () => {
             setPosts((prev) => [newPost, ...prev]);
           }}
         /> */}
-        <Feeds posts={posts} setPosts={setPosts} isUserProfile={true} />{" "}
+        <Feeds
+          posts={posts}
+          setPosts={setPosts}
+          isUserProfile={true}
+          feedType="friends"
+        />{" "}
         {/* <CreatePostCard />
         <Feeds /> */}
       </Col>

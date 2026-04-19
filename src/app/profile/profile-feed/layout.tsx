@@ -117,7 +117,6 @@ const PageProfileLayout = ({ children }: ChildrenType) => {
   useEffect(() => {
     if (pageId) {
       getPageById(pageId).then((data) => {
-        console.log("Fetched page data:", data);
         setPage(data); // 👈 IMPORTANT
       });
     }

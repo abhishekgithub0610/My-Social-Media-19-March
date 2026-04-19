@@ -132,15 +132,9 @@ const CreatePostCard = ({
   const searchParams = useSearchParams();
 
   const handleCreatePost = async () => {
-    console.log("Creating post...");
     try {
       setLoading(true);
-      console.log("Creating post..22.");
       const state = useAuthStore.getState();
-      console.log("Zustand AFTER setUser:", {
-        user: state.user,
-        accessToken: state.accessToken,
-      });
       const formData = new FormData();
       formData.append("content", text);
       formData.append("privacy", privacy);
@@ -175,10 +169,7 @@ const CreatePostCard = ({
       // onPostCreated?.(mapToFeedPost(data));
       const json = await res.json();
       const post = json.result ?? json;
-      console.log("Post created:", post);
-
       onPostCreated?.(mapToFeedPost(post));
-      console.log("STEP 2: mapped post", mapToFeedPost(post));
 
       // reset UI
       setText("");
@@ -204,7 +195,6 @@ const CreatePostCard = ({
         ? firstMedia.url
         : `http://localhost:7120/${firstMedia.url}`
       : undefined;
-    console.log("Mapping API post to feed post:", p);
     return {
       id: p.id,
       caption: p.content,

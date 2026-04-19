@@ -48,7 +48,6 @@ const FollowButton = ({ page }: Props) => {
     setIsFollowing(true);
 
     const token = useAuthStore.getState().accessToken;
-    console.log("Follow API called with token:", token, "and type:", val); // 🔥 DEBUG
     if (!token) {
       console.error("No access token found");
       return;
@@ -70,7 +69,6 @@ const FollowButton = ({ page }: Props) => {
     setSelectedType(null);
 
     const token = useAuthStore.getState().accessToken;
-    console.log("Unfollow API called with token:", token); // 🔥 DEBUG
     await fetch(`http://localhost:7120/api/pages/${page.id}/follow`, {
       method: "DELETE",
       headers: {

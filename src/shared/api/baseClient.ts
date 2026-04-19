@@ -14,7 +14,6 @@ export const baseClient = axios.create({
 baseClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const accessToken = getAccessToken();
   // // const { accessToken } = useAuthStore.getState(); // ✅ FIX
-  console.log("Attaching token to request:", accessToken);
   if (accessToken) {
     config.headers.set("Authorization", `Bearer ${accessToken}`);
   }
@@ -75,7 +74,6 @@ baseClient.interceptors.response.use(
         const newAccessToken = res.result.accessToken;
         const { setUser, user } = useAuthStore.getState();
         if (user) {
-          console.log("New access token obtained:", newAccessToken);
           setUser(user, newAccessToken); // ✅ FIXED
         }
 

@@ -65,7 +65,6 @@ export const useLogin = () => {
         console.error("User not found in response");
         return;
       }
-      console.log("login token :", user.accessToken); // 👈 ADD THIS
 
       setUser(
         {
@@ -103,10 +102,6 @@ export const useLogin = () => {
       // ✅ CHECK Zustand state immediately
       const state = useAuthStore.getState();
 
-      console.log("Zustand AFTER setUser:", {
-        user: state.user,
-        accessToken: state.accessToken,
-      });
       setTimeout(() => {
         router.push("/feed");
       }, 0);

@@ -37,6 +37,7 @@ import {
 } from "react-icons/bs";
 import LoadContentButton from "@/LoadContentButton"; //to be deleted/confirmed
 import avatar12 from "@/assets/images/avatar/12.jpg";
+import { useAuthStore } from "@/features/account/store/authStore";
 const ActionMenu = ({ name }: { name?: string }) => {
   return (
     <Dropdown>
@@ -185,8 +186,6 @@ const PostCard = ({
   //photos,
   isVideo,
 }: SocialPostType) => {
-  console.log("PostCard received image:", image, "isVideo:", isVideo); //
-
   return (
     <Card>
       <CardHeader className="border-0 pb-0">
@@ -201,8 +200,15 @@ const PostCard = ({
                     src={
                       pageinfo?.avatar
                         ? `http://localhost:7120/${pageinfo.avatar}`
-                        : socialUser?.avatar || "/default-avatar.png"
+                        : socialUser?.avatar
+                          ? `http://localhost:7120/${socialUser.avatar}`
+                          : "/default-avatar.png"
                     }
+                    // src={
+                    //   pageinfo?.avatar
+                    //     ? `http://localhost:7120/${pageinfo.avatar}`
+                    //     : socialUser?.avatar || "/default-avatar.png"
+                    // }
                     alt="post-avatar"
                     width={40}
                     height={40}
@@ -405,82 +411,129 @@ type FeedsProps = {
   posts: SocialPostType[];
   setPosts: React.Dispatch<React.SetStateAction<SocialPostType[]>>;
   isUserProfile?: boolean;
+  feedType?: "page" | "friends";
 };
 // const Feeds = () => {
-const Feeds = ({ posts, setPosts, isUserProfile = false }: FeedsProps) => {
+const Feeds = ({
+  posts,
+  setPosts,
+  isUserProfile = false,
+  feedType,
+}: FeedsProps) => {
   //const [posts, setPosts] = useState<SocialPostType[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const { user } = useAuthStore();
+  const userId = user?.id;
   const params = useParams();
-  const userId = params?.userId as string;
-  const fetchPosts = async () => {
-    if (loading || !hasMore) return;
+  // Replace your fetchPosts() logic inside Feeds with this updated version
+  const pageId = params?.pageId as string;
+
+  // Decide active mode automatically
+  const activeFeedType = feedType; // homepage tabs
+  // const activeFeedType = isUserProfile
+  //   ? "friends" // user profile = only user posts
+  //   : pageId
+  //     ? "page" // page profile = only page posts
+  //     : feedType; // homepage tabs
+  console.log("feedd typeeeee" + feedType);
+  const fetchPosts = async (currentPage = page, forceFetch = false) => {
+    //if (loading || !hasMore) return;
+    if (!forceFetch && (loading || !hasMore)) return;
+
     setLoading(true);
+
     try {
       let res;
 
-      if (isUserProfile && userId) {
-        res = await getUserFeed(userId, page, 5);
+      // User profile page → always user feed
+      // ✅ SIMPLE LOGIC ONLY
+      if (feedType === "friends") {
+        if (!userId) {
+          setLoading(false);
+          return;
+        }
+        res = await getUserFeed(userId, currentPage, 5);
       } else {
-        res = await getFeed(page, 5);
+        res = await getFeed(currentPage, 5);
       }
-      console.log("Fetched posts:", res); // Debug log
-      const mappedPosts = res.result.items.map((p) => {
-        const firstMedia = p.media?.[0];
-        const imageUrl = firstMedia?.url;
-        return {
-          id: p.id,
-          caption: p.content,
-          image:
-            imageUrl && imageUrl.startsWith("http")
-              ? imageUrl
-              : imageUrl
-                ? `${"http://localhost:7120/"}${imageUrl}`
-                : undefined,
-          isVideo: firstMedia?.type === "video",
-          createdAt: new Date(p.createdAt), // ✅ FIX HERE
-          likesCount: p.likesCount,
-          commentsCount: p.commentsCount,
-          socialUser: {
-            id: p.user.id,
-            name: p.user.name,
-            avatar: p.user.avatar || "/default-avatar.png",
-          },
-          pageinfo:
-            !isUserProfile && p.pageDetails
+
+      const mappedPosts = res.result.items
+        .map((p): SocialPostType | null => {
+          const firstMedia = p.media?.[0];
+          const imageUrl = firstMedia?.url;
+
+          const isPagePost = !!p.pageDetails;
+          const isFriendPost = !p.pageDetails;
+
+          // 🔥 Filter based on feedType
+          if (
+            (activeFeedType === "page" && !isPagePost) ||
+            (activeFeedType === "friends" && !isFriendPost)
+          ) {
+            return null;
+          }
+
+          return {
+            id: p.id,
+            caption: p.content,
+            image:
+              imageUrl && imageUrl.startsWith("http")
+                ? imageUrl
+                : imageUrl
+                  ? `http://localhost:7120/${imageUrl}`
+                  : undefined,
+
+            isVideo: firstMedia?.type === "video",
+            createdAt: new Date(p.createdAt),
+            likesCount: p.likesCount,
+            commentsCount: p.commentsCount,
+
+            socialUser: {
+              id: p.user.id,
+              name: p.user.name,
+              avatar: p.user.avatar || "/default-avatar.png",
+            },
+
+            pageinfo: isPagePost
               ? {
                   id: p.pageDetails.id,
                   name: p.pageDetails.name,
                   avatar: p.pageDetails.avatar || "/default-avatar.png",
                 }
               : undefined,
-        };
-      });
-      console.log("Mapped posts:", mappedPosts); // Debug log
-      //setPosts((prev) => [...prev, ...mappedPosts]);
+          };
+        })
+        .filter((post): post is SocialPostType => post !== null);
+
       setPosts((prev) => {
         const existingIds = new Set(prev.map((p) => p.id));
-        const newPosts = mappedPosts.filter((p) => !existingIds.has(p.id));
-        return [...prev, ...newPosts];
+        const newPosts = mappedPosts.filter((p) => p && !existingIds.has(p.id));
+        return currentPage === 1 ? mappedPosts : [...prev, ...newPosts];
+        //return [...prev, ...newPosts];
       });
+
       setHasMore(res.result.hasMore);
-      //setPage(currentPage + 1);
       setPage((prev) => prev + 1);
     } catch (err) {
       console.error(err);
     }
+
     setLoading(false);
   };
-  console.log("Rendering Feeds with posts:", posts); // Debug log
-  //const hasFetched = useRef(false);
   useEffect(() => {
-    const loadPosts = async () => {
-      await fetchPosts();
+    const resetAndFetch = async () => {
+      setPosts([]);
+      setPage(1);
+      setHasMore(true);
+
+      await fetchPosts(1, true); // force fetch
     };
-    loadPosts();
-  }, []);
-  // useEffect(() => {
+
+    resetAndFetch();
+  }, [feedType, userId, pageId]);
+
   //   const load = async () => {
   //     setPosts([]); // 🔥 reset old posts
   //     setPage(1);
@@ -512,32 +565,17 @@ const Feeds = ({ posts, setPosts, isUserProfile = false }: FeedsProps) => {
         </div>
       )}
 
-      {/* 🔥 Empty State */}
-      {/* {!loading && posts.length === 0 && (
-        <div className="text-center mt-4">
-          <h5>No posts available</h5>
-        </div>
-      )} */}
-
       {/* 🔥 Load More */}
       {hasMore && posts?.length > 0 && (
         <div className="text-center">
-          <Button onClick={fetchPosts} disabled={loading}>
+          <Button onClick={() => fetchPosts()} disabled={loading}>
             {loading ? "Loading..." : "Load More"}
           </Button>
         </div>
       )}
-      {/* 🔥 Load More */}
-      {/* {hasMore && posts.length > 0 && (
-        <div className="text-center">
-          <Button onClick={fetchPosts} disabled={loading}>
-            {loading ? "Loading..." : "Load More"}
-          </Button>
-        </div>
-      )} */}
     </>
   );
-  // return (
+
   //   <>
   //     {" "}
   //     {posts?.map(

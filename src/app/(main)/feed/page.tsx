@@ -17,23 +17,27 @@ import type { Metadata } from "next";
 import { useAuthStore } from "@/features/account/store/authStore";
 import { SocialPostType } from "@/types/data";
 import { useState } from "react";
+import FeedTabs from "@/features/post/components/FeedTabs";
 
 //export const metadata: Metadata = { title: "Default Home" };
-
+type FeedType = "friends" | "page";
 const Home = () => {
   const state = useAuthStore.getState();
   const [posts, setPosts] = useState<SocialPostType[]>([]);
 
-  console.log("Zustand AFTER setUser:", {
-    user: state.user,
-    accessToken: state.accessToken,
-  });
+  const [selectedTab, setSelectedTab] = useState("page");
+
   return (
     <>
       <Col md={8} lg={6} className="vstack gap-4">
         {/* <Stories /> */}
+        <FeedTabs selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
         <CreatePostCard />
-        <Feeds posts={posts} setPosts={setPosts} />
+        <Feeds
+          posts={posts}
+          setPosts={setPosts}
+          feedType={selectedTab as "friends" | "page"}
+        />{" "}
       </Col>
 
       <Col lg={3}>

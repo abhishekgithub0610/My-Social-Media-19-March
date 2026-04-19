@@ -5,12 +5,10 @@ import { useAuthStore } from "../store/authStore";
 
 export const useAuthInit = () => {
   const { setUser } = useAuthStore();
-  console.log("useAuthInit called");
   useEffect(() => {
     const initAuth = async () => {
       try {
         const res = await refreshTokenApi();
-        console.log("refresh token response:", res);
         setUser(
           {
             id: res.user.id,
@@ -23,10 +21,6 @@ export const useAuthInit = () => {
         );
         const state = useAuthStore.getState();
 
-        console.log("Zustand AFTER setUser:", {
-          user: state.user,
-          accessToken: state.accessToken,
-        });
         // // setUser({
         // //   id: res.user.id,
         // //   email: res.user.email,

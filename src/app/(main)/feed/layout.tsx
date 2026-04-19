@@ -47,7 +47,6 @@ const FeedLayout = ({ children }: ChildrenType) => {
               <div className="d-flex align-items-center d-lg-none">
                 <button
                   onClick={() => {
-                    console.log("CLICKED");
                     startOffcanvas.toggle();
                   }}
                   className="border-0 bg-transparent"

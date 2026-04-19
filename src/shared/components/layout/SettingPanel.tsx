@@ -9,11 +9,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button, Card, CardBody, CardFooter } from "react-bootstrap";
+import { useAuthStore } from "@/features/account/store/authStore";
 type settingPanelProps = {
   links: ProfilePanelLink[];
 };
 const SettingPanel = ({ links }: settingPanelProps) => {
   const pathName = usePathname();
+  const { user } = useAuthStore();
+
   return (
     <>
       <Card className="w-100">
@@ -43,7 +46,7 @@ const SettingPanel = ({ links }: settingPanelProps) => {
         </CardBody>
         <CardFooter className="text-center py-2">
           <Link
-            href="/profile/feed"
+            href={`/profile/${user?.id}/feed`}
             className="text-secondary btn btn-link btn-sm"
           >
             View Profile

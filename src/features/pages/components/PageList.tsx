@@ -20,10 +20,7 @@ const PageList = () => {
   //const PageList = async () => {
   const state = useAuthStore.getState();
   const [pages, setPages] = useState<PageType[]>([]);
-  console.log("Zustand AFTER setUser:", {
-    user: state.user,
-    accessToken: state.accessToken,
-  });
+
   useEffect(() => {
     const fetchData = async () => {
       const data = await getPages();
