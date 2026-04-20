@@ -268,7 +268,7 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
             toast.success("Page updated successfully 🚀");
 
             // ✅ REDIRECT AFTER SUCCESS
-            router.push(`/profile/profile-feed?pageId=${initialData.id}`);
+            router.push(`/profile/page?pageId=${initialData.id}`);
           },
           onError: (err: unknown) => {
             toast.error(getErrorMessage(err));

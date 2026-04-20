@@ -291,7 +291,7 @@ const PageProfileLayout = ({ children }: ChildrenType) => {
                             active:
                               (item.url && pathName.startsWith(item.url)) ||
                               (pathName === "/profile" &&
-                                item.url === "/profile/profile-feed"),
+                                item.url === "/profile/page"),
                           })}
                           href={item.url ?? ""}
                         >

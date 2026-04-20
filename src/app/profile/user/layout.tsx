@@ -188,9 +188,7 @@ const UserProfileLayout = ({ children }: ChildrenType) => {
                         <Button
                           variant="danger-soft"
                           className="me-2"
-                          onClick={() =>
-                            router.push(`/profile/user/${user.id}/edit`)
-                          }
+                          onClick={() => router.push(`/settings/account`)}
                         >
                           <BsPencilFill size={19} className="pe-1" />
                           Edit Profile
@@ -306,7 +304,7 @@ const UserProfileLayout = ({ children }: ChildrenType) => {
                             active:
                               (item.url && pathName.startsWith(item.url)) ||
                               (pathName === "/profile" &&
-                                item.url === "/profile/profile-feed"),
+                                item.url === "/profile/page"),
                           })}
                           href={item.url ?? ""}
                         >

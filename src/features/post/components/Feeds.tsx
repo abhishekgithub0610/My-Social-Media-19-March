@@ -222,7 +222,7 @@ const PostCard = ({
               <div className="nav nav-divider">
                 <h6 className="nav-item card-title mb-0">
                   {pageinfo ? (
-                    <Link href={`/profile/profile-feed?pageId=${pageinfo.id}`}>
+                    <Link href={`/profile/page?pageId=${pageinfo.id}`}>
                       {pageinfo.name}
                     </Link>
                   ) : (

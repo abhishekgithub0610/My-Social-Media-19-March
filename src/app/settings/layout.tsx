@@ -56,6 +56,7 @@ const SettingLayout = ({ children }: ChildrenType) => {
                     placement="start"
                     tabIndex={-1}
                     id="offcanvasNavbar"
+                    className="w-75"
                   >
                     <OffcanvasHeader closeButton />
                     <OffcanvasBody className="p-0">

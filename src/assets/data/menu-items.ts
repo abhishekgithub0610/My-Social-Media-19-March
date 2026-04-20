@@ -5,7 +5,7 @@ export const PROFILE_MENU_ITEMS: MenuItemType[] = [
   {
     key: "profile-posts",
     label: "Posts",
-    url: "/profile/profile-feed",
+    url: "/profile/page",
     parentKey: "pages-profile",
   },
   {

@@ -10,6 +10,8 @@ import type { ProfilePanelLink } from "@/features/profile/types/profile";
 import avatar7 from "@/assets/images/avatar/07.jpg";
 import bgBannerImg from "@/assets/images/bg/01.jpg";
 import { useAuthStore } from "@/features/account/store/authStore";
+import { getUserById } from "@/features/users/services/userApi";
+import { useEffect, useState } from "react";
 
 type ProfilePanelProps = {
   links: ProfilePanelLink[];
@@ -17,7 +19,24 @@ type ProfilePanelProps = {
 
 const ProfilePanel = ({ links }: ProfilePanelProps) => {
   const { user } = useAuthStore();
+  const [profileImage, setProfileImage] = useState<string>("");
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user?.id) return;
 
+      try {
+        const userData = await getUserById(user.id);
+        console.log("Fetched user data:", userData); // Debug log
+        if (userData.profilePicture) {
+          setProfileImage(`http://localhost:7120/${userData.profilePicture}`);
+        }
+      } catch (error) {
+        console.error("Failed to fetch profile image:", error);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user?.id]);
   return (
     <>
       <Card className="overflow-hidden h-100">
@@ -35,21 +54,18 @@ const ProfilePanel = ({ links }: ProfilePanelProps) => {
           <div className="text-center">
             <div className="avatar avatar-lg mt-n5 mb-3">
               <span role="button">
-                <Image
+                <img
                   height={64}
                   width={64}
-                  src={avatar7}
+                  src={profileImage || avatar7.src}
                   alt="avatar"
                   className="avatar-img rounded border border-white border-3"
                 />
               </span>
             </div>
 
-            <h5 className="mb-0">
-              {" "}
-              <Link href="#">Sam Lanson </Link>{" "}
-            </h5>
-            <small>Web Developer at StackBros</small>
+            <h5 className="mb-0"> {user?.name || "User Name"}</h5>
+            <small>Welcome back</small>
             <p className="mt-3">
               I&apos;d love to change the world, but they won’t give me the
               source code.

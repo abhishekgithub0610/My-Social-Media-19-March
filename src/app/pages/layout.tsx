@@ -45,6 +45,7 @@ const FeedLayout = ({ children }: ChildrenType) => {
   const { width } = useViewPort();
   return (
     <>
+      <Navbar />
       <main>
         <Container>
           <Row className="g-4">
@@ -111,7 +112,7 @@ const FeedLayout = ({ children }: ChildrenType) => {
           show={messagingOffcanvas.open}
           onHide={messagingOffcanvas.toggle}
           placement="end"
-          className="offcanvas-end"
+          className="offcanvas-end w-75"
           data-bs-scroll="true"
           data-bs-backdrop="false"
           tabIndex={-1}

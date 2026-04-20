@@ -35,7 +35,7 @@ const PageRow = ({ page }: { page: PageType }) => {
 
         {/* NAME */}
         <Link
-          href={`/profile/profile-feed?pageId=${page.id}`}
+          href={`/profile/page?pageId=${page.id}`}
           className="text-decoration-none flex-grow-1"
         >
           {/* <Link
@@ -51,7 +51,7 @@ const PageRow = ({ page }: { page: PageType }) => {
 
       {/* 🔹 ROW 2 */}
       <Link
-        href={`/profile/profile-feed?pageId=${page.id}`}
+        href={`/profile/page?pageId=${page.id}`}
         className="text-decoration-none"
       >
         {/* <Link href={`/profile/pages/${page.id}`} className="text-decoration-none"> */}

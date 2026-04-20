@@ -214,7 +214,7 @@ const AccountSettings = () => {
         });
 
         if (userData.profilePicture) {
-          setProfileImage(userData.profilePicture);
+          setProfileImage(`http://localhost:7120/${userData.profilePicture}`);
         }
       } catch (error) {
         console.error("Failed to fetch user profile:", error);

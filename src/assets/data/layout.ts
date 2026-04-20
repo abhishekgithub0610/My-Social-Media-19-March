@@ -116,26 +116,26 @@ export const settingPanelLinksData: ProfilePanelLink[] = [
     name: "Account",
     link: "/settings/account",
   },
-  {
-    image: notificationImg,
-    name: "Notification",
-    link: "/settings/notification",
-  },
+  // {
+  //   image: notificationImg,
+  //   name: "Notification",
+  //   link: "/settings/notification",
+  // },
   {
     image: shieldImg,
-    name: "Privacy and safety",
-    link: "/settings/privacy",
+    name: "Password and security",
+    link: "/settings/password",
   },
-  {
-    image: handshakeImg,
-    name: "Communications",
-    link: "/settings/communication",
-  },
-  {
-    image: chatAltImg,
-    name: "Messaging",
-    link: "/settings/messaging",
-  },
+  // {
+  //   image: handshakeImg,
+  //   name: "Communications",
+  //   link: "/settings/communication",
+  // },
+  // {
+  //   image: chatAltImg,
+  //   name: "Messaging",
+  //   link: "/settings/messaging",
+  // },
   {
     image: trashImg,
     name: "Close account",

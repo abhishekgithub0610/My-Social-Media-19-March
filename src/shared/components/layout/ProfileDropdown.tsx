@@ -20,6 +20,7 @@ import {
 } from "react-icons/bs";
 import type { IconType } from "react-icons";
 import { useAuthStore } from "@/features/account/store/authStore";
+import { useEffect, useState } from "react";
 
 //import type { ThemeType } from "@/types/context";
 
@@ -30,6 +31,8 @@ import clsx from "clsx";
 //import { developedByLink } from "@/context/constants";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getUserById } from "@/features/users/services/userApi";
+
 // type ThemeModeType = {
 //   theme: ThemeType;
 //   icon: IconType;
@@ -58,7 +61,26 @@ const ProfileDropdown = () => {
   //const { theme: themeMode, updateTheme } = useLayoutContext();
   const { user, clearUser } = useAuthStore();
   const router = useRouter();
+  const [profileImage, setProfileImage] = useState<string>("");
 
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user?.id) return;
+
+      try {
+        const userData = await getUserById(user.id);
+
+        // If profile picture exists, prepend backend URL
+        if (userData.profilePicture) {
+          setProfileImage(`http://localhost:7120/${userData.profilePicture}`);
+        }
+      } catch (error) {
+        console.error("Failed to fetch profile image:", error);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user?.id]);
   const handleLogout = () => {
     clearUser(); // ✅ your method
     router.push("/sign-in");
@@ -74,7 +96,13 @@ const ProfileDropdown = () => {
         data-bs-toggle="dropdown"
         aria-expanded="false"
       >
-        <Image className="avatar-img rounded-2" src={avatar7} alt="avatar" />
+        <img
+          src={profileImage || avatar7.src}
+          alt="avatar"
+          width={40}
+          height={40}
+          className="avatar-img rounded-2"
+        />{" "}
       </DropdownToggle>
       <DropdownMenu
         className="dropdown-animation dropdown-menu-end pt-3 small me-md-n3"
@@ -82,17 +110,19 @@ const ProfileDropdown = () => {
       >
         <div className="d-flex align-items-center position-relative px-3">
           <div className="avatar me-3">
-            <Image
-              className="avatar-img rounded-circle"
-              src={avatar7}
+            <img
+              src={profileImage || avatar7.src}
               alt="avatar"
+              width={50}
+              height={50}
+              className="avatar-img rounded-circle"
             />
           </div>
           <div>
-            <Link className="h6" href="/profile">
-              {user.email}
+            <Link className="h6" href={`/profile/user/${user.id}`}>
+              {user.name || user.email}
             </Link>
-            <p className="small m-0">{user.role}</p>
+            <p className="small m-0">"role"</p>
             {/* <Link className="h6 stretched-link" href="#">
               Lori Ferguson
             </Link>
@@ -101,7 +131,7 @@ const ProfileDropdown = () => {
         </div>
         <DropdownItem
           className="btn btn-primary-soft btn-sm my-2 text-center"
-          href="/profile/feed"
+          href={`/profile/user/${user.id}`}
         >
           View profile
         </DropdownItem>
