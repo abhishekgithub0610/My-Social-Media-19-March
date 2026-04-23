@@ -14,7 +14,7 @@ export type ProfilePanelLink = {
 export type UserType = {
   id: IdType;
   name: string;
-  avatar: StaticImageData;
+  avatar?: string;
   isStory?: boolean;
   mutualCount: number;
   hasRequested?: boolean;
@@ -31,6 +31,7 @@ export type CommentType = {
   socialUser?: UserType;
   replyTo?: CommentType["id"];
   comment: string;
+  isLiked?: boolean;
   likesCount: number;
   image?: StaticImageData;
   createdAt: Date;

@@ -4,7 +4,11 @@ import type { CommentType, SocialPostType } from "@/types/data"; // to be delete
 import { timeSince } from "@/utils/date"; // to be deleted/confirmed
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { getFeed, getUserFeed } from "@/features/post/services/postApi";
+import {
+  getFeed,
+  getUserFeed,
+  toggleCommentLike,
+} from "@/features/post/services/postApi";
 import { useParams } from "next/navigation";
 
 import {
@@ -32,8 +36,10 @@ import {
   BsReplyFill,
   BsShare,
   BsSlashCircle,
-  BsThreeDots,
+  BsWhatsapp,
+  BsFacebook,
   BsXCircle,
+  BsThreeDots,
 } from "react-icons/bs";
 import LoadContentButton from "@/LoadContentButton"; //to be deleted/confirmed
 import avatar12 from "@/assets/images/avatar/12.jpg";
@@ -95,14 +101,21 @@ const ActionMenu = ({ name }: { name?: string }) => {
     </Dropdown>
   );
 };
+
+interface CommentItemProps extends CommentType {
+  onLike: (commentId: string) => void;
+}
 const CommentItem = ({
+  id,
   comment,
   likesCount,
+  isLiked,
   children,
   socialUser,
   createdAt,
   image,
-}: CommentType) => {
+  onLike,
+}: CommentItemProps) => {
   return (
     <li className="comment-item">
       {socialUser && (
@@ -110,9 +123,15 @@ const CommentItem = ({
           <div className="d-flex position-relative">
             <div className="avatar avatar-xs">
               <span role="button">
-                <Image
+                <img
                   className="avatar-img rounded-circle"
-                  src={socialUser.avatar}
+                  src={
+                    socialUser.avatar
+                      ? socialUser.avatar.startsWith("http")
+                        ? socialUser.avatar
+                        : `http://localhost:7120/${socialUser.avatar}`
+                      : "/default-avatar.png"
+                  }
                   alt={socialUser.name + "-avatar"}
                   width={40}
                   height={40}
@@ -138,10 +157,17 @@ const CommentItem = ({
 
               <ul className="nav nav-divider py-2 small">
                 <li className="nav-item">
-                  <Link className="nav-link" href="#">
+                  <button
+                    type="button"
+                    className="btn btn-link nav-link p-0"
+                    onClick={() => onLike(String(id))}
+                  >
+                    {isLiked ? "Unlike" : "Like"} ({likesCount})
+                  </button>
+                  {/* <Link className="nav-link" href="#">
                     {" "}
                     Like ({likesCount})
-                  </Link>
+                  </Link> */}
                 </li>
                 <li className="nav-item">
                   <Link className="nav-link" href="#">
@@ -163,7 +189,11 @@ const CommentItem = ({
 
           <ul className="comment-item-nested list-unstyled">
             {children?.map((childComment) => (
-              <CommentItem key={childComment.id} {...childComment} />
+              <CommentItem
+                key={childComment.id}
+                {...childComment}
+                onLike={onLike}
+              />
             ))}
           </ul>
           {children?.length === 2 && (
@@ -174,6 +204,9 @@ const CommentItem = ({
     </li>
   );
 };
+interface PostCardProps extends SocialPostType {
+  onCommentLike: (commentId: string) => void;
+}
 const PostCard = ({
   createdAt,
   likesCount,
@@ -185,7 +218,25 @@ const PostCard = ({
   pageinfo,
   //photos,
   isVideo,
-}: SocialPostType) => {
+  onCommentLike,
+}: PostCardProps) => {
+  const [shareUrl, setShareUrl] = useState("");
+
+  useEffect(() => {
+    setShareUrl(window.location.href);
+  }, []);
+
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareUrl)}`;
+  const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+
+  const copyLinkForInstagram = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert("Link copied for Instagram sharing");
+    } catch {
+      alert("Failed to copy link");
+    }
+  };
   return (
     <Card>
       <CardHeader className="border-0 pb-0">
@@ -226,7 +277,7 @@ const PostCard = ({
                       {pageinfo.name}
                     </Link>
                   ) : (
-                    <Link href="#">{socialUser?.name}</Link>
+                    <Link href={`/profile/user`}>{socialUser?.name}</Link>
                   )}
                 </h6>
                 <span className="nav-item small"> {timeSince(createdAt)}</span>
@@ -297,8 +348,29 @@ const PostCard = ({
               Comments ({commentsCount})
             </Link>
           </li>
+          <Dropdown className="ms-auto">
+            <DropdownToggle
+              as="a"
+              className="nav-link content-none cursor-pointer"
+            >
+              <BsReplyFill className="me-1" /> Share
+            </DropdownToggle>
 
-          <Dropdown className="nav-item ms-sm-auto">
+            <DropdownMenu className="dropdown-menu-end">
+              <DropdownItem href={whatsappShare} target="_blank">
+                <BsWhatsapp className="me-2" /> WhatsApp
+              </DropdownItem>
+
+              <DropdownItem href={facebookShare} target="_blank">
+                <BsFacebook className="me-2" /> Facebook
+              </DropdownItem>
+
+              <DropdownItem onClick={copyLinkForInstagram}>
+                <BsLink className="me-2" /> Instagram (Copy Link)
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+          {/* <Dropdown className="nav-item ms-sm-auto">
             <DropdownToggle
               as="a"
               className="nav-link mb-0 content-none cursor-pointer"
@@ -353,7 +425,7 @@ const PostCard = ({
                 </DropdownItem>
               </li>
             </DropdownMenu>
-          </Dropdown>
+          </Dropdown> */}
         </ul>
         {comments && (
           <>
@@ -395,7 +467,11 @@ const PostCard = ({
 
             <ul className="comment-wrap list-unstyled">
               {comments.map((comment) => (
-                <CommentItem {...comment} key={comment.id} />
+                <CommentItem
+                  {...comment}
+                  key={comment.id}
+                  onLike={onCommentLike}
+                />
               ))}
             </ul>
           </>
@@ -429,7 +505,26 @@ const Feeds = ({
   const params = useParams();
   // Replace your fetchPosts() logic inside Feeds with this updated version
   const pageId = params?.pageId as string;
+  const handleCommentLike = async (commentId: string) => {
+    await toggleCommentLike(commentId);
 
+    setPosts((prev) =>
+      prev.map((post) => ({
+        ...post,
+        comments: post.comments?.map((comment) =>
+          String(comment.id) === commentId
+            ? {
+                ...comment,
+                isLiked: !comment.isLiked,
+                likesCount: comment.isLiked
+                  ? comment.likesCount - 1
+                  : comment.likesCount + 1,
+              }
+            : comment,
+        ),
+      })),
+    );
+  };
   // Decide active mode automatically
   const activeFeedType = feedType; // homepage tabs
   // const activeFeedType = isUserProfile
@@ -515,7 +610,8 @@ const Feeds = ({
       });
 
       setHasMore(res.result.hasMore);
-      setPage((prev) => prev + 1);
+      setPage(currentPage + 1);
+      //setPage((prev) => prev + 1);
     } catch (err) {
       console.error(err);
     }
@@ -558,7 +654,9 @@ const Feeds = ({
     <>
       {/* Option 1: Using a Ternary for "No Posts" state */}
       {posts && posts.length > 0 ? (
-        posts.map((post) => <PostCard {...post} key={post.id} />)
+        posts.map((post) => (
+          <PostCard key={post.id} {...post} onCommentLike={handleCommentLike} />
+        ))
       ) : (
         <div className="text-center">
           <h5>No posts available</h5>

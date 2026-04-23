@@ -20,12 +20,16 @@ type ProfilePanelProps = {
 const ProfilePanel = ({ links }: ProfilePanelProps) => {
   const { user } = useAuthStore();
   const [profileImage, setProfileImage] = useState<string>("");
+  const [bio, setBio] = useState<string>("");
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!user?.id) return;
 
       try {
         const userData = await getUserById(user.id);
+        if (userData.bio) {
+          setBio(userData.bio);
+        }
         console.log("Fetched user data:", userData); // Debug log
         if (userData.profilePicture) {
           setProfileImage(`http://localhost:7120/${userData.profilePicture}`);
@@ -66,10 +70,7 @@ const ProfilePanel = ({ links }: ProfilePanelProps) => {
 
             <h5 className="mb-0"> {user?.name || "User Name"}</h5>
             <small>Welcome back</small>
-            <p className="mt-3">
-              I&apos;d love to change the world, but they won’t give me the
-              source code.
-            </p>
+            <p className="mt-3">{bio}</p>
 
             <div className="hstack gap-2 gap-xl-3 justify-content-center">
               <div>
@@ -110,7 +111,7 @@ const ProfilePanel = ({ links }: ProfilePanelProps) => {
         </CardBody>
 
         <CardFooter className="text-center py-2">
-          <Button variant="link" size="sm" href={`/profile/user/${user?.id}`}>
+          <Button variant="link" size="sm" href={`/profile/user`}>
             View Profile{" "}
           </Button>
         </CardFooter>

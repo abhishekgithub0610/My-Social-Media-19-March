@@ -46,7 +46,7 @@ const SettingPanel = ({ links }: settingPanelProps) => {
         </CardBody>
         <CardFooter className="text-center py-2">
           <Link
-            href={`/profile/${user?.id}/feed`}
+            href={`/profile/user`}
             className="text-secondary btn btn-link btn-sm"
           >
             View Profile

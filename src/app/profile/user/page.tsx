@@ -9,13 +9,15 @@ import { SocialPostType } from "@/types/data";
 import { useParams } from "next/navigation";
 import { getUserById } from "@/features/users/services/userApi";
 import { UserProfileType } from "@/features/users/types/user";
+import { useAuthStore } from "@/features/account/store/authStore";
 
 //const UserProfileFeed = ({ params }: { params: { pageId: string } }) => {
 const UserProfileFeed = () => {
   const [posts, setPosts] = useState<SocialPostType[]>([]);
   const [user, setUser] = useState<UserProfileType | null>(null);
   const params = useParams();
-  const userId = params?.userId as string;
+  const { user: currentuser } = useAuthStore();
+  const userId = currentuser?.id as string;
   useEffect(() => {
     if (userId) {
       getUserById(userId).then((data) => {

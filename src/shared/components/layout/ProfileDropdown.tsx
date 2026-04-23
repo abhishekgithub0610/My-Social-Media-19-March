@@ -122,7 +122,7 @@ const ProfileDropdown = () => {
             <Link className="h6" href={`/profile/user/${user.id}`}>
               {user.name || user.email}
             </Link>
-            <p className="small m-0">"role"</p>
+            <p className="small m-0">role</p>
             {/* <Link className="h6 stretched-link" href="#">
               Lori Ferguson
             </Link>
@@ -131,7 +131,7 @@ const ProfileDropdown = () => {
         </div>
         <DropdownItem
           className="btn btn-primary-soft btn-sm my-2 text-center"
-          href={`/profile/user/${user.id}`}
+          href={`/profile/user`}
         >
           View profile
         </DropdownItem>

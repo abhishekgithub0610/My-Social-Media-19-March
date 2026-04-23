@@ -53,6 +53,7 @@ import album5 from "@/assets/images/albums/05.jpg";
 import { useEffect, useState } from "react";
 import { getUserById } from "@/features/users/services/userApi";
 import { UserProfileType } from "@/features/users/types/user";
+import { useAuthStore } from "@/features/account/store/authStore";
 //import { usePageId } from "@/shared/hooks/usePageId";
 //import { PageType } from "@/shared/types/PageType";
 
@@ -126,7 +127,10 @@ const UserProfileLayout = ({ children }: ChildrenType) => {
   const [user, setUser] = useState<UserProfileType | null>(null);
   //const [isEditOpen, setIsEditOpen] = useState(false); // ✅ NEW
   const params = useParams();
-  const userId = params?.userId as string;
+  //const userId = params?.userId as string;
+  const { user: currentuser } = useAuthStore();
+  const userId = currentuser?.id as string;
+
   useEffect(() => {
     if (userId) {
       getUserById(userId).then((data) => {

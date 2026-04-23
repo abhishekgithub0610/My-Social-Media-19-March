@@ -14,6 +14,7 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/bootstrap.css";
 import { useEffect } from "react";
 import { getUserById } from "@/features/users/services/userApi";
+import { changePassword } from "@/features/users/services/userApi";
 import { useAuthStore } from "@/features/account/store/authStore";
 import {
   Button,
@@ -60,13 +61,25 @@ const ChangePassword = () => {
       .oneOf([yup.ref("newPassword")], "Passwords must match"),
   });
 
-  const { control, handleSubmit } = useForm<ChangePasswordFormValues>({
+  const { control, handleSubmit, reset } = useForm<ChangePasswordFormValues>({
     resolver: yupResolver(resetPasswordSchema),
   });
-  const onSubmitPassword = (data: ChangePasswordFormValues) => {
-    // TODO: call backend API for password change
-  };
 
+  const onSubmitPassword = async (data: ChangePasswordFormValues) => {
+    try {
+      await changePassword({
+        currentPassword: data.currentPass,
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword,
+      });
+
+      toast.success("Password updated successfully 🚀");
+      reset(); // recommended
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update password");
+    }
+  };
   const passwordValue = useWatch({
     control,
     name: "newPassword",

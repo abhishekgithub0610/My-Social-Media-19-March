@@ -13,7 +13,11 @@ export type UpdateUserProfilePayload = {
   dateOfBirth?: string;
   bio?: string;
 };
-
+export type ChangePasswordPayload = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+};
 export const getUserById = async (id: string): Promise<UserProfileType> => {
   const res = await baseClient.get<ApiResponse<UserProfileType>>(
     `/users/${id}`,
@@ -25,6 +29,17 @@ export const getUserById = async (id: string): Promise<UserProfileType> => {
 export const updateUserProfile = async (payload: FormData): Promise<string> => {
   const res = await baseClient.put<ApiResponse<string>>(
     "/users/update-profile",
+    payload,
+  );
+
+  return res.data.result;
+};
+
+export const changePassword = async (
+  payload: ChangePasswordPayload,
+): Promise<string> => {
+  const res = await baseClient.put<ApiResponse<string>>(
+    "/users/change-password",
     payload,
   );
 

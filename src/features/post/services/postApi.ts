@@ -43,3 +43,11 @@ export const getUserFeed = async (
 
   return response.data;
 };
+
+export const toggleCommentLike = async (commentId: string) => {
+  const response = await baseClient.post(
+    `/posts/toggle-like?commentId=${commentId}`,
+  );
+
+  return response.data;
+};
