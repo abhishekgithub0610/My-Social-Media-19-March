@@ -19,12 +19,21 @@ import { useRegister } from "@/features/account/hooks/useAccount";
 type SignUpFormValues = {
   name: string;
   email: string;
+  userNameSlug: string;
   password: string;
   confirmPassword: string;
 };
 // ✅ FIX: Move schema OUTSIDE component (prevents re-creation on every render)
 const signUpSchema: yup.ObjectSchema<SignUpFormValues> = yup.object({
   name: yup.string().required("Name is required"),
+  userNameSlug: yup
+    .string()
+    .required("Username slug is required")
+    .min(3, "Username slug must be at least 3 characters")
+    .matches(
+      /^[a-z0-9-_]+$/,
+      "Only lowercase letters, numbers, hyphen and underscore are allowed",
+    ),
   email: yup.string().email("Invalid email").required("Email is required"),
   password: yup.string().required("Password is required"),
   confirmPassword: yup
@@ -52,6 +61,7 @@ const SignUpForm = () => {
     resolver: yupResolver(signUpSchema),
     defaultValues: {
       name: "",
+      userNameSlug: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -85,6 +95,7 @@ const SignUpForm = () => {
         email: data.email,
         password: data.password,
         name: data.name, // ✅ FIX: was using email split (bad practice)
+        userNameSlug: data.userNameSlug, // ✅ Added
         role: "User",
       },
       {
@@ -115,6 +126,14 @@ const SignUpForm = () => {
           control={control}
           placeholder="Enter email"
         /> */}
+      </div>
+      {/* Username Slug */}
+      <div className="mb-3 text-start">
+        <TextFormInput<SignUpFormValues>
+          name="userNameSlug"
+          control={control}
+          placeholder="Enter username (example: john_doe)"
+        />
       </div>
       <div className="mb-3 text-start">
         <TextFormInput<SignUpFormValues>

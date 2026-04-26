@@ -160,7 +160,10 @@ const CommentItem = ({
                   <button
                     type="button"
                     className="btn btn-link nav-link p-0"
-                    onClick={() => onLike(String(id))}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onLike(String(id));
+                    }}
                   >
                     {isLiked ? "Unlike" : "Like"} ({likesCount})
                   </button>
@@ -488,6 +491,7 @@ type FeedsProps = {
   setPosts: React.Dispatch<React.SetStateAction<SocialPostType[]>>;
   isUserProfile?: boolean;
   feedType?: "page" | "friends";
+  pageId?: string;
 };
 // const Feeds = () => {
 const Feeds = ({
@@ -495,6 +499,7 @@ const Feeds = ({
   setPosts,
   isUserProfile = false,
   feedType,
+  pageId,
 }: FeedsProps) => {
   //const [posts, setPosts] = useState<SocialPostType[]>([]);
   const [page, setPage] = useState(1);
@@ -502,28 +507,34 @@ const Feeds = ({
   const [loading, setLoading] = useState(false);
   const { user } = useAuthStore();
   const userId = user?.id;
-  const params = useParams();
+  //const params = useParams();
   // Replace your fetchPosts() logic inside Feeds with this updated version
-  const pageId = params?.pageId as string;
+  //const pageId = params?.pageId as string;
   const handleCommentLike = async (commentId: string) => {
-    await toggleCommentLike(commentId);
+    try {
+      console.log("Calling like API for:", commentId);
 
-    setPosts((prev) =>
-      prev.map((post) => ({
-        ...post,
-        comments: post.comments?.map((comment) =>
-          String(comment.id) === commentId
-            ? {
-                ...comment,
-                isLiked: !comment.isLiked,
-                likesCount: comment.isLiked
-                  ? comment.likesCount - 1
-                  : comment.likesCount + 1,
-              }
-            : comment,
-        ),
-      })),
-    );
+      await toggleCommentLike(commentId);
+
+      setPosts((prev) =>
+        prev.map((post) => ({
+          ...post,
+          comments: post.comments?.map((comment) =>
+            String(comment.id) === commentId
+              ? {
+                  ...comment,
+                  isLiked: !comment.isLiked,
+                  likesCount: comment.isLiked
+                    ? comment.likesCount - 1
+                    : comment.likesCount + 1,
+                }
+              : comment,
+          ),
+        })),
+      );
+    } catch (error) {
+      console.error("Like API failed:", error);
+    }
   };
   // Decide active mode automatically
   const activeFeedType = feedType; // homepage tabs
@@ -550,8 +561,12 @@ const Feeds = ({
           return;
         }
         res = await getUserFeed(userId, currentPage, 5);
+      } else if (feedType === "page" && pageId) {
+        res = await getFeed(currentPage, 5, pageId);
       } else {
-        res = await getFeed(currentPage, 5);
+        console.error("Invalid feed type or missing pageId");
+        setLoading(false);
+        return;
       }
 
       const mappedPosts = res.result.items
@@ -584,7 +599,6 @@ const Feeds = ({
             createdAt: new Date(p.createdAt),
             likesCount: p.likesCount,
             commentsCount: p.commentsCount,
-
             socialUser: {
               id: p.user.id,
               name: p.user.name,

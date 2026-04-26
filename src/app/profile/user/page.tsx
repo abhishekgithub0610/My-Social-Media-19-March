@@ -52,6 +52,7 @@ const UserProfileFeed = () => {
           setPosts={setPosts}
           isUserProfile={true}
           feedType="friends"
+          pageId=""
         />{" "}
         {/* <CreatePostCard />
         <Feeds /> */}

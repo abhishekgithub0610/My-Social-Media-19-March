@@ -37,6 +37,7 @@ const Home = () => {
           posts={posts}
           setPosts={setPosts}
           feedType={selectedTab as "friends" | "page"}
+          pageId="All"
         />{" "}
       </Col>
 

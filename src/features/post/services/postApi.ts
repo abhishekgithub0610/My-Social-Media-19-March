@@ -8,13 +8,29 @@ import { baseClient } from "@/shared/api/baseClient";
 export const getFeed = async (
   page: number = 1,
   pageSize: number = 10,
+  pageId?: string,
 ): Promise<ApiResponseResult<PagedResult<PostFeedDto>>> => {
-  const response = await baseClient.get(
-    `/posts/feed?page=${page}&pageSize=${pageSize}`,
-  );
+  let url = `/posts/feed?page=${page}&pageSize=${pageSize}`;
+
+  if (pageId) {
+    url += `&pageId=${pageId}`;
+  }
+
+  const response = await baseClient.get(url);
 
   return response.data;
 };
+
+// export const getFeed = async (
+//   page: number = 1,
+//   pageSize: number = 10,
+// ): Promise<ApiResponseResult<PagedResult<PostFeedDto>>> => {
+//   const response = await baseClient.get(
+//     `/posts/feed?page=${page}&pageSize=${pageSize}`,
+//   );
+
+//   return response.data;
+// };
 
 // export const getFeed = async (
 //   page: number = 1,
