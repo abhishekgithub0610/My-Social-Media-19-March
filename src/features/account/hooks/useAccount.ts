@@ -16,6 +16,14 @@ type LoginRequest = {
 export const useRegister = () => {
   return useMutation({
     mutationFn: registerUser,
+    onSuccess: (data) => {
+      console.log("Registration success:", data);
+    },
+
+    // CHANGED: proper error logging
+    onError: (error: any) => {
+      console.error("Registration failed:", error?.response?.data || error);
+    },
   });
 };
 
@@ -57,8 +65,10 @@ export const useLogin = () => {
     mutationFn: loginApi,
 
     onSuccess: (data) => {
-      if (!data.result) return; // safety
-
+      if (!data?.result) {
+        console.error("Login response missing result");
+        return;
+      }
       const user = data.result;
 
       if (!user) {
@@ -118,8 +128,8 @@ export const useLogin = () => {
     // //   router.push("/feed");
     // // },
 
-    onError: (error) => {
-      console.error("Login failed", error);
+    onError: (error: any) => {
+      console.error("Login failed:", error?.response?.data || error);
     },
   });
 };

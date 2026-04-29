@@ -1,15 +1,15 @@
 import { Col } from "react-bootstrap";
-import PageList from "@/features/pages/components/PageList";
 import { Metadata } from "next";
+import BuddyList from "@/features/buddies/components/BuddyList";
 export const metadata: Metadata = {
-  title: "Pages",
+  title: "Buddies",
 };
-const Pages = () => {
+const Buddies = () => {
   return (
     <Col md={10} lg={8} className="vstack gap-4">
       {/* 📄 SERVER COMPONENT */}
-      <PageList />
+      <BuddyList />
     </Col>
   );
 };
-export default Pages;
+export default Buddies;

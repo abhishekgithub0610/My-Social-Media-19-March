@@ -11,7 +11,7 @@ import {
 import { yupResolver } from "@hookform/resolvers/yup";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Button, FormCheck } from "react-bootstrap";
+import { Alert, Button, FormCheck } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form"; // ✅ FIX: import SubmitHandler
 import * as yup from "yup";
 import { useRegister } from "@/features/account/hooks/useAccount";
@@ -45,7 +45,7 @@ const signUpSchema: yup.ObjectSchema<SignUpFormValues> = yup.object({
 const SignUpForm = () => {
   const [firstPassword, setFirstPassword] = useState<string>("");
 
-  const { mutate, isPending } = useRegister();
+  const { mutate, isPending, error } = useRegister();
 
   // // const signUpSchema = yup.object({
   // //   name: yup.string().required("Name is required"),
@@ -86,6 +86,10 @@ const SignUpForm = () => {
   // useEffect(() => {
   //   setFirstPassword(getValues().password);
   // }, [watch("password")]);
+  const apiErrorMessage =
+    (error as any)?.response?.data?.error?.message ||
+    (error as any)?.response?.data?.message ||
+    "Registration failed. Please try again.";
   const router = useRouter();
   // ✅ FIX: NO ANY — fully typed submit handler
   const onSubmit: SubmitHandler<SignUpFormValues> = (data) => {
@@ -115,6 +119,15 @@ const SignUpForm = () => {
 
   return (
     <form className="mt-4" onSubmit={handleSubmit(onSubmit)}>
+      {error && (
+        <Alert
+          variant="danger"
+          className="py-2 px-3 small mb-3 border rounded-3"
+        >
+          {apiErrorMessage}
+        </Alert>
+      )}
+
       <div className="mb-3 text-start">
         <TextFormInput<SignUpFormValues> // ✅ FIX: generic added
           name="name"

@@ -6,7 +6,7 @@ import {
   developedByLink,
 } from "@/shared/constants/appConstants";
 import Link from "next/link";
-import { Button, FormCheck } from "react-bootstrap";
+import { Alert, Button, FormCheck } from "react-bootstrap";
 import TextFormInput from "@/shared/components/ui/TextFormInput";
 import PasswordFormInput from "@/shared/components/ui/PasswordFormInput";
 import { useForm } from "react-hook-form";
@@ -25,8 +25,7 @@ const schema = yup.object({
 });
 
 const LoginForm = () => {
-  const { mutate, isPending } = useLogin();
-
+  const { mutate, isPending, error } = useLogin();
   const { control, handleSubmit } = useForm<LoginFormValues>({
     resolver: yupResolver(schema),
   });
@@ -34,9 +33,21 @@ const LoginForm = () => {
   const onSubmit = (data: LoginFormValues) => {
     mutate(data);
   };
-
+  const apiErrorMessage =
+    (error as any)?.response?.data?.error?.message ||
+    (error as any)?.response?.data?.message ||
+    "Unable to login. Please try again.";
   return (
     <form className="mt-4" onSubmit={handleSubmit(onSubmit)}>
+      {/* CHANGED: Backend API Error (Instagram/Facebook style) */}
+      {error && (
+        <Alert
+          variant="danger"
+          className="py-2 px-3 small mb-3 border rounded-3"
+        >
+          {apiErrorMessage}
+        </Alert>
+      )}
       <TextFormInput
         name="email"
         control={control}
