@@ -22,7 +22,6 @@ export const getUserById = async (id: string): Promise<UserProfileType> => {
   const res = await baseClient.get<ApiResponse<UserProfileType>>(
     `/users/${id}`,
   );
-
   return res.data.result;
 };
 

@@ -41,7 +41,6 @@ export const updateBuddyApi = async ({
 export const getFollowingBuddies = async (): Promise<BuddyType[]> => {
   const res =
     await baseClient.get<ApiResponse<BuddyType[]>>("/buddies/following");
-
   return res.data.result || [];
 };
 

@@ -88,27 +88,6 @@ const FeedLayout = ({ children }: ChildrenType) => {
                     </OffcanvasBody>
                   </Offcanvas>
                 </div>
-                {/* {width >= 992 ? (
-                  <div className="d-block px-2 px-lg-0">
-                    <ProfilePanel links={profilePanelLinksData1} />
-                  </div>
-                ) : (
-                  <Offcanvas
-                    show={startOffcanvas.open}
-                    placement="start"
-                    onHide={startOffcanvas.toggle}
-                    tabIndex={-1}
-                    id="offcanvasSideNavbar"
-                  >
-                    <OffcanvasHeader closeButton />
-
-                    <OffcanvasBody className="d-block px-2 px-lg-0">
-                      <div>
-                        <ProfilePanel links={profilePanelLinksData1} />
-                      </div>
-                    </OffcanvasBody>
-                  </Offcanvas>
-                )} */}
               </nav>
             </Col>
             {children}

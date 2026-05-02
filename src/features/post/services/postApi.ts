@@ -67,3 +67,8 @@ export const toggleCommentLike = async (commentId: string) => {
 
   return response.data;
 };
+
+export const deletePost = async (postId: string) => {
+  const response = await baseClient.delete(`/posts/${postId}`);
+  return response.data;
+};

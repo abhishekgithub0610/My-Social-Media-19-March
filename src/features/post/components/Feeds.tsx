@@ -4,13 +4,15 @@ import type { CommentType, SocialPostType } from "@/types/data"; // to be delete
 import { timeSince } from "@/utils/date"; // to be deleted/confirmed
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+
 import {
   getFeed,
   getUserFeed,
   toggleCommentLike,
 } from "@/features/post/services/postApi";
 import { useParams } from "next/navigation";
-
+import { deletePost } from "@/features/post/services/postApi";
 import {
   Button,
   Card,
@@ -44,7 +46,18 @@ import {
 import LoadContentButton from "@/LoadContentButton"; //to be deleted/confirmed
 import avatar12 from "@/assets/images/avatar/12.jpg";
 import { useAuthStore } from "@/features/account/store/authStore";
-const ActionMenu = ({ name }: { name?: string }) => {
+import { AnimatePresence, motion } from "framer-motion";
+const ActionMenu = ({
+  name,
+  postId,
+  onDelete,
+  isOwner, // ✅ added
+}: {
+  name?: string;
+  postId: string;
+  onDelete: (postId: string) => void;
+  isOwner: boolean; // ✅ added
+}) => {
   return (
     <Dropdown>
       <DropdownToggle
@@ -60,38 +73,53 @@ const ActionMenu = ({ name }: { name?: string }) => {
         aria-labelledby="cardFeedAction"
       >
         <li>
-          <DropdownItem href="#">
+          <DropdownItem onClick={(e) => e.preventDefault()}>
             {" "}
             <BsBookmark size={22} className="fa-fw pe-2" />
             Save post
           </DropdownItem>
         </li>
         <li>
-          <DropdownItem href="#">
+          <DropdownItem onClick={(e) => e.preventDefault()}>
             {" "}
             <BsPersonX size={22} className="fa-fw pe-2" />
             Unfollow {name}{" "}
           </DropdownItem>
         </li>
         <li>
-          <DropdownItem href="#">
+          <DropdownItem onClick={(e) => e.preventDefault()}>
             {" "}
             <BsXCircle size={22} className="fa-fw pe-2" />
             Hide post
           </DropdownItem>
         </li>
         <li>
-          <DropdownItem href="#">
+          <DropdownItem onClick={(e) => e.preventDefault()}>
             {" "}
             <BsSlashCircle size={22} className="fa-fw pe-2" />
             Block
           </DropdownItem>
         </li>
+        {isOwner && (
+          <li>
+            <DropdownItem
+              onClick={() => {
+                if (confirm("Are you sure you want to delete this post?")) {
+                  onDelete(postId);
+                }
+              }}
+            >
+              <BsSlashCircle size={22} className="fa-fw pe-2" />
+              Delete Post
+            </DropdownItem>
+          </li>
+        )}
+
         <li>
           <DropdownDivider />
         </li>
         <li>
-          <DropdownItem href="#">
+          <DropdownItem onClick={(e) => e.preventDefault()}>
             {" "}
             <BsFlag size={22} className="fa-fw pe-2" />
             Report post
@@ -209,8 +237,10 @@ const CommentItem = ({
 };
 interface PostCardProps extends SocialPostType {
   onCommentLike: (commentId: string) => void;
+  onDeletePost: (postId: string) => void;
 }
 const PostCard = ({
+  id, // ✅ FIXED: needed
   createdAt,
   likesCount,
   caption,
@@ -222,12 +252,13 @@ const PostCard = ({
   //photos,
   isVideo,
   onCommentLike,
+  onDeletePost, // ✅ FIXED
 }: PostCardProps) => {
-  const [shareUrl, setShareUrl] = useState("");
+  const { user } = useAuthStore(); // ✅ FIXED
 
-  useEffect(() => {
-    setShareUrl(window.location.href);
-  }, []);
+  const isOwner = user?.id === socialUser?.id;
+
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareUrl)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
@@ -240,6 +271,7 @@ const PostCard = ({
       alert("Failed to copy link");
     }
   };
+
   return (
     <Card>
       <CardHeader className="border-0 pb-0">
@@ -288,7 +320,12 @@ const PostCard = ({
               <p className="mb-0 small">Web Developer at StackBros</p>
             </div>
           </div>
-          <ActionMenu name={socialUser?.name} />
+          <ActionMenu
+            name={socialUser?.name}
+            postId={id}
+            onDelete={onDeletePost}
+            isOwner={isOwner} // ✅ FIXED
+          />
         </div>
       </CardHeader>
       <CardBody>
@@ -512,8 +549,6 @@ const Feeds = ({
   //const pageId = params?.pageId as string;
   const handleCommentLike = async (commentId: string) => {
     try {
-      console.log("Calling like API for:", commentId);
-
       await toggleCommentLike(commentId);
 
       setPosts((prev) =>
@@ -537,13 +572,7 @@ const Feeds = ({
     }
   };
   // Decide active mode automatically
-  const activeFeedType = feedType; // homepage tabs
-  // const activeFeedType = isUserProfile
-  //   ? "friends" // user profile = only user posts
-  //   : pageId
-  //     ? "page" // page profile = only page posts
-  //     : feedType; // homepage tabs
-  console.log("feedd typeeeee" + feedType);
+  const activeFeedType = feedType;
   const fetchPosts = async (currentPage = page, forceFetch = false) => {
     //if (loading || !hasMore) return;
     if (!forceFetch && (loading || !hasMore)) return;
@@ -644,6 +673,69 @@ const Feeds = ({
     resetAndFetch();
   }, [feedType, userId, pageId]);
 
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const handleDeletePost = async (postId: string) => {
+    if (deletingId) return;
+
+    const index = posts.findIndex((p) => p.id === postId); // ✅ BEFORE removal
+    if (index === -1) return;
+
+    const postToDelete = posts[index];
+    setDeletingId(postId);
+
+    // remove from UI
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+
+    const timeout = setTimeout(async () => {
+      try {
+        await deletePost(postId);
+        toast.success("Post deleted permanently");
+      } catch {
+        toast.error("Delete failed");
+
+        // rollback on failure
+        setPosts((prev) => {
+          const newPosts = [...prev];
+          newPosts.splice(index, 0, postToDelete);
+          return newPosts;
+        });
+      } finally {
+        setDeletingId(null);
+      }
+    }, 5000);
+
+    toast(
+      ({ closeToast }) => (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: "10px",
+          }}
+        >
+          <span>Post deleted</span>
+          <button
+            className="btn btn-sm btn-light"
+            onClick={() => {
+              clearTimeout(timeout);
+
+              setPosts((prev) => {
+                const newPosts = [...prev];
+                newPosts.splice(index, 0, postToDelete);
+                return newPosts;
+              });
+
+              setDeletingId(null);
+              closeToast();
+            }}
+          >
+            Undo
+          </button>
+        </div>
+      ),
+      { autoClose: 5000 },
+    );
+  };
   //   const load = async () => {
   //     setPosts([]); // 🔥 reset old posts
   //     setPage(1);
@@ -666,16 +758,30 @@ const Feeds = ({
 
   return (
     <>
-      {/* Option 1: Using a Ternary for "No Posts" state */}
-      {posts && posts.length > 0 ? (
-        posts.map((post) => (
-          <PostCard key={post.id} {...post} onCommentLike={handleCommentLike} />
-        ))
-      ) : (
+      {posts.length === 0 && (
         <div className="text-center">
           <h5>No posts available</h5>
         </div>
       )}
+      {/* Option 1: Using a Ternary for "No Posts" state */}
+      <AnimatePresence mode="popLayout">
+        {" "}
+        {posts.map((post) => (
+          <motion.div
+            key={post.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <PostCard
+              {...post}
+              onCommentLike={handleCommentLike}
+              onDeletePost={handleDeletePost}
+            />
+          </motion.div>
+        ))}
+      </AnimatePresence>
 
       {/* 🔥 Load More */}
       {hasMore && posts?.length > 0 && (

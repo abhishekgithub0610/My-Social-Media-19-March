@@ -12,6 +12,7 @@ import bgBannerImg from "@/assets/images/bg/01.jpg";
 import { useAuthStore } from "@/features/account/store/authStore";
 import { getUserById } from "@/features/users/services/userApi";
 import { useEffect, useState } from "react";
+import { UserProfileType } from "@/features/users/types/user";
 
 type ProfilePanelProps = {
   links: ProfilePanelLink[];
@@ -21,16 +22,17 @@ const ProfilePanel = ({ links }: ProfilePanelProps) => {
   const { user } = useAuthStore();
   const [profileImage, setProfileImage] = useState<string>("");
   const [bio, setBio] = useState<string>("");
+  const [userAllData, setUserAllData] = useState<UserProfileType | null>(null);
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!user?.id) return;
 
       try {
         const userData = await getUserById(user.id);
+        setUserAllData(userData);
         if (userData.bio) {
           setBio(userData.bio);
         }
-        console.log("Fetched user data:", userData); // Debug log
         if (userData.profilePicture) {
           setProfileImage(`http://localhost:7120/${userData.profilePicture}`);
         }
@@ -41,6 +43,7 @@ const ProfilePanel = ({ links }: ProfilePanelProps) => {
 
     fetchUserProfile();
   }, [user?.id]);
+
   return (
     <>
       <Card className="overflow-hidden h-100">
@@ -74,17 +77,23 @@ const ProfilePanel = ({ links }: ProfilePanelProps) => {
 
             <div className="hstack gap-2 gap-xl-3 justify-content-center">
               <div>
-                <h6 className="mb-0">256</h6>
+                <h6 className="mb-0">
+                  {userAllData ? userAllData.noOfPosts : "..."}
+                </h6>
                 <small>Post</small>
               </div>
               <div className="vr" />
               <div>
-                <h6 className="mb-0">2.5K</h6>
+                <h6 className="mb-0">
+                  {userAllData ? userAllData.noOfFollowers : "..."}
+                </h6>
                 <small>Followers</small>
               </div>
               <div className="vr" />
               <div>
-                <h6 className="mb-0">365</h6>
+                <h6 className="mb-0">
+                  {userAllData ? userAllData.noOfFollowings : "..."}
+                </h6>
                 <small>Following</small>
               </div>
             </div>
