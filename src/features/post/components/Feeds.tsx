@@ -5,13 +5,15 @@ import { timeSince } from "@/utils/date"; // to be deleted/confirmed
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import collaborationImg from "@/assets/images/collaboration.png";
 
 import {
   getFeed,
   getUserFeed,
   toggleCommentLike,
+  togglePostLike,
+  createComment,
 } from "@/features/post/services/postApi";
-import { useParams } from "next/navigation";
 import { deletePost } from "@/features/post/services/postApi";
 import {
   Button,
@@ -290,11 +292,6 @@ const PostCard = ({
                           ? `http://localhost:7120/${socialUser.avatar}`
                           : "/default-avatar.png"
                     }
-                    // src={
-                    //   pageinfo?.avatar
-                    //     ? `http://localhost:7120/${pageinfo.avatar}`
-                    //     : socialUser?.avatar || "/default-avatar.png"
-                    // }
                     alt="post-avatar"
                     width={40}
                     height={40}
@@ -391,11 +388,20 @@ const PostCard = ({
           <Dropdown className="ms-auto">
             <DropdownToggle
               as="a"
-              className="nav-link content-none cursor-pointer"
+              className="nav-link content-none cursor-pointer d-flex align-items-center"
             >
-              <BsReplyFill className="me-1" /> Share
-            </DropdownToggle>
+              {/* Text comes first */}
+              <span>Share</span>
 
+              {/* Image comes second with ms-2 (Margin Start) to push it away from the text */}
+              <img
+                src={collaborationImg.src}
+                alt="Share"
+                width={22}
+                height={22}
+                className="ms-2"
+              />
+            </DropdownToggle>
             <DropdownMenu className="dropdown-menu-end">
               <DropdownItem href={whatsappShare} target="_blank">
                 <BsWhatsapp className="me-2" /> WhatsApp
@@ -410,62 +416,6 @@ const PostCard = ({
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
-          {/* <Dropdown className="nav-item ms-sm-auto">
-            <DropdownToggle
-              as="a"
-              className="nav-link mb-0 content-none cursor-pointer"
-              id="cardShareAction"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              <BsReplyFill size={16} className="flip-horizontal ps-1" />
-              Share
-            </DropdownToggle>
-
-            <DropdownMenu
-              className="dropdown-menu-end"
-              aria-labelledby="cardShareAction"
-            >
-              <li>
-                <DropdownItem href="#">
-                  {" "}
-                  <BsEnvelope size={20} className="fa-fw pe-2" />
-                  Send via Direct Message
-                </DropdownItem>
-              </li>
-              <li>
-                <DropdownItem href="#">
-                  {" "}
-                  <BsBookmarkCheck size={20} className="fa-fw pe-2" />
-                  Bookmark{" "}
-                </DropdownItem>
-              </li>
-              <li>
-                <DropdownItem href="#">
-                  {" "}
-                  <BsLink size={20} className="fa-fw pe-2" />
-                  Copy link to post
-                </DropdownItem>
-              </li>
-              <li>
-                <DropdownItem href="#">
-                  {" "}
-                  <BsShare size={20} className="fa-fw pe-2" />
-                  Share post via …
-                </DropdownItem>
-              </li>
-              <li>
-                <DropdownDivider />
-              </li>
-              <li>
-                <DropdownItem href="#">
-                  {" "}
-                  <BsPencilSquare size={20} className="fa-fw pe-2" />
-                  Share to News Feed
-                </DropdownItem>
-              </li>
-            </DropdownMenu>
-          </Dropdown> */}
         </ul>
         {comments && (
           <>
@@ -570,6 +520,23 @@ const Feeds = ({
     } catch (error) {
       console.error("Like API failed:", error);
     }
+  };
+  const handlePostLike = async (postId: string) => {
+    await togglePostLike(postId);
+
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              isLiked: !post.isLiked,
+              likesCount: post.isLiked
+                ? post.likesCount - 1
+                : post.likesCount + 1,
+            }
+          : post,
+      ),
+    );
   };
   // Decide active mode automatically
   const activeFeedType = feedType;

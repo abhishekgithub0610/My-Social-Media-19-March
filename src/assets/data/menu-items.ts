@@ -14,6 +14,18 @@ export const PROFILE_MENU_ITEMS: MenuItemType[] = [
     url: "/profile/about",
     parentKey: "pages-profile",
   },
+  {
+    key: "shopping",
+    label: "Shop",
+    url: "/profile/shopping",
+    parentKey: "pages-profile",
+  },
+  {
+    key: "courses",
+    label: "Courses",
+    url: "/profile/courses",
+    parentKey: "pages-profile",
+  },
   // {
   //   key: "profile-connections",
   //   label: "Connections",
@@ -30,12 +42,7 @@ export const PROFILE_MENU_ITEMS: MenuItemType[] = [
     url: "/profile/media",
     parentKey: "pages-profile",
   },
-  {
-    key: "profile-videos",
-    label: "Videos",
-    url: "/profile/videos",
-    parentKey: "pages-profile",
-  },
+
   {
     key: "profile-events",
     label: "Events",

@@ -17,6 +17,7 @@ import shieldImg from "@/assets/images/icon/shield-outline-filled.svg";
 import handshakeImg from "@/assets/images/icon/handshake-outline-filled.svg";
 import chatAltImg from "@/assets/images/icon/chat-alt-outline-filled.svg";
 import trashImg from "@/assets/images/icon/trash-var-outline-filled.svg";
+import placement from "@/assets/images/placement.png";
 import pages from "@/assets/images/icon/pages.svg";
 
 export const profilePanelLinksData1: ProfilePanelLink[] = [
@@ -123,7 +124,12 @@ export const settingPanelLinksData: ProfilePanelLink[] = [
   // },
   {
     image: shieldImg,
-    name: "Password and security",
+    name: "Password and Security",
+    link: "/settings/password",
+  },
+  {
+    image: placement,
+    name: "Orders and Subscriptions",
     link: "/settings/password",
   },
   // {
