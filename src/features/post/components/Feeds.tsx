@@ -3,10 +3,9 @@ import Link from "next/link";
 import type { CommentType, SocialPostType } from "@/types/data"; // to be deleted/confirmed
 import { timeSince } from "@/utils/date"; // to be deleted/confirmed
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { toast } from "react-toastify";
 import collaborationImg from "@/assets/images/collaboration.png";
-
 import {
   getFeed,
   getUserFeed,
@@ -134,6 +133,14 @@ const ActionMenu = ({
 
 interface CommentItemProps extends CommentType {
   onLike: (commentId: string) => void;
+
+  onReply: (
+    postId: string,
+    content: string,
+    parentCommentId?: string,
+  ) => Promise<void>;
+
+  postId: string;
 }
 const CommentItem = ({
   id,
@@ -145,7 +152,31 @@ const CommentItem = ({
   createdAt,
   image,
   onLike,
+  onReply,
+  postId,
 }: CommentItemProps) => {
+  const [showReplyBox, setShowReplyBox] = useState(false);
+
+  const [replyText, setReplyText] = useState("");
+  const [replyLoading, setReplyLoading] = useState(false);
+
+  // ✅ CHANGED: prevent multiple reply submissions
+  const handleReply = async () => {
+    if (!replyText.trim() || replyLoading) return;
+
+    try {
+      setReplyLoading(true);
+
+      await onReply(postId, replyText, String(id));
+
+      setReplyText("");
+      setShowReplyBox(false);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setReplyLoading(false);
+    }
+  };
   return (
     <li className="comment-item">
       {socialUser && (
@@ -203,20 +234,48 @@ const CommentItem = ({
                   </Link> */}
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" href="#">
+                  <button
+                    type="button"
+                    className="btn btn-link nav-link p-0"
+                    onClick={() => setShowReplyBox((prev) => !prev)}
+                  >
+                    Reply
+                  </button>
+                  {/* <Link className="nav-link" href="#">
                     {" "}
                     Reply
-                  </Link>
+                  </Link> */}
                 </li>
-                {children?.length && children?.length > 0 && (
+                {/* ✅ CHANGED: safer optional chaining */}
+                {!!children?.length && (
                   <li className="nav-item">
                     <Link className="nav-link" href="#">
-                      {" "}
-                      View {children?.length} replies
+                      View {children.length} replies
                     </Link>
                   </li>
                 )}
               </ul>
+
+              {showReplyBox && (
+                <div className="mt-2 ms-4">
+                  <textarea
+                    className="form-control"
+                    rows={2}
+                    placeholder="Write a reply..."
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                  />
+
+                  <Button
+                    size="sm"
+                    className="mt-2"
+                    onClick={handleReply}
+                    disabled={replyLoading}
+                  >
+                    {replyLoading ? "Replying..." : "Reply"}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -226,10 +285,12 @@ const CommentItem = ({
                 key={childComment.id}
                 {...childComment}
                 onLike={onLike}
+                onReply={onReply}
+                postId={postId}
               />
             ))}
           </ul>
-          {children?.length === 2 && (
+          {children && children.length >= 2 && (
             <LoadContentButton name="Load more replies" className="mb-3 ms-5" />
           )}
         </>
@@ -239,10 +300,18 @@ const CommentItem = ({
 };
 interface PostCardProps extends SocialPostType {
   onCommentLike: (commentId: string) => void;
+  onPostLike: (postId: string) => void;
+
+  onCreateComment: (
+    postId: string,
+    content: string,
+    parentCommentId?: string,
+  ) => Promise<void>;
+
   onDeletePost: (postId: string) => void;
 }
 const PostCard = ({
-  id, // ✅ FIXED: needed
+  id,
   createdAt,
   likesCount,
   caption,
@@ -251,29 +320,76 @@ const PostCard = ({
   image,
   socialUser,
   pageinfo,
-  //photos,
   isVideo,
+
+  isLiked,
+
   onCommentLike,
-  onDeletePost, // ✅ FIXED
+  onPostLike,
+  onCreateComment,
+  onDeletePost,
 }: PostCardProps) => {
   const { user } = useAuthStore(); // ✅ FIXED
 
   const isOwner = user?.id === socialUser?.id;
+  // ✅ ADDED
+  const [commentLoading, setCommentLoading] = useState(false);
+  const [commentText, setCommentText] = useState("");
 
-  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
-
+  // ✅ CHANGED: avoid hydration/SSR issue
+  const shareUrl =
+    typeof window !== "undefined" ? `${window.location.origin}/post/${id}` : "";
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareUrl)}`;
   const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
 
   const copyLinkForInstagram = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
-      alert("Link copied for Instagram sharing");
+
+      toast.success("Link copied successfully");
     } catch {
-      alert("Failed to copy link");
+      toast.error("Failed to copy link");
     }
   };
 
+  // ✅ ADDED: recursive reply insertion
+  const addReplyRecursively = (
+    comments: CommentType[],
+    parentCommentId: string,
+    newReply: CommentType,
+  ): CommentType[] => {
+    return comments.map((comment) => {
+      if (String(comment.id) === parentCommentId) {
+        return {
+          ...comment,
+          children: [...(comment.children || []), newReply],
+        };
+      }
+
+      return {
+        ...comment,
+        children: comment.children
+          ? addReplyRecursively(comment.children, parentCommentId, newReply)
+          : [],
+      };
+    });
+  };
+  // ✅ CHANGED
+  const handleCreateComment = async () => {
+    if (!commentText.trim() || commentLoading) return;
+
+    try {
+      setCommentLoading(true);
+
+      await onCreateComment(id, commentText);
+
+      setCommentText("");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setCommentLoading(false);
+    }
+  };
   return (
     <Card>
       <CardHeader className="border-0 pb-0">
@@ -363,7 +479,18 @@ const PostCard = ({
 
         <ul className="nav nav-stack py-3 small">
           <li className="nav-item">
-            <Link
+            <button
+              type="button"
+              className="btn btn-link nav-link active p-0"
+              onClick={() => onPostLike(id)}
+            >
+              <BsHandThumbsUpFill size={18} className="pe-1" />
+              {/* ✅ CHANGED: cleaner UX */}
+              <span className={isLiked ? "text-primary fw-bold" : ""}>
+                {isLiked ? "Liked" : "Like"} ({likesCount})
+              </span>{" "}
+            </button>
+            {/* <Link
               className="nav-link active"
               href="#"
               data-bs-container="body"
@@ -376,7 +503,7 @@ const PostCard = ({
               {" "}
               <BsHandThumbsUpFill size={18} className="pe-1" />
               Liked ({likesCount})
-            </Link>
+            </Link> */}
           </li>
           <li className="nav-item">
             <Link className="nav-link" href="#">
@@ -430,14 +557,38 @@ const PostCard = ({
                   />{" "}
                 </span>
               </div>
-
-              <form className="w-100 position-relative">
+              {/* ✅ CHANGED: prevent page refresh */}
+              <form
+                className="w-100 position-relative"
+                onSubmit={(e) => e.preventDefault()}
+              >
+                {" "}
+                <textarea
+                  className="form-control pe-4 bg-light"
+                  rows={1}
+                  placeholder="Add a comment..."
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                />
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="mb-0 rounded mt-2"
+                  type="button"
+                  onClick={handleCreateComment}
+                  disabled={commentLoading}
+                >
+                  {commentLoading ? "Posting..." : "Post"}
+                </Button>
+              </form>
+              {/* <form className="w-100 position-relative">
                 <textarea
                   data-autoresize
                   className="form-control pe-4 bg-light"
                   rows={1}
                   placeholder="Add a comment..."
-                  defaultValue={""}
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
                 />
                 <div className="position-absolute top-0 end-0">
                   <button className="btn" type="button">
@@ -449,10 +600,11 @@ const PostCard = ({
                   size="sm"
                   className="mb-0 rounded mt-2"
                   type="button"
+                  onClick={handleCreateComment}
                 >
                   Post
                 </Button>
-              </form>
+              </form> */}
             </div>
 
             <ul className="comment-wrap list-unstyled">
@@ -461,6 +613,8 @@ const PostCard = ({
                   {...comment}
                   key={comment.id}
                   onLike={onCommentLike}
+                  onReply={onCreateComment}
+                  postId={id}
                 />
               ))}
             </ul>
@@ -492,11 +646,41 @@ const Feeds = ({
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  // ✅ ADDED
+  const observerRef = useRef<IntersectionObserver | null>(null);
   const { user } = useAuthStore();
   const userId = user?.id;
   //const params = useParams();
   // Replace your fetchPosts() logic inside Feeds with this updated version
   //const pageId = params?.pageId as string;
+  // ✅ CHANGED: recursive comment like update
+  const updateCommentLikeRecursively = (
+    comments: CommentType[],
+    commentId: string,
+  ): CommentType[] => {
+    return comments.map((comment) => {
+      // update current comment
+      if (String(comment.id) === commentId) {
+        return {
+          ...comment,
+          isLiked: !comment.isLiked,
+          likesCount: comment.isLiked
+            ? comment.likesCount - 1
+            : comment.likesCount + 1,
+        };
+      }
+
+      // recursively update children
+      return {
+        ...comment,
+        children: comment.children
+          ? updateCommentLikeRecursively(comment.children, commentId)
+          : [],
+      };
+    });
+  };
+
+  // ✅ CHANGED
   const handleCommentLike = async (commentId: string) => {
     try {
       await toggleCommentLike(commentId);
@@ -504,17 +688,9 @@ const Feeds = ({
       setPosts((prev) =>
         prev.map((post) => ({
           ...post,
-          comments: post.comments?.map((comment) =>
-            String(comment.id) === commentId
-              ? {
-                  ...comment,
-                  isLiked: !comment.isLiked,
-                  likesCount: comment.isLiked
-                    ? comment.likesCount - 1
-                    : comment.likesCount + 1,
-                }
-              : comment,
-          ),
+          comments: post.comments
+            ? updateCommentLikeRecursively(post.comments, commentId)
+            : [],
         })),
       );
     } catch (error) {
@@ -522,21 +698,151 @@ const Feeds = ({
     }
   };
   const handlePostLike = async (postId: string) => {
-    await togglePostLike(postId);
+    try {
+      await togglePostLike(postId);
 
-    setPosts((prev) =>
-      prev.map((post) =>
-        post.id === postId
-          ? {
+      setPosts((prev) =>
+        prev.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+
+                isLiked: !post.isLiked,
+
+                likesCount: post.isLiked
+                  ? post.likesCount - 1
+                  : post.likesCount + 1,
+              }
+            : post,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const addReplyRecursively = (
+    comments: CommentType[],
+    parentCommentId: string,
+    reply: CommentType,
+  ): CommentType[] => {
+    return comments.map((comment) => {
+      if (String(comment.id) === parentCommentId) {
+        return {
+          ...comment,
+          children: [...(comment.children || []), reply],
+        };
+      }
+
+      return {
+        ...comment,
+        children: comment.children
+          ? addReplyRecursively(comment.children, parentCommentId, reply)
+          : [],
+      };
+    });
+  };
+
+  const handleCreateComment = async (
+    postId: string,
+    content: string,
+    parentCommentId?: string,
+  ) => {
+    try {
+      const response = await createComment(postId, content, parentCommentId);
+
+      const newComment = response.result;
+      const formattedComment: CommentType = {
+        id: newComment.id,
+        comment: newComment.content,
+
+        createdAt: new Date(),
+
+        likesCount: 0,
+        isLiked: false,
+
+        socialUser: {
+          id: user?.id || "",
+          name: user?.name || "",
+          avatar: user?.avatar || "/default-avatar.png",
+        },
+
+        children: [],
+      };
+      setPosts((prev) =>
+        prev.map((post) => {
+          if (post.id !== postId) return post;
+
+          // ✅ CHANGED: reply also increases total comments count
+          if (parentCommentId) {
+            return {
               ...post,
-              isLiked: !post.isLiked,
-              likesCount: post.isLiked
-                ? post.likesCount - 1
-                : post.likesCount + 1,
-            }
-          : post,
-      ),
-    );
+
+              commentsCount: post.commentsCount + 1,
+
+              comments: post.comments?.map((comment) =>
+                String(comment.id) === parentCommentId
+                  ? {
+                      ...comment,
+
+                      children: [
+                        ...(comment.children || []),
+
+                        {
+                          id: newComment.id,
+                          comment: newComment.content,
+
+                          createdAt: new Date(),
+
+                          likesCount: 0,
+                          isLiked: false,
+
+                          socialUser: {
+                            id: user?.id || "",
+                            name: user?.name || "",
+                            avatar: user?.avatar || "/default-avatar.png",
+                          },
+
+                          children: [],
+                        },
+                      ],
+                    }
+                  : comment,
+              ),
+            };
+          }
+          return {
+            ...post,
+
+            commentsCount: post.commentsCount + 1,
+
+            comments: [
+              ...(post.comments || []),
+
+              {
+                id: newComment.id,
+                comment: newComment.content,
+
+                createdAt: new Date(),
+
+                likesCount: 0,
+                isLiked: false,
+
+                socialUser: {
+                  id: user?.id || "",
+                  name: user?.name || "",
+                  avatar: user?.avatar || "/default-avatar.png",
+                },
+
+                children: [],
+              },
+            ],
+          };
+        }),
+      );
+    } catch (error) {
+      console.error(error);
+    }
   };
   // Decide active mode automatically
   const activeFeedType = feedType;
@@ -584,6 +890,7 @@ const Feeds = ({
           return {
             id: p.id,
             caption: p.content,
+            isLiked: p.isLikedByCurrentUser,
             image:
               imageUrl && imageUrl.startsWith("http")
                 ? imageUrl
@@ -624,9 +931,10 @@ const Feeds = ({
       //setPage((prev) => prev + 1);
     } catch (err) {
       console.error(err);
+    } finally {
+      // ✅ CHANGED: always reset loading
+      setLoading(false);
     }
-
-    setLoading(false);
   };
   useEffect(() => {
     const resetAndFetch = async () => {
@@ -722,7 +1030,26 @@ const Feeds = ({
   //   hasFetched.current = true;
   //   fetchPosts();
   // }, []);
+  // ✅ ADDED: infinite scroll
+  useEffect(() => {
+    const lastPost = document.querySelector("#feed-loader");
 
+    if (!lastPost) return;
+
+    observerRef.current?.disconnect();
+
+    observerRef.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore && !loading) {
+        fetchPosts();
+      }
+    });
+
+    observerRef.current.observe(lastPost);
+
+    return () => {
+      observerRef.current?.disconnect();
+    };
+  }, [posts, hasMore, loading]);
   return (
     <>
       {posts.length === 0 && (
@@ -744,18 +1071,19 @@ const Feeds = ({
             <PostCard
               {...post}
               onCommentLike={handleCommentLike}
+              onPostLike={handlePostLike}
+              onCreateComment={handleCreateComment}
               onDeletePost={handleDeletePost}
             />
           </motion.div>
         ))}
       </AnimatePresence>
 
-      {/* 🔥 Load More */}
-      {hasMore && posts?.length > 0 && (
-        <div className="text-center">
-          <Button onClick={() => fetchPosts()} disabled={loading}>
-            {loading ? "Loading..." : "Load More"}
-          </Button>
+      {/* ✅ CHANGED: infinite scroll loader */}
+
+      {hasMore && (
+        <div id="feed-loader" className="text-center py-3">
+          {loading && <span>Loading more posts...</span>}
         </div>
       )}
     </>

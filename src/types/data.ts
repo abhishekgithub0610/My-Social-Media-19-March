@@ -76,6 +76,7 @@ export type SocialPostType = {
     avatar?: string;
   };
   IsLikedByCurrentUse?: boolean;
+  isLiked?: boolean;
 };
 
 export type VideoType = {
