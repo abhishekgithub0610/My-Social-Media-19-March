@@ -505,7 +505,9 @@ const PostCard = ({
             >
               <BsHandThumbsUpFill size={18} className="pe-1" />
               {/* ✅ CHANGED: cleaner UX */}
-              <span className={isLiked ? "text-primary fw-bold" : ""}>
+              <span
+                className={isLiked ? "text-primary fw-bold" : "text-secondary"}
+              >
                 {isLiked ? "Liked" : "Like"} ({likesCount})
               </span>{" "}
             </button>
