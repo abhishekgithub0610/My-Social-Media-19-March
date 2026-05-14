@@ -25,6 +25,7 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownToggle,
+  Collapse, // ✅ ADDED
 } from "react-bootstrap";
 import {
   BsBookmark,
@@ -43,6 +44,8 @@ import {
   BsFacebook,
   BsXCircle,
   BsThreeDots,
+  BsChevronDown, // ✅ ADDED
+  BsChevronUp, // ✅ ADDED
 } from "react-icons/bs";
 import LoadContentButton from "@/LoadContentButton"; //to be deleted/confirmed
 import avatar12 from "@/assets/images/avatar/12.jpg";
@@ -175,6 +178,7 @@ const CommentItem = ({
   postId,
 }: CommentItemProps) => {
   const [showReplyBox, setShowReplyBox] = useState(false);
+  const [showReplies, setShowReplies] = useState(true);
 
   const [replyText, setReplyText] = useState("");
   const [replyLoading, setReplyLoading] = useState(false);
@@ -190,6 +194,7 @@ const CommentItem = ({
 
       setReplyText("");
       setShowReplyBox(false);
+      setShowReplies(true); // ✅ ADDED
     } catch (error) {
       console.error(error);
     } finally {
@@ -267,10 +272,24 @@ const CommentItem = ({
                 </li>
                 {/* ✅ CHANGED: safer optional chaining */}
                 {!!children?.length && (
-                  <li className="nav-item">
-                    <Link className="nav-link" href="#">
-                      View {children.length} replies
-                    </Link>
+                  <li className="nav-item ms-2">
+                    <button
+                      type="button"
+                      className="btn btn-link nav-link p-0 d-flex align-items-center gap-1"
+                      onClick={() => setShowReplies((prev) => !prev)}
+                    >
+                      {showReplies ? (
+                        <>
+                          <BsChevronUp />
+                          Hide replies
+                        </>
+                      ) : (
+                        <>
+                          <BsChevronDown />
+                          View {children.length} replies
+                        </>
+                      )}
+                    </button>
                   </li>
                 )}
               </ul>
@@ -298,17 +317,21 @@ const CommentItem = ({
             </div>
           </div>
 
-          <ul className="comment-item-nested list-unstyled">
-            {children?.map((childComment) => (
-              <CommentItem
-                key={childComment.id}
-                {...childComment}
-                onLike={onLike}
-                onReply={onReply}
-                postId={postId}
-              />
-            ))}
-          </ul>
+          <Collapse in={showReplies}>
+            <div>
+              <ul className="comment-item-nested list-unstyled mt-3">
+                {children?.map((childComment) => (
+                  <CommentItem
+                    key={childComment.id}
+                    {...childComment}
+                    onLike={onLike}
+                    onReply={onReply}
+                    postId={postId}
+                  />
+                ))}
+              </ul>
+            </div>
+          </Collapse>
           {children && children.length >= 2 && (
             <LoadContentButton name="Load more replies" className="mb-3 ms-5" />
           )}
@@ -354,6 +377,7 @@ const PostCard = ({
   // ✅ ADDED
   const [commentLoading, setCommentLoading] = useState(false);
   const [commentText, setCommentText] = useState("");
+  const [showComments, setShowComments] = useState(false);
 
   // ✅ CHANGED: avoid hydration/SSR issue
   const shareUrl =
@@ -403,6 +427,7 @@ const PostCard = ({
       await onCreateComment(id, commentText);
 
       setCommentText("");
+      setShowComments(true); // ✅ ADDED
     } catch (error) {
       console.error(error);
     } finally {
@@ -500,39 +525,45 @@ const PostCard = ({
           <li className="nav-item">
             <button
               type="button"
+              className={`btn ${isLiked ? "btn-primary" : "btn-secondary"}`}
+              onClick={() => onPostLike(id)}
+            >
+              <BsHandThumbsUpFill size={18} className="me-1" />
+              {isLiked ? "Liked" : "Like"} ({likesCount})
+            </button>
+          </li>
+          {/* <li className="nav-item">
+            <button
+              type="button"
               className="btn btn-link nav-link active p-0"
               onClick={() => onPostLike(id)}
             >
               <BsHandThumbsUpFill size={18} className="pe-1" />
-              {/* ✅ CHANGED: cleaner UX */}
               <span
                 className={isLiked ? "text-primary fw-bold" : "text-secondary"}
               >
                 {isLiked ? "Liked" : "Like"} ({likesCount})
               </span>{" "}
             </button>
-            {/* <Link
-              className="nav-link active"
-              href="#"
-              data-bs-container="body"
-              data-bs-toggle="tooltip"
-              data-bs-placement="top"
-              data-bs-html="true"
-              data-bs-custom-class="tooltip-text-start"
-              data-bs-title="Frances Guerrero<br> Lori Stevens<br> Billy Vasquez<br> Judy Nguyen<br> Larry Lawson<br> Amanda Reed<br> Louis Crawford"
+          
+          </li> */}
+          <li className="nav-item ms-2">
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              onClick={() => setShowComments((prev) => !prev)}
             >
-              {" "}
-              <BsHandThumbsUpFill size={18} className="pe-1" />
-              Liked ({likesCount})
-            </Link> */}
+              <BsChatFill size={18} className="me-1" />
+              {showComments ? "Hide" : "Comments"} ({commentsCount})
+            </button>
           </li>
-          <li className="nav-item">
+          {/* <li className="nav-item">
             <Link className="nav-link" href="#">
               {" "}
               <BsChatFill size={18} className="pe-1" />
               Comments ({commentsCount})
             </Link>
-          </li>
+          </li> */}
           <Dropdown className="ms-auto">
             <DropdownToggle
               as="a"
@@ -565,7 +596,7 @@ const PostCard = ({
             </DropdownMenu>
           </Dropdown>
         </ul>
-        {comments && (
+        {/* {comments && (
           <>
             <div className="d-flex mb-3">
               <div className="avatar avatar-xs me-2">
@@ -578,7 +609,6 @@ const PostCard = ({
                   />{" "}
                 </span>
               </div>
-              {/* ✅ CHANGED: prevent page refresh */}
               <form
                 className="w-100 position-relative"
                 onSubmit={(e) => e.preventDefault()}
@@ -602,30 +632,7 @@ const PostCard = ({
                   {commentLoading ? "Posting..." : "Post"}
                 </Button>
               </form>
-              {/* <form className="w-100 position-relative">
-                <textarea
-                  data-autoresize
-                  className="form-control pe-4 bg-light"
-                  rows={1}
-                  placeholder="Add a comment..."
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                />
-                <div className="position-absolute top-0 end-0">
-                  <button className="btn" type="button">
-                    🙂
-                  </button>
-                </div>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  className="mb-0 rounded mt-2"
-                  type="button"
-                  onClick={handleCreateComment}
-                >
-                  Post
-                </Button>
-              </form> */}
+             
             </div>
 
             <ul className="comment-wrap list-unstyled">
@@ -640,7 +647,68 @@ const PostCard = ({
               ))}
             </ul>
           </>
-        )}
+        )} */}
+        <Collapse in={showComments}>
+          <div>
+            <div className="d-flex mb-3 mt-3">
+              <div className="avatar avatar-xs me-2">
+                <Image
+                  className="avatar-img rounded-circle"
+                  src={avatar12}
+                  alt="avatar12"
+                />
+              </div>
+
+              <form
+                className="w-100 position-relative"
+                onSubmit={(e) => e.preventDefault()}
+              >
+                <textarea
+                  className="form-control pe-4 bg-light"
+                  rows={1}
+                  placeholder="Add a comment..."
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                />
+
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="mb-0 rounded mt-2"
+                  type="button"
+                  onClick={handleCreateComment}
+                  disabled={commentLoading}
+                >
+                  {commentLoading ? "Posting..." : "Post"}
+                </Button>
+              </form>
+            </div>
+
+            {/* ============================================
+                CHANGED EMPTY COMMENTS
+            ============================================ */}
+
+            {!comments?.length && (
+              <div className="text-muted small mb-3">No comments yet</div>
+            )}
+
+            {/* ============================================
+                UNCHANGED COMMENT LIST
+            ============================================ */}
+
+            <ul className="comment-wrap list-unstyled">
+              {comments?.map((comment: any) => (
+                <CommentItem
+                  {...comment}
+                  key={comment.id}
+                  onLike={onCommentLike}
+                  onReply={onCreateComment}
+                  postId={id}
+                />
+              ))}
+            </ul>
+          </div>
+        </Collapse>
       </CardBody>
       <CardFooter className="border-0 pt-0">
         {comments && <LoadContentButton name=" Load more comments" />}
@@ -800,36 +868,41 @@ const Feeds = ({
               ...post,
 
               commentsCount: post.commentsCount + 1,
-
-              comments: post.comments?.map((comment) =>
-                String(comment.id) === parentCommentId
-                  ? {
-                      ...comment,
-
-                      children: [
-                        ...(comment.children || []),
-
-                        {
-                          id: newComment.id,
-                          comment: newComment.content,
-
-                          createdAt: new Date(),
-
-                          likesCount: 0,
-                          isLiked: false,
-
-                          socialUser: {
-                            id: user?.id || "",
-                            name: user?.name || "",
-                            avatar: user?.avatar || "/default-avatar.png",
-                          },
-
-                          children: [],
-                        },
-                      ],
-                    }
-                  : comment,
+              comments: addReplyRecursively(
+                post.comments || [],
+                parentCommentId,
+                formattedComment,
               ),
+
+              // comments: post.comments?.map((comment) =>
+              //   String(comment.id) === parentCommentId
+              //     ? {
+              //         ...comment,
+
+              //         children: [
+              //           ...(comment.children || []),
+
+              //           {
+              //             id: newComment.id,
+              //             comment: newComment.content,
+
+              //             createdAt: new Date(),
+
+              //             likesCount: 0,
+              //             isLiked: false,
+
+              //             socialUser: {
+              //               id: user?.id || "",
+              //               name: user?.name || "",
+              //               avatar: user?.avatar || "/default-avatar.png",
+              //             },
+
+              //             children: [],
+              //           },
+              //         ],
+              //       }
+              //     : comment,
+              // ),
             };
           }
           return {
@@ -912,6 +985,7 @@ const Feeds = ({
             id: p.id,
             caption: p.content,
             isLiked: p.isLikedByCurrentUser,
+            comments: p.comments || [],
             image:
               imageUrl && imageUrl.startsWith("http")
                 ? imageUrl
