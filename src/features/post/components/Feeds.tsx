@@ -48,6 +48,25 @@ import LoadContentButton from "@/LoadContentButton"; //to be deleted/confirmed
 import avatar12 from "@/assets/images/avatar/12.jpg";
 import { useAuthStore } from "@/features/account/store/authStore";
 import { AnimatePresence, motion } from "framer-motion";
+// ✅ ADDED: lightweight user type for posts/comments
+export type SocialUserType = {
+  id: string;
+  name: string;
+  avatar?: string;
+
+  // optional fields
+  mutualCount?: number;
+  role?: string;
+  status?: string;
+  lastMessage?: string;
+  lastActivity?: Date;
+};
+// Local helper for creating comment user safely
+const createSocialUser = (user: any): SocialUserType => ({
+  id: user?.id || "",
+  name: user?.name || "",
+  avatar: user?.avatar || "/default-avatar.png",
+});
 const ActionMenu = ({
   name,
   postId,
