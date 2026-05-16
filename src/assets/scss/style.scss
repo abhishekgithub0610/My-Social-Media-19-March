@@ -52,6 +52,19 @@
 @import "user";
 
 
+.comment-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.comment-scroll-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.comment-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 ////// previous scss file
 
 // // // Bootstrap variables

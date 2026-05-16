@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import type { CommentType, SocialPostType } from "@/types/data"; // to be deleted/confirmed
+import type { CommentType, SocialPostType, UserType } from "@/types/data"; // to be deleted/confirmed
 import { timeSince } from "@/utils/date"; // to be deleted/confirmed
 import Image from "next/image";
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -65,11 +65,7 @@ export type SocialUserType = {
   lastActivity?: Date;
 };
 // Local helper for creating comment user safely
-const createSocialUser = (user: any): SocialUserType => ({
-  id: user?.id || "",
-  name: user?.name || "",
-  avatar: user?.avatar || "/default-avatar.png",
-});
+
 const ActionMenu = ({
   name,
   postId,
@@ -163,6 +159,7 @@ interface CommentItemProps extends CommentType {
   ) => Promise<void>;
 
   postId: string;
+  isReply?: boolean;
 }
 const CommentItem = ({
   id,
@@ -176,9 +173,10 @@ const CommentItem = ({
   onLike,
   onReply,
   postId,
+  isReply = false,
 }: CommentItemProps) => {
   const [showReplyBox, setShowReplyBox] = useState(false);
-  const [showReplies, setShowReplies] = useState(true);
+  const [showReplies, setShowReplies] = useState(false);
 
   const [replyText, setReplyText] = useState("");
   const [replyLoading, setReplyLoading] = useState(false);
@@ -257,7 +255,18 @@ const CommentItem = ({
                     Like ({likesCount})
                   </Link> */}
                 </li>
-                <li className="nav-item">
+                {!isReply && (
+                  <li className="nav-item">
+                    <button
+                      type="button"
+                      className="btn btn-link nav-link p-0"
+                      onClick={() => setShowReplyBox((prev) => !prev)}
+                    >
+                      Reply
+                    </button>
+                  </li>
+                )}
+                {/* <li className="nav-item">
                   <button
                     type="button"
                     className="btn btn-link nav-link p-0"
@@ -265,11 +274,8 @@ const CommentItem = ({
                   >
                     Reply
                   </button>
-                  {/* <Link className="nav-link" href="#">
-                    {" "}
-                    Reply
-                  </Link> */}
-                </li>
+          
+                </li> */}
                 {/* ✅ CHANGED: safer optional chaining */}
                 {!!children?.length && (
                   <li className="nav-item ms-2">
@@ -327,14 +333,15 @@ const CommentItem = ({
                     onLike={onLike}
                     onReply={onReply}
                     postId={postId}
+                    isReply={true}
                   />
                 ))}
               </ul>
             </div>
           </Collapse>
-          {children && children.length >= 2 && (
+          {/* {children && children.length >= 2 && (
             <LoadContentButton name="Load more replies" className="mb-3 ms-5" />
-          )}
+          )} */}
         </>
       )}
     </li>
@@ -378,7 +385,7 @@ const PostCard = ({
   const [commentLoading, setCommentLoading] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [showComments, setShowComments] = useState(false);
-
+  const commentsContainerRef = useRef<HTMLDivElement | null>(null);
   // ✅ CHANGED: avoid hydration/SSR issue
   const shareUrl =
     typeof window !== "undefined" ? `${window.location.origin}/post/${id}` : "";
@@ -405,7 +412,8 @@ const PostCard = ({
       if (String(comment.id) === parentCommentId) {
         return {
           ...comment,
-          children: [...(comment.children || []), newReply],
+          children: [newReply, ...(comment.children || [])],
+          //children: [...(comment.children || []), newReply],
         };
       }
 
@@ -418,7 +426,7 @@ const PostCard = ({
     });
   };
   // ✅ CHANGED
-  const handleCreateComment = async () => {
+  const handleSubmitComment = async () => {
     if (!commentText.trim() || commentLoading) return;
 
     try {
@@ -434,6 +442,30 @@ const PostCard = ({
       setCommentLoading(false);
     }
   };
+  // const handleCreateComment = async () => {
+  //   if (!commentText.trim() || commentLoading) return;
+
+  //   try {
+  //     setCommentLoading(true);
+
+  //     await onCreateComment(id, commentText);
+
+  //     setCommentText("");
+  //     setShowComments(true); // ✅ ADDED
+  //   } catch (error) {
+  //     console.error(error);
+  //   } finally {
+  //     setCommentLoading(false);
+  //   }
+  // };
+
+  useEffect(() => {
+    if (showComments && commentsContainerRef.current) {
+      commentsContainerRef.current.scrollTop =
+        commentsContainerRef.current.scrollHeight;
+    }
+  }, [comments, showComments]);
+
   return (
     <Card>
       <CardHeader className="border-0 pb-0">
@@ -459,6 +491,23 @@ const PostCard = ({
                   />{" "}
                 </span>
               )}
+
+              {/* {user?.avatar && (
+                <span role="button">
+                  <Image
+                    className="avatar-img rounded-circle"
+                    src={
+                      user.avatar.startsWith("http")
+                        ? user.avatar
+                        : `http://localhost:7120/${user.avatar}`
+                    }
+                    alt="user-avatar"
+                    width={40}
+                    height={40}
+                    unoptimized
+                  />
+                </span>
+              )} */}
             </div>
 
             <div>
@@ -487,15 +536,7 @@ const PostCard = ({
       </CardHeader>
       <CardBody>
         {caption && <p>{caption}</p>}
-        {/* {image && image.startsWith("http") && !isVideo && (
-          <Image
-            className="card-img"
-            src={image}
-            alt="Post"
-            width={500}
-            height={500}
-          />
-        )} */}
+
         {image && !isVideo && (
           <Image
             className="card-img"
@@ -506,15 +547,7 @@ const PostCard = ({
             unoptimized
           />
         )}
-        {/* {image && !isVideo && (
-          <Image
-            className="card-img"
-            src={image}
-            alt="Post"onPostCreated
-            width={40}
-            height={40}
-          />
-        )} */}
+
         {isVideo && image && (
           <video controls className="w-100">
             <source src={image} />
@@ -650,9 +683,42 @@ const PostCard = ({
         )} */}
         <Collapse in={showComments}>
           <div>
+            {/* ============================================
+                CHANGED EMPTY COMMENTS
+            ============================================ */}
+
+            {!comments?.length && (
+              <div className="text-muted small mb-3">No comments yet</div>
+            )}
+
+            {/* ============================================
+                UNCHANGED COMMENT LIST
+            ============================================ */}
+
+            <div
+              ref={commentsContainerRef}
+              className="comment-scroll-container"
+              style={{
+                maxHeight: "500px", // roughly 4 comments
+                overflowY: "auto",
+                paddingRight: "6px",
+              }}
+            >
+              <ul className="comment-wrap list-unstyled mb-0">
+                {comments?.map((comment: any) => (
+                  <CommentItem
+                    {...comment}
+                    key={comment.id}
+                    onLike={onCommentLike}
+                    onReply={onCreateComment}
+                    postId={id}
+                  />
+                ))}
+              </ul>
+            </div>
             <div className="d-flex mb-3 mt-3">
               <div className="avatar avatar-xs me-2">
-                {socialUser?.avatar && (
+                {/* {socialUser?.avatar && (
                   <span role="button">
                     {" "}
                     <Image
@@ -667,6 +733,23 @@ const PostCard = ({
                       height={40}
                       unoptimized
                     />{" "}
+                  </span>
+                )} */}
+
+                {user?.avatar && (
+                  <span role="button">
+                    <Image
+                      className="avatar-img rounded-circle"
+                      src={
+                        user.avatar.startsWith("http")
+                          ? user.avatar
+                          : `http://localhost:7120/${user.avatar}`
+                      }
+                      alt="user-avatar"
+                      width={40}
+                      height={40}
+                      unoptimized
+                    />
                   </span>
                 )}
               </div>
@@ -688,27 +771,14 @@ const PostCard = ({
                   size="sm"
                   className="mb-0 rounded mt-2"
                   type="button"
-                  onClick={handleCreateComment}
+                  onClick={handleSubmitComment}
                   disabled={commentLoading}
                 >
                   {commentLoading ? "Posting..." : "Post"}
                 </Button>
               </form>
             </div>
-
-            {/* ============================================
-                CHANGED EMPTY COMMENTS
-            ============================================ */}
-
-            {!comments?.length && (
-              <div className="text-muted small mb-3">No comments yet</div>
-            )}
-
-            {/* ============================================
-                UNCHANGED COMMENT LIST
-            ============================================ */}
-
-            <ul className="comment-wrap list-unstyled">
+            {/* <ul className="comment-wrap list-unstyled">
               {comments?.map((comment: any) => (
                 <CommentItem
                   {...comment}
@@ -719,12 +789,17 @@ const PostCard = ({
                 />
               ))}
             </ul>
+            {comments && comments.length > 2 && (
+              <div className="mt-2">
+                <LoadContentButton name="Load more comments" />
+              </div>
+            )} */}
           </div>
         </Collapse>
       </CardBody>
-      <CardFooter className="border-0 pt-0">
+      {/* <CardFooter className="border-0 pt-0">
         {comments && <LoadContentButton name=" Load more comments" />}
-      </CardFooter>
+      </CardFooter> */}
     </Card>
   );
 };
@@ -751,9 +826,6 @@ const Feeds = ({
   const observerRef = useRef<IntersectionObserver | null>(null);
   const { user } = useAuthStore();
   const userId = user?.id;
-  //const params = useParams();
-  // Replace your fetchPosts() logic inside Feeds with this updated version
-  //const pageId = params?.pageId as string;
   // ✅ CHANGED: recursive comment like update
   const updateCommentLikeRecursively = (
     comments: CommentType[],
@@ -843,7 +915,17 @@ const Feeds = ({
       };
     });
   };
+  const createUser = (user: any): UserType => ({
+    id: user?.id || "",
+    name: user?.name || "",
+    avatar: user?.avatar || "/default-avatar.png",
 
+    mutualCount: 0,
+    role: "",
+    status: "offline",
+    lastMessage: "",
+    lastActivity: new Date(),
+  });
   const handleCreateComment = async (
     postId: string,
     content: string,
@@ -853,21 +935,24 @@ const Feeds = ({
       const response = await createComment(postId, content, parentCommentId);
 
       const newComment = response.result;
+      console.log("Created comment:", response);
       const formattedComment: CommentType = {
         id: newComment.id,
-        comment: newComment.content,
+        //comment: newComment.content,
+        comment: newComment.comment,
         postId: postId, // ✅ ADDED
 
-        socialUserId: user?.id || "", // ✅ ADDED
+        socialUserId: newComment.socialUser?.id || "", // ✅ ADDED
+        //socialUserId: user?.id || "", // ✅ ADDED
         createdAt: new Date(),
 
         likesCount: 0,
         isLiked: false,
 
         socialUser: {
-          id: user?.id || "",
-          name: user?.name || "",
-          avatar: user?.avatar || "/default-avatar.png",
+          id: newComment.socialUser?.id || "",
+          name: newComment.socialUser?.name || "",
+          avatar: newComment.socialUser?.avatar || "/default-avatar.png",
           mutualCount: 0,
           role: "",
           status: "offline",
@@ -928,7 +1013,8 @@ const Feeds = ({
             ...post,
 
             commentsCount: post.commentsCount + 1,
-            comments: [...(post.comments || []), formattedComment],
+            comments: [formattedComment, ...(post.comments || [])],
+            //comments: [...(post.comments || []), formattedComment],
             // comments: [
             //   ...(post.comments || []),
 
@@ -1126,26 +1212,7 @@ const Feeds = ({
       { autoClose: 5000 },
     );
   };
-  //   const load = async () => {
-  //     setPosts([]); // 🔥 reset old posts
-  //     setPage(1);
-  //     setHasMore(true);
-  //     await fetchPosts(); // fetch fresh data
-  //   };
-  //   load();
-  // }, [refreshFeed]); // 🔥 KEY CHANGE
-  // useEffect(() => {
-  //   const load = async () => {
-  //     await fetchPosts();
-  //   };
-  //   load();
-  // }, []);
-  // useEffect(() => {
-  //   if (hasFetched.current) return;
-  //   hasFetched.current = true;
-  //   fetchPosts();
-  // }, []);
-  // ✅ ADDED: infinite scroll
+
   useEffect(() => {
     const lastPost = document.querySelector("#feed-loader");
 
@@ -1203,27 +1270,5 @@ const Feeds = ({
       )}
     </>
   );
-
-  //   <>
-  //     {" "}
-  //     {posts?.map(
-  //       (post) => (
-  //         console.log("Rendering PostCard for post:", post),
-  //         (<PostCard {...post} key={post.id} />)
-  //       ),
-  //       // <PostCard {...post} key={post.id || idx} />
-  //     )}
-  //     {/* Pending ....
-  //     <SponsoredCard /> */}
-  //     {hasMore && (
-  //       <div className="text-center">
-  //         <Button onClick={fetchPosts} disabled={loading}>
-  //           {loading ? "Loading..." : "Load More"}
-  //         </Button>
-  //       </div>
-  //     )}
-  //     {/* <LoadMoreButton /> */}
-  //   </>
-  // );
 };
 export default Feeds;
