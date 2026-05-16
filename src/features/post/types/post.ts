@@ -1,3 +1,5 @@
+import { CommentType } from "@/types/data";
+
 export interface Post {
   id: string;
   content: string;
@@ -30,6 +32,9 @@ export interface PostFeedDto {
   commentsCount: number;
   user: FeedUserDto;
   pageDetails: FeedPageDto;
+  isLikedByCurrentUser?: boolean;
+  isLiked?: boolean;
+  comments?: CommentType[];
 }
 
 export interface PagedResult<T> {

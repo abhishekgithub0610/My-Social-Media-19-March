@@ -525,7 +525,7 @@ const PostCard = ({
           <li className="nav-item">
             <button
               type="button"
-              className={`btn ${isLiked ? "btn-primary" : "btn-secondary"}`}
+              className={`btn ${isLiked ? "text-primary" : "text-secondary"}`}
               onClick={() => onPostLike(id)}
             >
               <BsHandThumbsUpFill size={18} className="me-1" />
@@ -652,11 +652,23 @@ const PostCard = ({
           <div>
             <div className="d-flex mb-3 mt-3">
               <div className="avatar avatar-xs me-2">
-                <Image
-                  className="avatar-img rounded-circle"
-                  src={avatar12}
-                  alt="avatar12"
-                />
+                {socialUser?.avatar && (
+                  <span role="button">
+                    {" "}
+                    <Image
+                      className="avatar-img rounded-circle"
+                      src={
+                        socialUser?.avatar
+                          ? `http://localhost:7120/${socialUser.avatar}`
+                          : "/default-avatar.png"
+                      }
+                      alt="post-avatar"
+                      width={40}
+                      height={40}
+                      unoptimized
+                    />{" "}
+                  </span>
+                )}
               </div>
 
               <form
@@ -844,7 +856,9 @@ const Feeds = ({
       const formattedComment: CommentType = {
         id: newComment.id,
         comment: newComment.content,
+        postId: postId, // ✅ ADDED
 
+        socialUserId: user?.id || "", // ✅ ADDED
         createdAt: new Date(),
 
         likesCount: 0,
@@ -854,6 +868,11 @@ const Feeds = ({
           id: user?.id || "",
           name: user?.name || "",
           avatar: user?.avatar || "/default-avatar.png",
+          mutualCount: 0,
+          role: "",
+          status: "offline",
+          lastMessage: "",
+          lastActivity: new Date(),
         },
 
         children: [],
@@ -909,28 +928,28 @@ const Feeds = ({
             ...post,
 
             commentsCount: post.commentsCount + 1,
+            comments: [...(post.comments || []), formattedComment],
+            // comments: [
+            //   ...(post.comments || []),
 
-            comments: [
-              ...(post.comments || []),
+            //   {
+            //     id: newComment.id,
+            //     comment: newComment.content,
 
-              {
-                id: newComment.id,
-                comment: newComment.content,
+            //     createdAt: new Date(),
 
-                createdAt: new Date(),
+            //     likesCount: 0,
+            //     isLiked: false,
 
-                likesCount: 0,
-                isLiked: false,
+            //     socialUser: {
+            //       id: user?.id || "",
+            //       name: user?.name || "",
+            //       avatar: user?.avatar || "/default-avatar.png",
+            //     },
 
-                socialUser: {
-                  id: user?.id || "",
-                  name: user?.name || "",
-                  avatar: user?.avatar || "/default-avatar.png",
-                },
-
-                children: [],
-              },
-            ],
+            //     children: [],
+            //   },
+            // ],
           };
         }),
       );
@@ -967,6 +986,7 @@ const Feeds = ({
 
       const mappedPosts = res.result.items
         .map((p): SocialPostType | null => {
+          console.log("post dataaaaaa", p);
           const firstMedia = p.media?.[0];
           const imageUrl = firstMedia?.url;
 
@@ -1147,7 +1167,7 @@ const Feeds = ({
   }, [posts, hasMore, loading]);
   return (
     <>
-      {posts.length === 0 && (
+      {!loading && posts.length === 0 && (
         <div className="text-center">
           <h5>No posts available</h5>
         </div>

@@ -75,7 +75,7 @@ export type SocialPostType = {
     name: string;
     avatar?: string;
   };
-  IsLikedByCurrentUse?: boolean;
+  isLikedByCurrentUser?: boolean;
   isLiked?: boolean;
 };
 
