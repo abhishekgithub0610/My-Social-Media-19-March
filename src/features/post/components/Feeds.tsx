@@ -580,7 +580,19 @@ const PostCard = ({
             </button>
           
           </li> */}
-          <li className="nav-item ms-2">
+
+          <li className="nav-item">
+            <button
+              type="button"
+              className="nav-link btn btn-link p-0"
+              onClick={() => setShowComments((prev) => !prev)}
+            >
+              <BsChatFill size={18} className="pe-1" />
+              {showComments ? "Hide" : "Comments"} ({commentsCount})
+            </button>
+          </li>
+
+          {/* <li className="nav-item ms-2">
             <button
               type="button"
               className="btn btn-outline-secondary"
@@ -589,7 +601,7 @@ const PostCard = ({
               <BsChatFill size={18} className="me-1" />
               {showComments ? "Hide" : "Comments"} ({commentsCount})
             </button>
-          </li>
+          </li> */}
           {/* <li className="nav-item">
             <Link className="nav-link" href="#">
               {" "}
