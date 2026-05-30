@@ -67,3 +67,9 @@ export const createComment = async (
 
   return response.data;
 };
+
+export const getPostComments = async (postId: string) => {
+  const response = await baseClient.get(`/posts/${postId}/comments`);
+
+  return response.data;
+};
