@@ -14,7 +14,13 @@ import {
   createComment,
   getPostComments,
 } from "@/features/post/services/postApi";
-import { deletePost } from "@/features/post/services/postApi";
+import {
+  deletePost,
+  deleteComment,
+  reportPost,
+  reportComment,
+  ReportReason,
+} from "@/features/post/services/postApi";
 import {
   Button,
   Card,
@@ -27,6 +33,8 @@ import {
   DropdownMenu,
   DropdownToggle,
   Collapse, // ✅ ADDED
+  Modal,
+  Form,
 } from "react-bootstrap";
 import {
   BsBookmark,
@@ -72,11 +80,13 @@ const ActionMenu = ({
   postId,
   onDelete,
   isOwner, // ✅ added
+  onReport,
 }: {
   name?: string;
   postId: string;
   onDelete: (postId: string) => void;
   isOwner: boolean; // ✅ added
+  onReport: (postId: string) => void;
 }) => {
   return (
     <Dropdown>
@@ -134,13 +144,12 @@ const ActionMenu = ({
             </DropdownItem>
           </li>
         )}
-
         <li>
           <DropdownDivider />
         </li>
+
         <li>
-          <DropdownItem onClick={(e) => e.preventDefault()}>
-            {" "}
+          <DropdownItem onClick={() => onReport(postId)}>
             <BsFlag size={22} className="fa-fw pe-2" />
             Report post
           </DropdownItem>
@@ -149,7 +158,50 @@ const ActionMenu = ({
     </Dropdown>
   );
 };
+const CommentActionMenu = ({
+  commentId,
+  isOwner,
+  onDelete,
+  onReport,
+}: {
+  commentId: string;
+  isOwner: boolean;
+  onDelete: (commentId: string) => void;
+  onReport: (commentId: string) => void;
+}) => {
+  return (
+    <Dropdown>
+      <DropdownToggle
+        as="a"
+        className="text-secondary btn btn-secondary-soft-hover py-1 px-2 content-none cursor-pointer"
+      >
+        <BsThreeDots />
+      </DropdownToggle>
 
+      <DropdownMenu className="dropdown-menu-end">
+        {isOwner && (
+          <DropdownItem
+            onClick={() => {
+              if (confirm("Are you sure you want to delete this comment?")) {
+                onDelete(commentId);
+              }
+            }}
+          >
+            <BsSlashCircle className="me-2" />
+            Delete Comment
+          </DropdownItem>
+        )}
+
+        <DropdownDivider />
+
+        <DropdownItem onClick={() => onReport(commentId)}>
+          <BsFlag className="me-2" />
+          Report Comment
+        </DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+  );
+};
 interface CommentItemProps extends CommentType {
   onLike: (commentId: string) => void;
 
@@ -158,9 +210,11 @@ interface CommentItemProps extends CommentType {
     content: string,
     parentCommentId?: string,
   ) => Promise<void>;
-
+  onDeleteComment: (commentId: string) => Promise<void>;
+  currentUserId?: string;
   postId: string;
   isReply?: boolean;
+  onReportComment: (commentId: string) => Promise<void>;
 }
 const CommentItem = ({
   id,
@@ -175,13 +229,16 @@ const CommentItem = ({
   onReply,
   postId,
   isReply = false,
+  onDeleteComment,
+  currentUserId,
+  onReportComment,
 }: CommentItemProps) => {
   const [showReplyBox, setShowReplyBox] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
 
   const [replyText, setReplyText] = useState("");
   const [replyLoading, setReplyLoading] = useState(false);
-
+  const isOwner = currentUserId === socialUser?.id;
   // ✅ CHANGED: prevent multiple reply submissions
   const handleReply = async () => {
     if (!replyText.trim() || replyLoading) return;
@@ -224,12 +281,30 @@ const CommentItem = ({
             </div>
             <div className="ms-2">
               <div className="bg-light rounded-start-top-0 p-3 rounded">
-                <div className="d-flex justify-content-between">
+                {/* <div className="d-flex justify-content-between">
                   <h6 className="mb-1">
                     {" "}
                     <Link href="#"> {socialUser.name} </Link>
                   </h6>
                   <small className="ms-2">{timeSince(createdAt)}</small>
+                </div> */}
+
+                <div className="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h6 className="mb-1">
+                      <Link href="#">{socialUser.name}</Link>
+                    </h6>
+
+                    <small>{timeSince(createdAt)}</small>
+                  </div>
+
+                 {/* CHANGED */}
+<CommentActionMenu
+  commentId={String(id)}
+  isOwner={isOwner}
+  onDelete={onDeleteComment}
+  onReport={onReportComment}
+/>
                 </div>
                 <p className="small mb-0">{comment}</p>
                 {image && (
@@ -333,6 +408,9 @@ const CommentItem = ({
                     {...childComment}
                     onLike={onLike}
                     onReply={onReply}
+                    onDeleteComment={onDeleteComment}
+                    onReportComment={onReportComment}
+                    currentUserId={currentUserId}
                     postId={postId}
                     isReply={true}
                   />
@@ -360,6 +438,10 @@ interface PostCardProps extends SocialPostType {
 
   onDeletePost: (postId: string) => void;
   setPosts: React.Dispatch<React.SetStateAction<SocialPostType[]>>;
+  onDeleteComment: (commentId: string) => void;
+  onReportComment: (commentId: string) => void;
+
+  onReportPost: (postId: string) => void;
 }
 const PostCard = ({
   id,
@@ -380,6 +462,9 @@ const PostCard = ({
   onCreateComment,
   onDeletePost,
   setPosts,
+  onDeleteComment,
+  onReportComment,
+  onReportPost,
 }: PostCardProps) => {
   const { user } = useAuthStore(); // ✅ FIXED
 
@@ -407,28 +492,28 @@ const PostCard = ({
   };
 
   // ✅ ADDED: recursive reply insertion
-  const addReplyRecursively = (
-    comments: CommentType[],
-    parentCommentId: string,
-    newReply: CommentType,
-  ): CommentType[] => {
-    return comments.map((comment) => {
-      if (String(comment.id) === parentCommentId) {
-        return {
-          ...comment,
-          children: [newReply, ...(comment.children || [])],
-          //children: [...(comment.children || []), newReply],
-        };
-      }
+  // const addReplyRecursively = (
+  //   comments: CommentType[],
+  //   parentCommentId: string,
+  //   newReply: CommentType,
+  // ): CommentType[] => {
+  //   return comments.map((comment) => {
+  //     if (String(comment.id) === parentCommentId) {
+  //       return {
+  //         ...comment,
+  //         children: [newReply, ...(comment.children || [])],
+  //         //children: [...(comment.children || []), newReply],
+  //       };
+  //     }
 
-      return {
-        ...comment,
-        children: comment.children
-          ? addReplyRecursively(comment.children, parentCommentId, newReply)
-          : [],
-      };
-    });
-  };
+  //     return {
+  //       ...comment,
+  //       children: comment.children
+  //         ? addReplyRecursively(comment.children, parentCommentId, newReply)
+  //         : [],
+  //     };
+  //   });
+  // };
   // ✅ CHANGED
   const handleSubmitComment = async () => {
     if (!commentText.trim() || commentLoading) return;
@@ -446,6 +531,7 @@ const PostCard = ({
       setCommentLoading(false);
     }
   };
+
 
   const handleToggleComments = async () => {
     // close comments
@@ -569,6 +655,8 @@ const PostCard = ({
                   />{" "}
                 </span>
               )}
+
+              )} */}
             </div>
 
             <div>
@@ -587,11 +675,12 @@ const PostCard = ({
               <p className="mb-0 small">Web Developer at StackBros</p>
             </div>
           </div>
-          <ActionMenu
+         <ActionMenu
             name={socialUser?.name}
             postId={id}
             onDelete={onDeletePost}
-            isOwner={isOwner} // ✅ FIXED
+            onReport={onReportPost}
+            isOwner={isOwner}
           />
         </div>
       </CardHeader>
@@ -627,7 +716,9 @@ const PostCard = ({
             </button>
           </li>
 
+
           <li className="nav-item">
+    
             <button
               type="button"
               className="nav-link btn btn-link p-0"
@@ -645,6 +736,7 @@ const PostCard = ({
             </button>
           </li>
 
+         
           <Dropdown className="ms-auto">
             <DropdownToggle
               as="a"
@@ -677,7 +769,7 @@ const PostCard = ({
             </DropdownMenu>
           </Dropdown>
         </ul>
-
+       
         <Collapse in={showComments}>
           <div>
             {/* ============================================
@@ -708,6 +800,9 @@ const PostCard = ({
                     key={comment.id}
                     onLike={onCommentLike}
                     onReply={onCreateComment}
+                    onDeleteComment={onDeleteComment}
+                    onReportComment={onReportComment}
+                    currentUserId={user?.id}
                     postId={id}
                   />
                 ))}
@@ -715,6 +810,8 @@ const PostCard = ({
             </div>
             <div className="d-flex mb-3 mt-3">
               <div className="avatar avatar-xs me-2">
+               
+
                 {user?.avatar && (
                   <span role="button">
                     <Image
@@ -757,6 +854,7 @@ const PostCard = ({
                 </Button>
               </form>
             </div>
+           
           </div>
         </Collapse>
       </CardBody>
@@ -789,6 +887,21 @@ const Feeds = ({
   const observerRef = useRef<IntersectionObserver | null>(null);
   const { user } = useAuthStore();
   const userId = user?.id;
+
+  const [showReportModal, setShowReportModal] = useState(false);
+
+  const [reportTargetId, setReportTargetId] = useState("");
+
+  const [reportTargetType, setReportTargetType] = useState<"post" | "comment">(
+    "post",
+  );
+
+  const [selectedReason, setSelectedReason] = useState<ReportReason>(
+    ReportReason.Spam,
+  );
+
+  const [description, setDescription] = useState("");
+
   // ✅ CHANGED: recursive comment like update
   const updateCommentLikeRecursively = (
     comments: CommentType[],
@@ -879,6 +992,91 @@ const Feeds = ({
     });
   };
 
+  const removeCommentRecursively = (
+    comments: CommentType[],
+    commentId: string,
+  ): CommentType[] => {
+    return comments
+      .filter((c) => String(c.id) !== commentId)
+      .map((c) => ({
+        ...c,
+        children: c.children
+          ? removeCommentRecursively(c.children, commentId)
+          : [],
+      }));
+  };
+
+  // ✅ ADDED: count comments + replies recursively
+  const countComments = (comments: CommentType[]): number =>
+    comments.reduce(
+      (count, comment) => count + 1 + countComments(comment.children || []),
+      0,
+    );
+  const commentExists = (comments: CommentType[], id: string): boolean => {
+    return comments.some(
+      (c) => String(c.id) === id || commentExists(c.children || [], id),
+    );
+  };
+  // ✅ CHANGED
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      await deleteComment(commentId);
+      setPosts((prev) =>
+        prev.map((post) => {
+          if (!commentExists(post.comments || [], commentId)) {
+            return post;
+          }
+
+          const updatedComments = removeCommentRecursively(
+            post.comments || [],
+            commentId,
+          );
+
+          return {
+            ...post,
+            comments: updatedComments,
+            commentsCount: countComments(updatedComments),
+          };
+        }),
+      );
+
+      toast.success("Comment deleted");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete comment");
+    }
+  };
+
+  const handleReportPost = (postId: string) => {
+    setReportTargetId(postId);
+    setReportTargetType("post");
+    setShowReportModal(true);
+  };
+
+  const handleReportComment = (commentId: string) => {
+    setReportTargetId(commentId);
+    setReportTargetType("comment");
+    setShowReportModal(true);
+  };
+  const submitReport = async () => {
+    try {
+      if (reportTargetType === "post") {
+        await reportPost(reportTargetId, selectedReason, description);
+      } else {
+        await reportComment(reportTargetId, selectedReason, description);
+      }
+
+      toast.success("Report submitted");
+
+      setShowReportModal(false);
+      setDescription("");
+      setSelectedReason(ReportReason.Spam);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to submit report");
+    }
+  };
+
   const handleCreateComment = async (
     postId: string,
     content: string,
@@ -930,6 +1128,8 @@ const Feeds = ({
                 parentCommentId,
                 formattedComment,
               ),
+
+             
             };
           }
           return {
@@ -937,6 +1137,7 @@ const Feeds = ({
 
             commentsCount: post.commentsCount + 1,
             comments: [formattedComment, ...(post.comments || [])],
+           
           };
         }),
       );
@@ -1158,6 +1359,9 @@ const Feeds = ({
               onPostLike={handlePostLike}
               onCreateComment={handleCreateComment}
               onDeletePost={handleDeletePost}
+              onDeleteComment={handleDeleteComment}
+              onReportComment={handleReportComment}
+              onReportPost={handleReportPost}
             />
           </motion.div>
         ))}
@@ -1170,6 +1374,55 @@ const Feeds = ({
           {loading && <span>Loading more posts...</span>}
         </div>
       )}
+      <Modal show={showReportModal} onHide={() => setShowReportModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Report Content</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <Form.Group>
+            <Form.Label>Reason</Form.Label>
+
+            <Form.Select
+              value={selectedReason}
+              onChange={(e) =>
+                setSelectedReason(Number(e.target.value) as ReportReason)
+              }
+            >
+              <option value={ReportReason.Spam}>Spam</option>
+              <option value={ReportReason.Harassment}>Harassment</option>
+              <option value={ReportReason.HateSpeech}>Hate Speech</option>
+              <option value={ReportReason.Violence}>Violence</option>
+              <option value={ReportReason.SexualContent}>Sexual Content</option>
+              <option value={ReportReason.Misinformation}>
+                Misinformation
+              </option>
+              <option value={ReportReason.Other}>Other</option>
+            </Form.Select>
+          </Form.Group>
+
+          <Form.Group className="mt-3">
+            <Form.Label>Description (optional)</Form.Label>
+
+            <Form.Control
+              as="textarea"
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </Form.Group>
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowReportModal(false)}>
+            Cancel
+          </Button>
+
+          <Button variant="danger" onClick={submitReport}>
+            Submit Report
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };

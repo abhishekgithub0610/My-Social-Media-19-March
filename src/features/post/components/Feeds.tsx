@@ -14,7 +14,13 @@ import {
   createComment,
   getPostComments,
 } from "@/features/post/services/postApi";
-import { deletePost, deleteComment } from "@/features/post/services/postApi";
+import {
+  deletePost,
+  deleteComment,
+  reportPost,
+  reportComment,
+  ReportReason,
+} from "@/features/post/services/postApi";
 import {
   Button,
   Card,
@@ -27,6 +33,8 @@ import {
   DropdownMenu,
   DropdownToggle,
   Collapse, // ✅ ADDED
+  Modal,
+  Form,
 } from "react-bootstrap";
 import {
   BsBookmark,
@@ -72,11 +80,13 @@ const ActionMenu = ({
   postId,
   onDelete,
   isOwner, // ✅ added
+  onReport,
 }: {
   name?: string;
   postId: string;
   onDelete: (postId: string) => void;
   isOwner: boolean; // ✅ added
+  onReport: (postId: string) => void;
 }) => {
   return (
     <Dropdown>
@@ -134,13 +144,12 @@ const ActionMenu = ({
             </DropdownItem>
           </li>
         )}
-
         <li>
           <DropdownDivider />
         </li>
+
         <li>
-          <DropdownItem onClick={(e) => e.preventDefault()}>
-            {" "}
+          <DropdownItem onClick={() => onReport(postId)}>
             <BsFlag size={22} className="fa-fw pe-2" />
             Report post
           </DropdownItem>
@@ -153,10 +162,12 @@ const CommentActionMenu = ({
   commentId,
   isOwner,
   onDelete,
+  onReport,
 }: {
   commentId: string;
   isOwner: boolean;
   onDelete: (commentId: string) => void;
+  onReport: (commentId: string) => void;
 }) => {
   return (
     <Dropdown>
@@ -183,7 +194,7 @@ const CommentActionMenu = ({
 
         <DropdownDivider />
 
-        <DropdownItem>
+        <DropdownItem onClick={() => onReport(commentId)}>
           <BsFlag className="me-2" />
           Report Comment
         </DropdownItem>
@@ -199,11 +210,11 @@ interface CommentItemProps extends CommentType {
     content: string,
     parentCommentId?: string,
   ) => Promise<void>;
-  onDeleteComment: (commentId: string) => void;
-
+  onDeleteComment: (commentId: string) => Promise<void>;
   currentUserId?: string;
   postId: string;
   isReply?: boolean;
+  onReportComment: (commentId: string) => Promise<void>;
 }
 const CommentItem = ({
   id,
@@ -220,6 +231,7 @@ const CommentItem = ({
   isReply = false,
   onDeleteComment,
   currentUserId,
+  onReportComment,
 }: CommentItemProps) => {
   const [showReplyBox, setShowReplyBox] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
@@ -290,6 +302,7 @@ const CommentItem = ({
                     commentId={String(id)}
                     isOwner={isOwner}
                     onDelete={onDeleteComment}
+                    onReport={onReportComment}
                   />
                 </div>
                 <p className="small mb-0">{comment}</p>
@@ -389,21 +402,13 @@ const CommentItem = ({
             <div>
               <ul className="comment-item-nested list-unstyled mt-3">
                 {children?.map((childComment) => (
-                  // <CommentItem
-                  //   key={childComment.id}
-                  //   {...childComment}
-                  //   onLike={onLike}
-                  //   onReply={onReply}
-                  //   postId={postId}
-                  //   isReply={true}
-                  // />
-
                   <CommentItem
                     key={childComment.id}
                     {...childComment}
                     onLike={onLike}
                     onReply={onReply}
                     onDeleteComment={onDeleteComment}
+                    onReportComment={onReportComment}
                     currentUserId={currentUserId}
                     postId={postId}
                     isReply={true}
@@ -433,6 +438,9 @@ interface PostCardProps extends SocialPostType {
   onDeletePost: (postId: string) => void;
   setPosts: React.Dispatch<React.SetStateAction<SocialPostType[]>>;
   onDeleteComment: (commentId: string) => void;
+  onReportComment: (commentId: string) => void;
+
+  onReportPost: (postId: string) => void;
 }
 const PostCard = ({
   id,
@@ -454,6 +462,8 @@ const PostCard = ({
   onDeletePost,
   setPosts,
   onDeleteComment,
+  onReportComment,
+  onReportPost,
 }: PostCardProps) => {
   const { user } = useAuthStore(); // ✅ FIXED
 
@@ -497,9 +507,12 @@ const PostCard = ({
 
       return {
         ...comment,
+        // children: comment.children
+        //   ? addReplyRecursively(comment.children, parentCommentId, newReply)
+        //   : [],
         children: comment.children
           ? addReplyRecursively(comment.children, parentCommentId, newReply)
-          : [],
+          : comment.children,
       };
     });
   };
@@ -698,7 +711,8 @@ const PostCard = ({
             name={socialUser?.name}
             postId={id}
             onDelete={onDeletePost}
-            isOwner={isOwner} // ✅ FIXED
+            onReport={onReportPost}
+            isOwner={isOwner}
           />
         </div>
       </CardHeader>
@@ -899,20 +913,13 @@ const PostCard = ({
             >
               <ul className="comment-wrap list-unstyled mb-0">
                 {comments?.map((comment: CommentType) => (
-                  // <CommentItem
-                  //   {...comment}
-                  //   key={comment.id}
-                  //   onLike={onCommentLike}
-                  //   onReply={onCreateComment}
-                  //   postId={id}
-                  // />
-
                   <CommentItem
                     {...comment}
                     key={comment.id}
                     onLike={onCommentLike}
                     onReply={onCreateComment}
                     onDeleteComment={onDeleteComment}
+                    onReportComment={onReportComment}
                     currentUserId={user?.id}
                     postId={id}
                   />
@@ -1029,6 +1036,21 @@ const Feeds = ({
   const observerRef = useRef<IntersectionObserver | null>(null);
   const { user } = useAuthStore();
   const userId = user?.id;
+
+  const [showReportModal, setShowReportModal] = useState(false);
+
+  const [reportTargetId, setReportTargetId] = useState("");
+
+  const [reportTargetType, setReportTargetType] = useState<"post" | "comment">(
+    "post",
+  );
+
+  const [selectedReason, setSelectedReason] = useState<ReportReason>(
+    ReportReason.Spam,
+  );
+  const [reportLoading, setReportLoading] = useState(false);
+  const [description, setDescription] = useState("");
+
   // ✅ CHANGED: recursive comment like update
   const updateCommentLikeRecursively = (
     comments: CommentType[],
@@ -1112,9 +1134,12 @@ const Feeds = ({
 
       return {
         ...comment,
+        // children: comment.children
+        //   ? addReplyRecursively(comment.children, parentCommentId, reply)
+        //   : [],
         children: comment.children
           ? addReplyRecursively(comment.children, parentCommentId, reply)
-          : [],
+          : comment.children,
       };
     });
   };
@@ -1173,6 +1198,68 @@ const Feeds = ({
       toast.error("Failed to delete comment");
     }
   };
+  const closeReportModal = () => {
+    setShowReportModal(false);
+    setDescription("");
+    setSelectedReason(ReportReason.Spam);
+    setReportTargetId("");
+  };
+  const handleReportPost = (postId: string) => {
+    setReportTargetId(postId);
+    setReportTargetType("post");
+    setShowReportModal(true);
+  };
+
+  const handleReportComment = (commentId: string) => {
+    setReportTargetId(commentId);
+    setReportTargetType("comment");
+    setShowReportModal(true);
+  };
+  const submitReport = async () => {
+    if (!reportTargetId || reportLoading) return;
+
+    try {
+      setReportLoading(true);
+
+      if (reportTargetType === "post") {
+        await reportPost(reportTargetId, selectedReason, description);
+      } else {
+        await reportComment(reportTargetId, selectedReason, description);
+      }
+
+      toast.success("Report submitted");
+
+      closeReportModal();
+    } catch (error) {
+      console.error(error);
+
+      toast.error("Failed to submit report");
+    } finally {
+      setReportLoading(false);
+    }
+  };
+  // const handleReportPost = async (postId: string) => {
+  //   try {
+  //     await reportPost(postId, ReportReason.Other);
+  //     toast.success("Post reported successfully");
+  //   } catch (error) {
+  //     console.error(error);
+
+  //     toast.error("Failed to report post");
+  //   }
+  // };
+
+  // const handleReportComment = async (commentId: string) => {
+  //   try {
+  //     await reportComment(commentId, ReportReason.Other);
+
+  //     toast.success("Comment reported successfully");
+  //   } catch (error) {
+  //     console.error(error);
+
+  //     toast.error("Failed to report comment");
+  //   }
+  // };
   // const createUser = (user: any): UserType => ({
   //   id: user?.id || "",
   //   name: user?.name || "",
@@ -1516,6 +1603,8 @@ const Feeds = ({
               onCreateComment={handleCreateComment}
               onDeletePost={handleDeletePost}
               onDeleteComment={handleDeleteComment}
+              onReportComment={handleReportComment}
+              onReportPost={handleReportPost}
             />
           </motion.div>
         ))}
@@ -1528,6 +1617,58 @@ const Feeds = ({
           {loading && <span>Loading more posts...</span>}
         </div>
       )}
+      <Modal show={showReportModal} onHide={closeReportModal}>
+        {" "}
+        <Modal.Header closeButton>
+          <Modal.Title>Report Content</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group>
+            <Form.Label>Reason</Form.Label>
+
+            <Form.Select
+              value={selectedReason}
+              onChange={(e) =>
+                setSelectedReason(Number(e.target.value) as ReportReason)
+              }
+            >
+              <option value={ReportReason.Spam}>Spam</option>
+              <option value={ReportReason.Harassment}>Harassment</option>
+              <option value={ReportReason.HateSpeech}>Hate Speech</option>
+              <option value={ReportReason.Violence}>Violence</option>
+              <option value={ReportReason.SexualContent}>Sexual Content</option>
+              <option value={ReportReason.Misinformation}>
+                Misinformation
+              </option>
+              <option value={ReportReason.Other}>Other</option>
+            </Form.Select>
+          </Form.Group>
+
+          <Form.Group className="mt-3">
+            <Form.Label>Description (optional)</Form.Label>
+
+            <Form.Control
+              as="textarea"
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={closeReportModal}>
+            Cancel
+          </Button>
+
+          <Button
+            variant="danger"
+            onClick={submitReport}
+            disabled={reportLoading}
+          >
+            {reportLoading ? "Submitting..." : "Submit Report"}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };
