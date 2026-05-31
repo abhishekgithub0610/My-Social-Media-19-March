@@ -14,7 +14,7 @@ import {
   createComment,
   getPostComments,
 } from "@/features/post/services/postApi";
-import { deletePost } from "@/features/post/services/postApi";
+import { deletePost, deleteComment } from "@/features/post/services/postApi";
 import {
   Button,
   Card,
@@ -149,7 +149,48 @@ const ActionMenu = ({
     </Dropdown>
   );
 };
+const CommentActionMenu = ({
+  commentId,
+  isOwner,
+  onDelete,
+}: {
+  commentId: string;
+  isOwner: boolean;
+  onDelete: (commentId: string) => void;
+}) => {
+  return (
+    <Dropdown>
+      <DropdownToggle
+        as="a"
+        className="text-secondary btn btn-secondary-soft-hover py-1 px-2 content-none cursor-pointer"
+      >
+        <BsThreeDots />
+      </DropdownToggle>
 
+      <DropdownMenu className="dropdown-menu-end">
+        {isOwner && (
+          <DropdownItem
+            onClick={() => {
+              if (confirm("Are you sure you want to delete this comment?")) {
+                onDelete(commentId);
+              }
+            }}
+          >
+            <BsSlashCircle className="me-2" />
+            Delete Comment
+          </DropdownItem>
+        )}
+
+        <DropdownDivider />
+
+        <DropdownItem>
+          <BsFlag className="me-2" />
+          Report Comment
+        </DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+  );
+};
 interface CommentItemProps extends CommentType {
   onLike: (commentId: string) => void;
 
@@ -158,7 +199,9 @@ interface CommentItemProps extends CommentType {
     content: string,
     parentCommentId?: string,
   ) => Promise<void>;
+  onDeleteComment: (commentId: string) => void;
 
+  currentUserId?: string;
   postId: string;
   isReply?: boolean;
 }
@@ -175,13 +218,15 @@ const CommentItem = ({
   onReply,
   postId,
   isReply = false,
+  onDeleteComment,
+  currentUserId,
 }: CommentItemProps) => {
   const [showReplyBox, setShowReplyBox] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
 
   const [replyText, setReplyText] = useState("");
   const [replyLoading, setReplyLoading] = useState(false);
-
+  const isOwner = currentUserId === socialUser?.id;
   // ✅ CHANGED: prevent multiple reply submissions
   const handleReply = async () => {
     if (!replyText.trim() || replyLoading) return;
@@ -224,12 +269,28 @@ const CommentItem = ({
             </div>
             <div className="ms-2">
               <div className="bg-light rounded-start-top-0 p-3 rounded">
-                <div className="d-flex justify-content-between">
+                {/* <div className="d-flex justify-content-between">
                   <h6 className="mb-1">
                     {" "}
                     <Link href="#"> {socialUser.name} </Link>
                   </h6>
                   <small className="ms-2">{timeSince(createdAt)}</small>
+                </div> */}
+
+                <div className="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h6 className="mb-1">
+                      <Link href="#">{socialUser.name}</Link>
+                    </h6>
+
+                    <small>{timeSince(createdAt)}</small>
+                  </div>
+
+                  <CommentActionMenu
+                    commentId={String(id)}
+                    isOwner={isOwner}
+                    onDelete={onDeleteComment}
+                  />
                 </div>
                 <p className="small mb-0">{comment}</p>
                 {image && (
@@ -328,11 +389,22 @@ const CommentItem = ({
             <div>
               <ul className="comment-item-nested list-unstyled mt-3">
                 {children?.map((childComment) => (
+                  // <CommentItem
+                  //   key={childComment.id}
+                  //   {...childComment}
+                  //   onLike={onLike}
+                  //   onReply={onReply}
+                  //   postId={postId}
+                  //   isReply={true}
+                  // />
+
                   <CommentItem
                     key={childComment.id}
                     {...childComment}
                     onLike={onLike}
                     onReply={onReply}
+                    onDeleteComment={onDeleteComment}
+                    currentUserId={currentUserId}
                     postId={postId}
                     isReply={true}
                   />
@@ -360,6 +432,7 @@ interface PostCardProps extends SocialPostType {
 
   onDeletePost: (postId: string) => void;
   setPosts: React.Dispatch<React.SetStateAction<SocialPostType[]>>;
+  onDeleteComment: (commentId: string) => void;
 }
 const PostCard = ({
   id,
@@ -380,6 +453,7 @@ const PostCard = ({
   onCreateComment,
   onDeletePost,
   setPosts,
+  onDeleteComment,
 }: PostCardProps) => {
   const { user } = useAuthStore(); // ✅ FIXED
 
@@ -825,11 +899,21 @@ const PostCard = ({
             >
               <ul className="comment-wrap list-unstyled mb-0">
                 {comments?.map((comment: CommentType) => (
+                  // <CommentItem
+                  //   {...comment}
+                  //   key={comment.id}
+                  //   onLike={onCommentLike}
+                  //   onReply={onCreateComment}
+                  //   postId={id}
+                  // />
+
                   <CommentItem
                     {...comment}
                     key={comment.id}
                     onLike={onCommentLike}
                     onReply={onCreateComment}
+                    onDeleteComment={onDeleteComment}
+                    currentUserId={user?.id}
                     postId={id}
                   />
                 ))}
@@ -1033,6 +1117,61 @@ const Feeds = ({
           : [],
       };
     });
+  };
+
+  const removeCommentRecursively = (
+    comments: CommentType[],
+    commentId: string,
+  ): CommentType[] => {
+    return comments
+      .filter((c) => String(c.id) !== commentId)
+      .map((c) => ({
+        ...c,
+        children: c.children
+          ? removeCommentRecursively(c.children, commentId)
+          : [],
+      }));
+  };
+
+  // ✅ ADDED: count comments + replies recursively
+  const countComments = (comments: CommentType[]): number =>
+    comments.reduce(
+      (count, comment) => count + 1 + countComments(comment.children || []),
+      0,
+    );
+  const commentExists = (comments: CommentType[], id: string): boolean => {
+    return comments.some(
+      (c) => String(c.id) === id || commentExists(c.children || [], id),
+    );
+  };
+  // ✅ CHANGED
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      await deleteComment(commentId);
+      setPosts((prev) =>
+        prev.map((post) => {
+          if (!commentExists(post.comments || [], commentId)) {
+            return post;
+          }
+
+          const updatedComments = removeCommentRecursively(
+            post.comments || [],
+            commentId,
+          );
+
+          return {
+            ...post,
+            comments: updatedComments,
+            commentsCount: countComments(updatedComments),
+          };
+        }),
+      );
+
+      toast.success("Comment deleted");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete comment");
+    }
   };
   // const createUser = (user: any): UserType => ({
   //   id: user?.id || "",
@@ -1376,6 +1515,7 @@ const Feeds = ({
               onPostLike={handlePostLike}
               onCreateComment={handleCreateComment}
               onDeletePost={handleDeletePost}
+              onDeleteComment={handleDeleteComment}
             />
           </motion.div>
         ))}

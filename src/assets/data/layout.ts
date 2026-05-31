@@ -130,7 +130,7 @@ export const settingPanelLinksData: ProfilePanelLink[] = [
   {
     image: placement,
     name: "Orders and Subscriptions",
-    link: "/settings/password",
+    link: "/settings/OrdersAndSubscriptions",
   },
   // {
   //   image: handshakeImg,

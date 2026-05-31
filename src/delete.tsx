@@ -12,6 +12,7 @@ import {
   toggleCommentLike,
   togglePostLike,
   createComment,
+  getPostComments,
 } from "@/features/post/services/postApi";
 import { deletePost } from "@/features/post/services/postApi";
 import {
@@ -250,7 +251,10 @@ const CommentItem = ({
                   >
                     {isLiked ? "Unlike" : "Like"} ({likesCount})
                   </button>
-               
+                  {/* <Link className="nav-link" href="#">
+                    {" "}
+                    Like ({likesCount})
+                  </Link> */}
                 </li>
                 {!isReply && (
                   <li className="nav-item">
@@ -263,7 +267,16 @@ const CommentItem = ({
                     </button>
                   </li>
                 )}
-              
+                {/* <li className="nav-item">
+                  <button
+                    type="button"
+                    className="btn btn-link nav-link p-0"
+                    onClick={() => setShowReplyBox((prev) => !prev)}
+                  >
+                    Reply
+                  </button>
+          
+                </li> */}
                 {/* ✅ CHANGED: safer optional chaining */}
                 {!!children?.length && (
                   <li className="nav-item ms-2">
@@ -346,6 +359,7 @@ interface PostCardProps extends SocialPostType {
   ) => Promise<void>;
 
   onDeletePost: (postId: string) => void;
+  setPosts: React.Dispatch<React.SetStateAction<SocialPostType[]>>;
 }
 const PostCard = ({
   id,
@@ -365,6 +379,7 @@ const PostCard = ({
   onPostLike,
   onCreateComment,
   onDeletePost,
+  setPosts,
 }: PostCardProps) => {
   const { user } = useAuthStore(); // ✅ FIXED
 
@@ -373,6 +388,7 @@ const PostCard = ({
   const [commentLoading, setCommentLoading] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [showComments, setShowComments] = useState(false);
+  const [commentsLoading, setCommentsLoading] = useState(false);
   const commentsContainerRef = useRef<HTMLDivElement | null>(null);
   // ✅ CHANGED: avoid hydration/SSR issue
   const shareUrl =
@@ -430,6 +446,97 @@ const PostCard = ({
       setCommentLoading(false);
     }
   };
+
+  const handleToggleComments = async () => {
+    // close comments
+    if (showComments) {
+      setShowComments(false);
+      return;
+    }
+
+    // already loaded comments
+    if (comments && comments.length > 0) {
+      setShowComments(true);
+      return;
+    }
+
+    try {
+      setCommentsLoading(true);
+
+      const response = await getPostComments(id);
+
+      const fetchedComments: CommentType[] = response.result.map(
+        (comment: any) => ({
+          id: comment.id,
+
+          comment: comment.comment,
+
+          postId: id,
+
+          socialUserId: comment.socialUser?.id || "",
+
+          createdAt: new Date(comment.createdAt),
+
+          likesCount: comment.likesCount,
+
+          isLiked: comment.isLiked,
+
+          socialUser: {
+            id: comment.socialUser?.id || "",
+
+            name: comment.socialUser?.name || "",
+
+            avatar: comment.socialUser?.avatar || "/default-avatar.png",
+          },
+
+          children:
+            comment.children?.map((reply: any) => ({
+              id: reply.id,
+
+              comment: reply.comment,
+
+              postId: id,
+
+              socialUserId: reply.socialUser?.id || "",
+
+              createdAt: new Date(reply.createdAt),
+
+              likesCount: reply.likesCount,
+
+              isLiked: reply.isLiked,
+
+              socialUser: {
+                id: reply.socialUser?.id || "",
+
+                name: reply.socialUser?.name || "",
+
+                avatar: reply.socialUser?.avatar || "/default-avatar.png",
+              },
+
+              children: [],
+            })) || [],
+        }),
+      );
+
+      setPosts((prev: SocialPostType[]) =>
+        prev.map((post) =>
+          post.id === id
+            ? {
+                ...post,
+                comments: fetchedComments,
+              }
+            : post,
+        ),
+      );
+
+      setShowComments(true);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setCommentsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (showComments && commentsContainerRef.current) {
       commentsContainerRef.current.scrollTop =
@@ -524,10 +631,17 @@ const PostCard = ({
             <button
               type="button"
               className="nav-link btn btn-link p-0"
-              onClick={() => setShowComments((prev) => !prev)}
+              onClick={handleToggleComments}
+              disabled={commentsLoading}
             >
               <BsChatFill size={18} className="pe-1" />
-              {showComments ? "Hide" : "Comments"} ({commentsCount})
+              {commentsLoading
+                ? "Loading..."
+                : showComments
+                  ? "Hide"
+                  : "Comments"}{" "}
+              ({commentsCount})
+              {/* {showComments ? "Hide" : "Comments"} ({commentsCount}) */}
             </button>
           </li>
 
@@ -563,7 +677,7 @@ const PostCard = ({
             </DropdownMenu>
           </Dropdown>
         </ul>
-       
+
         <Collapse in={showComments}>
           <div>
             {/* ============================================
@@ -601,8 +715,6 @@ const PostCard = ({
             </div>
             <div className="d-flex mb-3 mt-3">
               <div className="avatar avatar-xs me-2">
-             
-
                 {user?.avatar && (
                   <span role="button">
                     <Image
@@ -645,10 +757,12 @@ const PostCard = ({
                 </Button>
               </form>
             </div>
-        
           </div>
         </Collapse>
       </CardBody>
+      {/* <CardFooter className="border-0 pt-0">
+        {comments && <LoadContentButton name=" Load more comments" />}
+      </CardFooter> */}
     </Card>
   );
 };
@@ -764,7 +878,7 @@ const Feeds = ({
       };
     });
   };
- 
+
   const handleCreateComment = async (
     postId: string,
     content: string,
@@ -816,7 +930,6 @@ const Feeds = ({
                 parentCommentId,
                 formattedComment,
               ),
-
             };
           }
           return {
@@ -824,7 +937,6 @@ const Feeds = ({
 
             commentsCount: post.commentsCount + 1,
             comments: [formattedComment, ...(post.comments || [])],
-         
           };
         }),
       );
@@ -880,7 +992,8 @@ const Feeds = ({
             id: p.id,
             caption: p.content,
             isLiked: p.isLikedByCurrentUser,
-            comments: p.comments || [],
+            //comments: p.comments || [],
+            comments: [],
             image:
               imageUrl && imageUrl.startsWith("http")
                 ? imageUrl
@@ -1040,6 +1153,7 @@ const Feeds = ({
           >
             <PostCard
               {...post}
+              setPosts={setPosts}
               onCommentLike={handleCommentLike}
               onPostLike={handlePostLike}
               onCreateComment={handleCreateComment}
@@ -1060,19 +1174,3 @@ const Feeds = ({
   );
 };
 export default Feeds;
-export const getFeed = async (
-  page: number = 1,
-  pageSize: number = 10,
-  pageId?: string,
-): Promise<ApiResponseResult<PagedResult<PostFeedDto>>> => {
-  let url = `/posts/feed?page=${page}&pageSize=${pageSize}`;
-
-  if (pageId) {
-    url += `&pageId=${pageId}`;
-  }
-
-  const response = await baseClient.get(url);
-
-  return response.data;
-};
-okay so modify it to not bring comments in getFeed api , but separately with a new Api 

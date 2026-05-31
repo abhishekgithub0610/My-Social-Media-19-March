@@ -73,3 +73,9 @@ export const getPostComments = async (postId: string) => {
 
   return response.data;
 };
+
+export const deleteComment = async (commentId: string) => {
+  const response = await baseClient.delete(`/posts/comments/${commentId}`);
+
+  return response.data;
+};
