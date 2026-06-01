@@ -1,15 +1,43 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // images: {
+  //   remotePatterns: [
+  //     {
+  //       protocol: "http",
+  //       hostname: "localhost",
+  //       port: "7120",
+  //       pathname: "/**",
+  //     },
+  //   ],
+  // },
   images: {
-    domains: ["localhost"], // ✅ SIMPLE + RELIABLE
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "**",
+      },
+    ],
   },
   typescript: {
     ignoreBuildErrors: true,
   },
 };
 
-export default nextConfig; // ✅ IMPORTANT
+export default nextConfig;
+
+// import type { NextConfig } from "next";
+
+// const nextConfig: NextConfig = {
+//   images: {
+//     domains: ["localhost"], // ✅ SIMPLE + RELIABLE
+//   },
+//   typescript: {
+//     ignoreBuildErrors: true,
+//   },
+// };
+
+// export default nextConfig; // ✅ IMPORTANT
 
 // const nextConfig: NextConfig = {
 //   images: {

@@ -210,11 +210,11 @@ interface CommentItemProps extends CommentType {
     content: string,
     parentCommentId?: string,
   ) => Promise<void>;
-  onDeleteComment: (commentId: string) => Promise<void>;
+  onDeleteComment: (commentId: string) => void;
   currentUserId?: string;
   postId: string;
   isReply?: boolean;
-  onReportComment: (commentId: string) => Promise<void>;
+  onReportComment: (commentId: string) => void;
 }
 const CommentItem = ({
   id,
