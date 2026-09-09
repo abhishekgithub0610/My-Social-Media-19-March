@@ -86,68 +86,16 @@ export const useLogin = () => {
         },
         user.accessToken,
       );
-      // setUser(
-      //   {
-      //     id: data.result.result.id,
-      //     email: data.result.result.email,
-      //     role: data.result.result.role,
-      //     name: data.result.result.name,
-      //     avatar: data.result.result.avatar,
-      //   },
-      //   data.result.result.accessToken, // token separate
-      // );
 
-      // // onSuccess: (data) => {
-      // //   setUser(
-      // //     {
-      // //       id: data.id,
-      // //       email: data.email,
-      // //       role: data.role,
-      // //       name: data.name, // optional
-      // //       avatar: data.avatar, // optional
-      // //     },
-      // //     data.accessToken, // ✅ token separate
-      // //   );
-      // //   console.log("LOGIN RESPONSE:", data); // 👈 ADD THIS
-      // ✅ CHECK Zustand state immediately
       const state = useAuthStore.getState();
 
       setTimeout(() => {
         router.push("/feed");
       }, 0);
     },
-    // // onSuccess: (data) => {
-    // //   // ✅ store in Zustand (NOT localStorage)
-    // //   setUser({
-    // //     id: data.id,
-    // //     email: data.email,
-    // //     role: data.role,
-    // //     accessToken: data.accessToken,
-    // //   });
-
-    // //   router.push("/feed");
-    // // },
 
     onError: (error: any) => {
       console.error("Login failed:", error?.response?.data || error);
     },
   });
 };
-// export const useLogin = () => {
-//   const router = useRouter();
-
-//   return useMutation({
-//     mutationFn: (data: LoginRequest) => loginUser(data),
-
-//     onSuccess: (data) => {
-//       // ⚠️ TEMP: localStorage (we'll improve later)
-//       localStorage.setItem("token", data.token);
-
-//       router.push("/feed");
-//     },
-
-//     onError: (error) => {
-//       console.error("Login failed", error);
-//     },
-//   });
-// };

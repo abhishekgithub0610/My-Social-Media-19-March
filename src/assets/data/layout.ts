@@ -148,3 +148,16 @@ export const settingPanelLinksData: ProfilePanelLink[] = [
     link: "/settings/close-account",
   },
 ];
+
+export const coursePanelLinksData: ProfilePanelLink[] = [
+  {
+    image: personImg,
+    name: "Courses",
+    link: "/settings/account",
+  },
+  {
+    image: shieldImg,
+    name: "Your Courses",
+    link: "/settings/password",
+  },
+];

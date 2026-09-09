@@ -4,7 +4,7 @@ import Image from "next/image";
 
 //import { useLayoutContext } from '@/context/useLayoutContext'
 
-import logo from "@/assets/images/logo.svg";
+import logo from "@/assets/images/tenor.gif";
 
 const LogoBox = () => {
   //const { theme } = useLayoutContext();
@@ -33,8 +33,8 @@ const LogoBox = () => {
       <Image
         src={logo}
         alt="logo"
-        height={36}
-        width={36}
+        height={56}
+        width={56}
         className="navbar-brand-item"
       />
     </Link>

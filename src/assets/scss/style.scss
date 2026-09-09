@@ -7,9 +7,8 @@
 @import "variables";
 @import "variables-dark";
 @import "user-variables";
-
 @import "bootstrap/scss/bootstrap";
-
+@import "glightbox/dist/css/glightbox.css";
 // -----------------------------
 // 🔥 Utilities (KEEP)
 // -----------------------------
@@ -64,6 +63,133 @@
 .comment-scroll-container::-webkit-scrollbar-track {
   background: transparent;
 }
+
+
+
+// gltchbox full screen image code
+
+/* =========================================================
+   GLIGHTBOX
+   ========================================================= */
+
+.glightbox-container {
+  z-index: 999999 !important;
+}
+
+.goverlay {
+  z-index: 999998 !important;
+  background: rgba(0, 0, 0, 0.92) !important;
+}
+
+/* Image */
+.gslide-image img {
+  max-width: 92vw !important;
+  max-height: 88vh !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
+}
+
+
+/* =========================================================
+   CLOSE BUTTON
+   ========================================================= */
+
+.gclose {
+  z-index: 1000002 !important;
+
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+
+  width: 46px !important;
+  height: 46px !important;
+
+  top: 20px !important;
+  right: 20px !important;
+
+  background: rgba(0, 0, 0, 0.65) !important;
+  border-radius: 50% !important;
+
+  cursor: pointer !important;
+}
+
+.gclose svg {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+
+/* =========================================================
+   PREVIOUS / NEXT
+   ========================================================= */
+
+.gprev,
+.gnext {
+  z-index: 1000001 !important;
+
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+
+  width: 48px !important;
+  height: 48px !important;
+
+  background: rgba(0, 0, 0, 0.65) !important;
+  border-radius: 50% !important;
+
+  cursor: pointer !important;
+}
+
+.gprev {
+  left: 20px !important;
+}
+
+.gnext {
+  right: 20px !important;
+}
+
+.gprev svg,
+.gnext svg {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  .gclose {
+    top: 12px !important;
+    right: 12px !important;
+
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  .gprev,
+  .gnext {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  .gprev {
+    left: 10px !important;
+  }
+
+  .gnext {
+    right: 10px !important;
+  }
+
+  .gslide-image img {
+    max-width: 96vw !important;
+    max-height: 82vh !important;
+  }
+}
+// gltchbox full screen image code ends
 
 ////// previous scss file
 

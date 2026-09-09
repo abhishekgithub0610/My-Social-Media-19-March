@@ -17,13 +17,13 @@ export const PROFILE_MENU_ITEMS: MenuItemType[] = [
   {
     key: "shopping",
     label: "Shop",
-    url: "/profile/shopping",
+    url: "/shop",
     parentKey: "pages-profile",
   },
   {
     key: "courses",
     label: "Courses",
-    url: "/profile/courses",
+    url: "/courses",
     parentKey: "pages-profile",
   },
   // {

@@ -3,11 +3,13 @@ import { Inter } from "next/font/google";
 import Image from "next/image";
 import NextTopLoader from "nextjs-toploader";
 import Footer from "@/shared/components/layout/Footer";
-import logo from "@/assets/images/logo.svg";
+//import logo from "@/assets/images/logo.svg";
+import logo from "@/assets/images/tenor.gif";
 import { DEFAULT_PAGE_TITLE } from "@/shared/constants/appConstants";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@/assets/scss/style.scss";
 import AppProvidersWrapper from "@/shared/components/wrappers/AppProvidersWrapper";
+import GLightboxProvider from "@/providers/GLightboxProvider";
 // const AppProvidersWrapper = dynamic(
 //   () => import("@/shared/components/wrappers/AppProvidersWrapper"),
 //   { ssr: false },
@@ -65,10 +67,10 @@ export default function RootLayout({
         <div id="splash-screen">
           <Image
             alt="Logo"
-            width={355}
-            height={83}
+            width={555}
+            height={123}
             src={logo}
-            style={{ height: "10%", width: "auto" }}
+            style={{ height: "20%", width: "auto" }}
             priority
           />
         </div>
@@ -79,6 +81,8 @@ export default function RootLayout({
         {/* App */}
         <div id="__next_splash">
           <AppProvidersWrapper>
+            <GLightboxProvider />
+
             {children}
             <Footer />
           </AppProvidersWrapper>

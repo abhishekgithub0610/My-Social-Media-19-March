@@ -25,7 +25,6 @@ baseClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 
 let isRefreshing = false;
 
-// ❌ replace `any[]`
 type FailedRequest = {
   resolve: (token: string) => void;
   reject: (error: AxiosError) => void;

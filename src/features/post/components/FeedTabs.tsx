@@ -20,7 +20,7 @@ const FeedTabs = ({ selectedTab, setSelectedTab }: FeedTabsProps) => {
           }`}
           onClick={() => setSelectedTab("page")}
         >
-          Page
+          Pages
         </button>
 
         <button

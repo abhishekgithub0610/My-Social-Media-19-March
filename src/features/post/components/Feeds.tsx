@@ -720,14 +720,21 @@ const PostCard = ({
         {caption && <p>{caption}</p>}
 
         {image && !isVideo && (
-          <Image
-            className="card-img"
-            src={image}
-            alt="Post"
-            width={500}
-            height={500}
-            unoptimized
-          />
+          <a
+            href={typeof image === "string" ? image : image?.src}
+            className="glightbox d-block"
+            data-gallery="feed-posts"
+            data-glightbox="type: image;"
+          >
+            <Image
+              className="card-img"
+              src={image}
+              alt="Post"
+              width={500}
+              height={500}
+              unoptimized
+            />
+          </a>
         )}
 
         {isVideo && image && (
@@ -747,29 +754,8 @@ const PostCard = ({
               {isLiked ? "Liked" : "Like"} ({likesCount})
             </button>
           </li>
-          {/* <li className="nav-item">
-            <button
-              type="button"
-              className="btn btn-link nav-link active p-0"
-              onClick={() => onPostLike(id)}
-            >
-              <BsHandThumbsUpFill size={18} className="pe-1" />
-              <span
-                className={isLiked ? "text-primary fw-bold" : "text-secondary"}
-              >
-                {isLiked ? "Liked" : "Like"} ({likesCount})
-              </span>{" "}
-            </button>
-          
-          </li> */}
 
           <li className="nav-item">
-            {/* <button
-              type="button"
-              className="nav-link btn btn-link p-0"
-              onClick={() => setShowComments((prev) => !prev)}
-            > */}
-
             <button
               type="button"
               className="nav-link btn btn-link p-0"
@@ -787,23 +773,6 @@ const PostCard = ({
             </button>
           </li>
 
-          {/* <li className="nav-item ms-2">
-            <button
-              type="button"
-              className="btn btn-outline-secondary"
-              onClick={() => setShowComments((prev) => !prev)}
-            >
-              <BsChatFill size={18} className="me-1" />
-              {showComments ? "Hide" : "Comments"} ({commentsCount})
-            </button>
-          </li> */}
-          {/* <li className="nav-item">
-            <Link className="nav-link" href="#">
-              {" "}
-              <BsChatFill size={18} className="pe-1" />
-              Comments ({commentsCount})
-            </Link>
-          </li> */}
           <Dropdown className="ms-auto">
             <DropdownToggle
               as="a"
@@ -836,58 +805,7 @@ const PostCard = ({
             </DropdownMenu>
           </Dropdown>
         </ul>
-        {/* {comments && (
-          <>
-            <div className="d-flex mb-3">
-              <div className="avatar avatar-xs me-2">
-                <span role="button">
-                  {" "}
-                  <Image
-                    className="avatar-img rounded-circle"
-                    src={avatar12}
-                    alt="avatar12"
-                  />{" "}
-                </span>
-              </div>
-              <form
-                className="w-100 position-relative"
-                onSubmit={(e) => e.preventDefault()}
-              >
-                {" "}
-                <textarea
-                  className="form-control pe-4 bg-light"
-                  rows={1}
-                  placeholder="Add a comment..."
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                />
-                <Button
-                  variant="primary"
-                  size="sm"
-                  className="mb-0 rounded mt-2"
-                  type="button"
-                  onClick={handleCreateComment}
-                  disabled={commentLoading}
-                >
-                  {commentLoading ? "Posting..." : "Post"}
-                </Button>
-              </form>
-             
-            </div>
 
-            <ul className="comment-wrap list-unstyled">
-              {comments.map((comment) => (
-                <CommentItem
-                  {...comment}
-                  key={comment.id}
-                  onLike={onCommentLike}
-                  onReply={onCreateComment}
-                  postId={id}
-                />
-              ))}
-            </ul>
-          </>
-        )} */}
         <Collapse in={showComments}>
           <div>
             {/* ============================================
@@ -928,24 +846,6 @@ const PostCard = ({
             </div>
             <div className="d-flex mb-3 mt-3">
               <div className="avatar avatar-xs me-2">
-                {/* {socialUser?.avatar && (
-                  <span role="button">
-                    {" "}
-                    <Image
-                      className="avatar-img rounded-circle"
-                      src={
-                        socialUser?.avatar
-                          ? `http://localhost:7120/${socialUser.avatar}`
-                          : "/default-avatar.png"
-                      }
-                      alt="post-avatar"
-                      width={40}
-                      height={40}
-                      unoptimized
-                    />{" "}
-                  </span>
-                )} */}
-
                 {user?.avatar && (
                   <span role="button">
                     <Image
@@ -988,28 +888,9 @@ const PostCard = ({
                 </Button>
               </form>
             </div>
-            {/* <ul className="comment-wrap list-unstyled">
-              {comments?.map((comment: any) => (
-                <CommentItem
-                  {...comment}
-                  key={comment.id}
-                  onLike={onCommentLike}
-                  onReply={onCreateComment}
-                  postId={id}
-                />
-              ))}
-            </ul>
-            {comments && comments.length > 2 && (
-              <div className="mt-2">
-                <LoadContentButton name="Load more comments" />
-              </div>
-            )} */}
           </div>
         </Collapse>
       </CardBody>
-      {/* <CardFooter className="border-0 pt-0">
-        {comments && <LoadContentButton name=" Load more comments" />}
-      </CardFooter> */}
     </Card>
   );
 };
@@ -1238,8 +1119,7 @@ const Feeds = ({
       setReportLoading(false);
     }
   };
-  // const handleReportPost = async (postId: string) => {
-  //   try {
+
   //     await reportPost(postId, ReportReason.Other);
   //     toast.success("Post reported successfully");
   //   } catch (error) {
@@ -1322,36 +1202,6 @@ const Feeds = ({
                 parentCommentId,
                 formattedComment,
               ),
-
-              // comments: post.comments?.map((comment) =>
-              //   String(comment.id) === parentCommentId
-              //     ? {
-              //         ...comment,
-
-              //         children: [
-              //           ...(comment.children || []),
-
-              //           {
-              //             id: newComment.id,
-              //             comment: newComment.content,
-
-              //             createdAt: new Date(),
-
-              //             likesCount: 0,
-              //             isLiked: false,
-
-              //             socialUser: {
-              //               id: user?.id || "",
-              //               name: user?.name || "",
-              //               avatar: user?.avatar || "/default-avatar.png",
-              //             },
-
-              //             children: [],
-              //           },
-              //         ],
-              //       }
-              //     : comment,
-              // ),
             };
           }
           return {
@@ -1359,28 +1209,6 @@ const Feeds = ({
 
             commentsCount: post.commentsCount + 1,
             comments: [formattedComment, ...(post.comments || [])],
-            //comments: [...(post.comments || []), formattedComment],
-            // comments: [
-            //   ...(post.comments || []),
-
-            //   {
-            //     id: newComment.id,
-            //     comment: newComment.content,
-
-            //     createdAt: new Date(),
-
-            //     likesCount: 0,
-            //     isLiked: false,
-
-            //     socialUser: {
-            //       id: user?.id || "",
-            //       name: user?.name || "",
-            //       avatar: user?.avatar || "/default-avatar.png",
-            //     },
-
-            //     children: [],
-            //   },
-            // ],
           };
         }),
       );
