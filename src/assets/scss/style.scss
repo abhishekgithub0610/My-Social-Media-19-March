@@ -189,6 +189,297 @@
     max-height: 82vh !important;
   }
 }
+
+// facebook image viewer css 
+
+.facebook-image-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 2000000;
+
+  background: rgba(0, 0, 0, 0.94);
+
+  display: flex;
+  flex-direction: column;
+
+  color: #fff;
+}
+
+.facebook-image-viewer__topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 70px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 20px;
+
+  z-index: 20;
+
+  pointer-events: none;
+}
+
+.facebook-image-viewer__counter {
+  font-size: 15px;
+  font-weight: 500;
+
+  padding: 8px 14px;
+
+  border-radius: 20px;
+
+  background: rgba(0, 0, 0, 0.45);
+
+  pointer-events: auto;
+}
+
+.facebook-image-viewer__close {
+  width: 48px;
+  height: 48px;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.12);
+
+  color: #fff;
+
+  font-size: 34px;
+  line-height: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+
+  pointer-events: auto;
+}
+
+.facebook-image-viewer__close:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: scale(1.05);
+}
+
+.facebook-image-viewer__backdrop {
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+.facebook-image-viewer__image-frame {
+  position: relative;
+
+  width: min(92vw, 1500px);
+  height: 86vh;
+
+  overflow: hidden;
+
+  cursor: grab;
+
+  touch-action: none;
+
+  user-select: none;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.facebook-image-viewer__image-frame--dragging {
+  cursor: grabbing;
+}
+
+.facebook-image-viewer__image {
+  object-fit: contain;
+
+  user-select: none;
+  -webkit-user-drag: none;
+
+  pointer-events: none;
+
+  transform-origin: center center;
+
+  transition: transform 0.2s ease;
+}
+
+.facebook-image-viewer__image-frame--dragging
+  .facebook-image-viewer__image {
+  transition: none;
+}
+
+.facebook-image-viewer__navigation {
+  position: absolute;
+
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 54px;
+  height: 54px;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.14);
+
+  color: #fff;
+
+  font-size: 48px;
+  line-height: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  z-index: 15;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.facebook-image-viewer__navigation:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.facebook-image-viewer__navigation--previous {
+  left: 24px;
+}
+
+.facebook-image-viewer__navigation--next {
+  right: 24px;
+}
+
+.facebook-image-viewer__toolbar {
+  position: absolute;
+
+  left: 50%;
+  bottom: 25px;
+
+  transform: translateX(-50%);
+
+  display: flex;
+  align-items: center;
+
+  gap: 4px;
+
+  padding: 6px;
+
+  border-radius: 28px;
+
+  background: rgba(30, 30, 30, 0.85);
+
+  backdrop-filter: blur(12px);
+
+  z-index: 20;
+}
+
+.facebook-image-viewer__toolbar button {
+  width: 44px;
+  height: 44px;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: transparent;
+
+  color: #fff;
+
+  font-size: 25px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition: background 0.2s ease;
+}
+
+.facebook-image-viewer__toolbar button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.facebook-image-viewer__toolbar button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.facebook-image-viewer__toolbar
+  .facebook-image-viewer__zoom-value {
+  width: auto;
+
+  min-width: 58px;
+
+  border-radius: 22px;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Mobile */
+@media (max-width: 767.98px) {
+  .facebook-image-viewer__topbar {
+    height: 60px;
+    padding: 0 12px;
+  }
+
+  .facebook-image-viewer__close {
+    width: 42px;
+    height: 42px;
+
+    font-size: 30px;
+  }
+
+  .facebook-image-viewer__counter {
+    font-size: 13px;
+  }
+
+  .facebook-image-viewer__image-frame {
+    width: 100vw;
+    height: 82vh;
+  }
+
+  .facebook-image-viewer__navigation {
+    width: 42px;
+    height: 42px;
+
+    font-size: 38px;
+  }
+
+  .facebook-image-viewer__navigation--previous {
+    left: 10px;
+  }
+
+  .facebook-image-viewer__navigation--next {
+    right: 10px;
+  }
+
+  .facebook-image-viewer__toolbar {
+    bottom: 18px;
+  }
+}
+
+// facebook image viewer css ends
+
+
+
+
 // gltchbox full screen image code ends
 
 ////// previous scss file

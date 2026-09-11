@@ -3,9 +3,13 @@ import Link from "next/link";
 import type { CommentType, SocialPostType } from "@/types/data"; // to be deleted/confirmed
 import { timeSince } from "@/utils/date"; // to be deleted/confirmed
 import Image from "next/image";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { toast } from "react-toastify";
 import collaborationImg from "@/assets/images/collaboration.png";
+import FacebookImageViewer, {
+  type ViewerImage,
+} from "@/shared/components/ui/FacebookImageViewer";
+
 import {
   getFeed,
   getUserFeed,
@@ -53,14 +57,13 @@ import {
   BsFacebook,
   BsXCircle,
   BsThreeDots,
-  BsChevronDown, // ✅ ADDED
-  BsChevronUp, // ✅ ADDED
+  BsChevronDown,
+  BsChevronUp,
 } from "react-icons/bs";
 import LoadContentButton from "@/LoadContentButton"; //to be deleted/confirmed
 import avatar12 from "@/assets/images/avatar/12.jpg";
 import { useAuthStore } from "@/features/account/store/authStore";
 import { AnimatePresence, motion } from "framer-motion";
-// ✅ ADDED: lightweight user type for posts/comments
 export type SocialUserType = {
   id: string;
   name: string;
@@ -74,7 +77,30 @@ export type SocialUserType = {
   lastActivity?: Date;
 };
 // Local helper for creating comment user safely
+type ApiCommentUser = {
+  id?: string;
+  name?: string;
+  avatar?: string;
+};
 
+type ApiReply = {
+  id: string;
+  comment: string;
+  createdAt: string;
+  likesCount: number;
+  isLiked: boolean;
+  socialUser?: ApiCommentUser;
+};
+
+type ApiComment = {
+  id: string;
+  comment: string;
+  createdAt: string;
+  likesCount: number;
+  isLiked: boolean;
+  socialUser?: ApiCommentUser;
+  children?: ApiReply[];
+};
 const ActionMenu = ({
   name,
   postId,
@@ -239,7 +265,6 @@ const CommentItem = ({
   const [replyText, setReplyText] = useState("");
   const [replyLoading, setReplyLoading] = useState(false);
   const isOwner = currentUserId === socialUser?.id;
-  // ✅ CHANGED: prevent multiple reply submissions
   const handleReply = async () => {
     if (!replyText.trim() || replyLoading) return;
 
@@ -281,14 +306,6 @@ const CommentItem = ({
             </div>
             <div className="ms-2">
               <div className="bg-light rounded-start-top-0 p-3 rounded">
-                {/* <div className="d-flex justify-content-between">
-                  <h6 className="mb-1">
-                    {" "}
-                    <Link href="#"> {socialUser.name} </Link>
-                  </h6>
-                  <small className="ms-2">{timeSince(createdAt)}</small>
-                </div> */}
-
                 <div className="d-flex justify-content-between align-items-start">
                   <div>
                     <h6 className="mb-1">
@@ -325,10 +342,6 @@ const CommentItem = ({
                   >
                     {isLiked ? "Unlike" : "Like"} ({likesCount})
                   </button>
-                  {/* <Link className="nav-link" href="#">
-                    {" "}
-                    Like ({likesCount})
-                  </Link> */}
                 </li>
                 {!isReply && (
                   <li className="nav-item">
@@ -341,17 +354,7 @@ const CommentItem = ({
                     </button>
                   </li>
                 )}
-                {/* <li className="nav-item">
-                  <button
-                    type="button"
-                    className="btn btn-link nav-link p-0"
-                    onClick={() => setShowReplyBox((prev) => !prev)}
-                  >
-                    Reply
-                  </button>
-          
-                </li> */}
-                {/* ✅ CHANGED: safer optional chaining */}
+
                 {!!children?.length && (
                   <li className="nav-item ms-2">
                     <button
@@ -417,9 +420,6 @@ const CommentItem = ({
               </ul>
             </div>
           </Collapse>
-          {/* {children && children.length >= 2 && (
-            <LoadContentButton name="Load more replies" className="mb-3 ms-5" />
-          )} */}
         </>
       )}
     </li>
@@ -441,6 +441,11 @@ interface PostCardProps extends SocialPostType {
   onReportComment: (commentId: string) => void;
 
   onReportPost: (postId: string) => void;
+  // ============================================
+  // callback used to open Facebook-style
+  // image viewer for this post.
+  // ============================================
+  onOpenImage: (postId: string) => void;
 }
 const PostCard = ({
   id,
@@ -464,17 +469,17 @@ const PostCard = ({
   onDeleteComment,
   onReportComment,
   onReportPost,
+  onOpenImage,
 }: PostCardProps) => {
   const { user } = useAuthStore(); // ✅ FIXED
 
   const isOwner = user?.id === socialUser?.id;
-  // ✅ ADDED
   const [commentLoading, setCommentLoading] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [showComments, setShowComments] = useState(false);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const commentsContainerRef = useRef<HTMLDivElement | null>(null);
-  // ✅ CHANGED: avoid hydration/SSR issue
+  // avoid hydration/SSR issue
   const shareUrl =
     typeof window !== "undefined" ? `${window.location.origin}/post/${id}` : "";
   const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareUrl)}`;
@@ -490,7 +495,7 @@ const PostCard = ({
     }
   };
 
-  // ✅ ADDED: recursive reply insertion
+  // recursive reply insertion
   const addReplyRecursively = (
     comments: CommentType[],
     parentCommentId: string,
@@ -501,22 +506,17 @@ const PostCard = ({
         return {
           ...comment,
           children: [newReply, ...(comment.children || [])],
-          //children: [...(comment.children || []), newReply],
         };
       }
 
       return {
         ...comment,
-        // children: comment.children
-        //   ? addReplyRecursively(comment.children, parentCommentId, newReply)
-        //   : [],
         children: comment.children
           ? addReplyRecursively(comment.children, parentCommentId, newReply)
           : comment.children,
       };
     });
   };
-  // ✅ CHANGED
   const handleSubmitComment = async () => {
     if (!commentText.trim() || commentLoading) return;
 
@@ -533,22 +533,6 @@ const PostCard = ({
       setCommentLoading(false);
     }
   };
-  // const handleCreateComment = async () => {
-  //   if (!commentText.trim() || commentLoading) return;
-
-  //   try {
-  //     setCommentLoading(true);
-
-  //     await onCreateComment(id, commentText);
-
-  //     setCommentText("");
-  //     setShowComments(true); // ✅ ADDED
-  //   } catch (error) {
-  //     console.error(error);
-  //   } finally {
-  //     setCommentLoading(false);
-  //   }
-  // };
 
   const handleToggleComments = async () => {
     // close comments
@@ -568,58 +552,59 @@ const PostCard = ({
 
       const response = await getPostComments(id);
 
-      const fetchedComments: CommentType[] = response.result.map(
-        (comment: any) => ({
-          id: comment.id,
+      const fetchedComments: CommentType[] = (
+        response.result as ApiComment[]
+      ).map((comment) => ({
+        id: comment.id,
 
-          comment: comment.comment,
+        comment: comment.comment,
 
-          postId: id,
+        postId: id,
 
-          socialUserId: comment.socialUser?.id || "",
+        socialUserId: comment.socialUser?.id || "",
 
-          createdAt: new Date(comment.createdAt),
+        createdAt: new Date(comment.createdAt),
 
-          likesCount: comment.likesCount,
+        likesCount: comment.likesCount,
 
-          isLiked: comment.isLiked,
+        isLiked: comment.isLiked,
 
-          socialUser: {
-            id: comment.socialUser?.id || "",
+        socialUser: {
+          id: comment.socialUser?.id || "",
 
-            name: comment.socialUser?.name || "",
+          name: comment.socialUser?.name || "",
 
-            avatar: comment.socialUser?.avatar || "/default-avatar.png",
-          },
+          avatar: comment.socialUser?.avatar || "/default-avatar.png",
+        },
 
-          children:
-            comment.children?.map((reply: any) => ({
-              id: reply.id,
+        children:
+          //comment.children?.map((reply: any) => ({
+          comment.children?.map((reply: ApiReply) => ({
+            id: reply.id,
 
-              comment: reply.comment,
+            comment: reply.comment,
 
-              postId: id,
+            postId: id,
 
-              socialUserId: reply.socialUser?.id || "",
+            socialUserId: reply.socialUser?.id || "",
 
-              createdAt: new Date(reply.createdAt),
+            createdAt: new Date(reply.createdAt),
 
-              likesCount: reply.likesCount,
+            likesCount: reply.likesCount,
 
-              isLiked: reply.isLiked,
+            isLiked: reply.isLiked,
 
-              socialUser: {
-                id: reply.socialUser?.id || "",
+            socialUser: {
+              id: reply.socialUser?.id || "",
 
-                name: reply.socialUser?.name || "",
+              name: reply.socialUser?.name || "",
 
-                avatar: reply.socialUser?.avatar || "/default-avatar.png",
-              },
+              avatar: reply.socialUser?.avatar || "/default-avatar.png",
+            },
 
-              children: [],
-            })) || [],
-        }),
-      );
+            children: [],
+          })) || [],
+      }));
 
       setPosts((prev: SocialPostType[]) =>
         prev.map((post) =>
@@ -672,23 +657,6 @@ const PostCard = ({
                   />{" "}
                 </span>
               )}
-
-              {/* {user?.avatar && (
-                <span role="button">
-                  <Image
-                    className="avatar-img rounded-circle"
-                    src={
-                      user.avatar.startsWith("http")
-                        ? user.avatar
-                        : `http://localhost:7120/${user.avatar}`
-                    }
-                    alt="user-avatar"
-                    width={40}
-                    height={40}
-                    unoptimized
-                  />
-                </span>
-              )} */}
             </div>
 
             <div>
@@ -722,9 +690,11 @@ const PostCard = ({
         {image && !isVideo && (
           <a
             href={typeof image === "string" ? image : image?.src}
-            className="glightbox d-block"
-            data-gallery="feed-posts"
-            data-glightbox="type: image;"
+            className="d-block"
+            onClick={(event) => {
+              event.preventDefault();
+              onOpenImage(id);
+            }}
           >
             <Image
               className="card-img"
@@ -769,7 +739,6 @@ const PostCard = ({
                   ? "Hide"
                   : "Comments"}{" "}
               ({commentsCount})
-              {/* {showComments ? "Hide" : "Comments"} ({commentsCount}) */}
             </button>
           </li>
 
@@ -809,7 +778,7 @@ const PostCard = ({
         <Collapse in={showComments}>
           <div>
             {/* ============================================
-                CHANGED EMPTY COMMENTS
+                EMPTY COMMENTS
             ============================================ */}
 
             {!comments?.length && (
@@ -817,7 +786,7 @@ const PostCard = ({
             )}
 
             {/* ============================================
-                UNCHANGED COMMENT LIST
+                COMMENT LIST
             ============================================ */}
 
             <div
@@ -901,7 +870,6 @@ type FeedsProps = {
   feedType?: "page" | "friends";
   pageId?: string;
 };
-// const Feeds = () => {
 const Feeds = ({
   posts,
   setPosts,
@@ -909,14 +877,51 @@ const Feeds = ({
   feedType,
   pageId,
 }: FeedsProps) => {
-  //const [posts, setPosts] = useState<SocialPostType[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
-  // ✅ ADDED
   const observerRef = useRef<IntersectionObserver | null>(null);
   const { user } = useAuthStore();
   const userId = user?.id;
+
+  // ============================================
+  // stores the post ID currently opened
+  // in the Facebook-style image viewer.
+  // ============================================
+  const [viewerImageId, setViewerImageId] = useState<string | null>(null);
+
+  // ============================================
+  // derive viewer images directly from
+  // the posts state. This also works naturally
+  // with infinite scrolling.
+  // ============================================
+  const viewerImages = useMemo<ViewerImage[]>(() => {
+    return posts.flatMap((post) => {
+      if (!post.image || post.isVideo) {
+        return [];
+      }
+
+      const src = typeof post.image === "string" ? post.image : post.image.src;
+
+      return [
+        {
+          id: post.id,
+          src,
+          alt: "Post image",
+        },
+      ];
+    });
+  }, [posts]);
+
+  const viewerActiveIndex = viewerImages.findIndex(
+    (image) => image.id === viewerImageId,
+  );
+
+  const isViewerOpen = viewerImageId !== null && viewerActiveIndex !== -1;
+
+  const handleOpenImage = (postId: string): void => {
+    setViewerImageId(postId);
+  };
 
   const [showReportModal, setShowReportModal] = useState(false);
 
@@ -932,7 +937,7 @@ const Feeds = ({
   const [reportLoading, setReportLoading] = useState(false);
   const [description, setDescription] = useState("");
 
-  // ✅ CHANGED: recursive comment like update
+  // recursive comment like update
   const updateCommentLikeRecursively = (
     comments: CommentType[],
     commentId: string,
@@ -959,7 +964,6 @@ const Feeds = ({
     });
   };
 
-  // ✅ CHANGED
   const handleCommentLike = async (commentId: string) => {
     try {
       await toggleCommentLike(commentId);
@@ -1039,7 +1043,7 @@ const Feeds = ({
       }));
   };
 
-  // ✅ ADDED: count comments + replies recursively
+  // count comments + replies recursively
   const countComments = (comments: CommentType[]): number =>
     comments.reduce(
       (count, comment) => count + 1 + countComments(comment.children || []),
@@ -1050,7 +1054,6 @@ const Feeds = ({
       (c) => String(c.id) === id || commentExists(c.children || [], id),
     );
   };
-  // ✅ CHANGED
   const handleDeleteComment = async (commentId: string) => {
     try {
       await deleteComment(commentId);
@@ -1264,7 +1267,6 @@ const Feeds = ({
             id: p.id,
             caption: p.content,
             isLiked: p.isLikedByCurrentUser,
-            //comments: p.comments || [],
             comments: [],
             image:
               imageUrl && imageUrl.startsWith("http")
@@ -1298,16 +1300,14 @@ const Feeds = ({
         const existingIds = new Set(prev.map((p) => p.id));
         const newPosts = mappedPosts.filter((p) => p && !existingIds.has(p.id));
         return currentPage === 1 ? mappedPosts : [...prev, ...newPosts];
-        //return [...prev, ...newPosts];
       });
 
       setHasMore(res.result.hasMore);
       setPage(currentPage + 1);
-      //setPage((prev) => prev + 1);
     } catch (err) {
       console.error(err);
     } finally {
-      // ✅ CHANGED: always reset loading
+      //  always reset loading
       setLoading(false);
     }
   };
@@ -1433,17 +1433,38 @@ const Feeds = ({
               onDeleteComment={handleDeleteComment}
               onReportComment={handleReportComment}
               onReportPost={handleReportPost}
+              // ============================================
+              //  opens the custom Facebook-style viewer.
+              // ============================================
+              onOpenImage={handleOpenImage}
             />
           </motion.div>
         ))}
       </AnimatePresence>
 
-      {/* ✅ CHANGED: infinite scroll loader */}
+      {/* infinite scroll loader */}
 
       {hasMore && (
         <div id="feed-loader" className="text-center py-3">
           {loading && <span>Loading more posts...</span>}
         </div>
+      )}
+      {/* ============================================
+          Facebook-style fullscreen image viewer.
+          ============================================ */}
+      {isViewerOpen && (
+        <FacebookImageViewer
+          images={viewerImages}
+          activeIndex={viewerActiveIndex}
+          onClose={() => setViewerImageId(null)}
+          onNavigate={(index) => {
+            const nextImage = viewerImages[index];
+
+            if (nextImage) {
+              setViewerImageId(nextImage.id);
+            }
+          }}
+        />
       )}
       <Modal show={showReportModal} onHide={closeReportModal}>
         {" "}
