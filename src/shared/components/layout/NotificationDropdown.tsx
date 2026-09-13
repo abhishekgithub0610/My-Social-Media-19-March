@@ -36,8 +36,6 @@ const mockNotifications: Notification[] = [
   },
 ];
 const NotificationDropdown = () => {
-  //const allNotifications = await getAllNotifications();
-
   return (
     <Dropdown
       as="li"
@@ -66,7 +64,6 @@ const NotificationDropdown = () => {
           <CardBody className="p-0">
             <ul className="list-group list-group-flush list-unstyled p-2">
               {mockNotifications.slice(0, 4).map((notification) => (
-                // {mockNotifications.slice(0, 4).map((notification, idx) => (
                 <li key={notification.id}>
                   <div
                     className={clsx(
@@ -95,13 +92,6 @@ const NotificationDropdown = () => {
                             {notification.textAvatar?.text}
                           </span>
                         </div>
-                        // // <div
-                        // //   className={`avatar-img rounded-circle bg-${notification.textAvatar?.variant}`}
-                        // // >
-                        // //   <span className="text-white position-absolute top-50 start-50 translate-middle fw-bold">
-                        // //     {notification.textAvatar?.text}
-                        // //   </span>
-                        // // </div>
                       )}
                     </div>
                     <div className="mx-sm-3 my-2 my-sm-0">

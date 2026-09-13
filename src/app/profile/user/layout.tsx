@@ -54,8 +54,6 @@ import { useEffect, useState } from "react";
 import { getUserById } from "@/features/users/services/userApi";
 import { UserProfileType } from "@/features/users/types/user";
 import { useAuthStore } from "@/features/account/store/authStore";
-//import { usePageId } from "@/shared/hooks/usePageId";
-//import { PageType } from "@/shared/types/PageType";
 
 const Photos = () => {
   return (
@@ -122,12 +120,9 @@ const Photos = () => {
 
 const UserProfileLayout = ({ children }: ChildrenType) => {
   const pathName = usePathname();
-  //const pageId = usePageId();
   const router = useRouter();
   const [user, setUser] = useState<UserProfileType | null>(null);
-  //const [isEditOpen, setIsEditOpen] = useState(false); // ✅ NEW
   const params = useParams();
-  //const userId = params?.userId as string;
   const { user: currentuser } = useAuthStore();
   const userId = currentuser?.id as string;
 
@@ -142,7 +137,6 @@ const UserProfileLayout = ({ children }: ChildrenType) => {
   if (!user) {
     return <div className="text-center p-5">Loading profile...</div>;
   }
-  // console.log("Page data:", page);
   return (
     <>
       <Navbar />
@@ -150,7 +144,6 @@ const UserProfileLayout = ({ children }: ChildrenType) => {
         <Container>
           <Row className="g-4">
             <Col lg={8} className="d-flex flex-column gap-4">
-              {/* <Col lg={8} className="vstack gap-4"> */}
               <Card>
                 <div
                   className="h-200px rounded-top"
@@ -162,7 +155,6 @@ const UserProfileLayout = ({ children }: ChildrenType) => {
                   }}
                 />
                 <CardBody className="py-0">
-                  {/* <div className="d-sm-flex align-items-start text-center text-sm-start"> */}
                   <div className="d-sm-flex align-items-start text-center text-sm-start w-100">
                     <div>
                       <div className="avatar avatar-xxl mt-n5 mb-3">
@@ -181,11 +173,6 @@ const UserProfileLayout = ({ children }: ChildrenType) => {
                     {/* <div className="ms-sm-4 mt-sm-3"> */}
                     <div className="ms-sm-4 mt-sm-3 flex-grow-1 min-w-0">
                       <h1 className="mb-0 h5 text-nowrap">{user.fullName}</h1>
-                      {/* <h1 className="mb-0 h5">
-                        {page?.displayName}{" "} */}
-                      {/* <BsPatchCheckFill className="text-success small" /> */}
-                      {/* </h1> */}
-                      {/* <p>250 connections</p> */}
                     </div>
                     <div className="d-flex mt-3 justify-content-center ms-sm-auto">
                       {user.isOwner && (
@@ -198,31 +185,6 @@ const UserProfileLayout = ({ children }: ChildrenType) => {
                           Edit Profile
                         </Button>
                       )}
-
-                      {/* <Button
-                        variant="danger-soft"
-                        className="me-2"
-                        onClick={() => router.push(`/pages/${page.id}/edit`)}
-                      >
-                        <BsPencilFill size={19} className="pe-1" /> Edit profile
-                      </Button> */}
-                      {/* <Button
-                        variant="danger-soft"
-                        className="me-2"
-                        type="button"
-                        onClick={() => setIsEditOpen(true)} // ✅ OPEN MODAL
-                      >
-                        <BsPencilFill size={19} className="pe-1" /> Edit profile
-                      </Button> */}
-                      {/* <Button
-                        variant="danger-soft"
-                        className="me-2"
-                        type="button"
-                      >
-                        {" "}
-                        <BsPencilFill size={19} className="pe-1" /> Edit
-                        profile{" "}
-                      </Button> */}
                       <Dropdown>
                         <DropdownToggle
                           as="a"
@@ -253,16 +215,7 @@ const UserProfileLayout = ({ children }: ChildrenType) => {
                               Share profile in a message
                             </DropdownItem>
                           </li>
-                          <li>
-                            {/* <DropdownItem href="#">
-                              {" "}
-                              <BsFileEarmarkPdf
-                                size={22}
-                                className="fa-fw pe-2"
-                              />
-                              Save your profile to PDF
-                            </DropdownItem> */}
-                          </li>
+                          <li></li>
                           <li>
                             <DropdownItem href="#">
                               {" "}
@@ -289,13 +242,6 @@ const UserProfileLayout = ({ children }: ChildrenType) => {
                       <BsBriefcase className="me-1" />
                       User Profile
                     </li>
-                    {/* <li className="list-inline-item">
-                      <BsGeoAlt className="me-1" /> New Hampshire
-                    </li> */}
-                    {/* <li className="list-inline-item">
-                      <BsCalendar2Plus className="me-1" /> Joined on Nov 26,
-                      2019
-                    </li> */}
                   </ul>
                 </CardBody>
                 <CardFooter className="card-footer mt-3 pt-2 pb-0">
@@ -312,12 +258,7 @@ const UserProfileLayout = ({ children }: ChildrenType) => {
                           })}
                           href={item.url ?? ""}
                         >
-                          {/* <Link
-                          className={clsx("nav-link", {
-                            active: pathName === item.url,
-                          })}
-                          href={item.url ?? ""}
-                        > */}{" "}
+                          {" "}
                           {item.label}{" "}
                           {item.badge && (
                             <span className="badge bg-success bg-opacity-10 text-success small">
@@ -331,9 +272,7 @@ const UserProfileLayout = ({ children }: ChildrenType) => {
                   </ul>
                 </CardFooter>
               </Card>
-              {/* <PageContext.Provider value={page}> */}
               {children}
-              {/* </PageContext.Provider>{" "} */}
             </Col>
             <Col lg={4}>
               <Row className="g-4">
@@ -375,15 +314,9 @@ const UserProfileLayout = ({ children }: ChildrenType) => {
                     </CardBody>
                   </Card>
                 </Col>
-                {/* <Col md={6} lg={12}>
-                  <Experience />
-                </Col> */}
                 <Col md={6} lg={12}>
                   <Photos />
                 </Col>
-                {/* <Col md={6} lg={12}>
-                  <Friends />
-                </Col> */}
               </Row>
             </Col>
           </Row>

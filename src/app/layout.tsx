@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import Image from "next/image";
 import NextTopLoader from "nextjs-toploader";
 import Footer from "@/shared/components/layout/Footer";
-//import logo from "@/assets/images/logo.svg";
 import logo from "@/assets/images/tenor.gif";
 import { DEFAULT_PAGE_TITLE } from "@/shared/constants/appConstants";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -11,10 +10,6 @@ import "@/assets/scss/style.scss";
 import AppProvidersWrapper from "@/shared/components/wrappers/AppProvidersWrapper";
 import GLightboxProvider from "@/providers/GLightboxProvider";
 import ImageViewerProvider from "@/shared/components/ui/image-viewer/ImageViewerProvider";
-// const AppProvidersWrapper = dynamic(
-//   () => import("@/shared/components/wrappers/AppProvidersWrapper"),
-//   { ssr: false },
-// );
 
 const inter = Inter({
   subsets: ["latin"],
@@ -93,64 +88,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-// // "use client";
-// // import QueryProvider from "@/providers/QueryProvider";
-// // import "bootstrap/dist/css/bootstrap.min.css"; // ✅ IMPORTANT
-// // import "@/assets/scss/style.scss"; // ✅ from template (adjust path if needed)
-// // import AuthProvider from "@/providers/AuthProvider";
-// // import Navbar from "@/shared/components/layout/Navbar";
-
-// // export default function RootLayout({
-// //   children,
-// // }: {
-// //   children: React.ReactNode;
-// // }) {
-// //   return (
-// //     <html lang="en">
-// //       <body>
-// //         <AuthProvider>
-// //           <QueryProvider>
-// //             <Navbar /> {/* ✅ render Navbar here */}
-// //             {children}
-// //             <Footer />
-// //           </QueryProvider>
-// //         </AuthProvider>
-// //       </body>
-// //     </html>
-// //   );
-// // }
-
-// // export default function RootLayout({
-// //   children,
-// // }: {
-// //   children: React.ReactNode;
-// // }) {
-// //   return (
-// //     <html lang="en">
-// //       <body>
-// //         <QueryProvider>
-// //           <AuthProvider>
-// //             <Navbar />
-// //             {children}
-// //           </AuthProvider>
-// //         </QueryProvider>
-// //       </body>
-// //     </html>
-// //   );
-// // }
-// import QueryProvider from "@/providers/QueryProvider";
-
-// export default function RootLayout({
-//   children,
-// }: {
-//   children: React.ReactNode;
-// }) {
-//   return (
-//     <html lang="en">
-//       <body>
-//         <QueryProvider>{children}</QueryProvider>
-//       </body>
-//     </html>
-//   );
-// }

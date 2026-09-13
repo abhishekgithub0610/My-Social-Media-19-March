@@ -6,13 +6,11 @@ import { useAuthStore } from "../store/authStore";
 import { ApiResponse } from "@/shared/types/api";
 import { UserResult } from "../types/account";
 
-// ✅ Type added (fix for your error)
 type LoginRequest = {
   email: string;
   password: string;
 };
 
-// ✅ REGISTER
 export const useRegister = () => {
   return useMutation({
     mutationFn: registerUser,
@@ -20,7 +18,6 @@ export const useRegister = () => {
       console.log("Registration success:", data);
     },
 
-    // CHANGED: proper error logging
     onError: (error: any) => {
       console.error("Registration failed:", error?.response?.data || error);
     },
@@ -38,25 +35,6 @@ export const loginApi = async (
 
   return response.data;
 };
-// export const loginApi = async (
-//   data: LoginRequest,
-// ): Promise<ApiResponse<LoginResponse>> => {
-//   const response = await baseClient.post("/auth/login", data, {
-//     withCredentials: true,
-//   });
-
-//   return response.data;
-// };
-// export const loginApi = async (data: LoginRequest): Promise<LoginResponse> => {
-//   const response = await baseClient.post("/auth/login", data, {
-//     withCredentials: true, // ✅ IMPORTANT (for cookies)
-//   });
-
-//   //return response.data.data; // based on your ApiResponseResult
-//   return response.data.data ?? response.data; //return response.data.data; // based on your ApiResponseResult
-// };
-
-// ✅ LOGIN
 export const useLogin = () => {
   const router = useRouter();
   const setUser = useAuthStore((state) => state.setUser);

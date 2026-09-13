@@ -64,7 +64,7 @@ const ChangePassword = () => {
       });
 
       toast.success("Password updated successfully 🚀");
-      reset(); // recommended
+      reset();
     } catch (error) {
       console.error(error);
       toast.error("Failed to update password");

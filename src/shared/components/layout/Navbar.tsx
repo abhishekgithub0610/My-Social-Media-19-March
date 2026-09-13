@@ -12,14 +12,9 @@ import { useAuthStore } from "@/features/account/store/authStore";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
-  // const { user, accessToken } = useAuthStore();
-  // Show loading until user is fetched or use localStorage value
   const { user } = useAuthStore();
 
-  if (!user) return null; // safer
-  // if (!accessToken) {
-  //   return null; // or return a skeleton / empty Navbar
-  // }
+  if (!user) return null;
   return (
     <StyledHeader>
       <div className="container">

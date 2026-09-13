@@ -15,7 +15,6 @@ import { Alert, Button, FormCheck } from "react-bootstrap";
 import { useForm, SubmitHandler } from "react-hook-form"; // ✅ FIX: import SubmitHandler
 import * as yup from "yup";
 import { useRegister } from "@/features/account/hooks/useAccount";
-// ✅ FIX: Strongly typed form values
 type SignUpFormValues = {
   name: string;
   email: string;
@@ -23,7 +22,6 @@ type SignUpFormValues = {
   password: string;
   confirmPassword: string;
 };
-// ✅ FIX: Move schema OUTSIDE component (prevents re-creation on every render)
 const signUpSchema: yup.ObjectSchema<SignUpFormValues> = yup.object({
   name: yup.string().required("Name is required"),
   userNameSlug: yup
@@ -46,17 +44,6 @@ const SignUpForm = () => {
   const [firstPassword, setFirstPassword] = useState<string>("");
 
   const { mutate, isPending, error } = useRegister();
-
-  // // const signUpSchema = yup.object({
-  // //   name: yup.string().required("Name is required"),
-  // //   email: yup.string().email().required(),
-  // //   password: yup.string().required(),
-  // //   confirmPassword: yup
-  // //     .string()
-  // //     .oneOf([yup.ref("password")], "Passwords must match"),
-  // // });
-
-  // ✅ FIX: Proper typing applied
   const { control, handleSubmit, watch } = useForm<SignUpFormValues>({
     resolver: yupResolver(signUpSchema),
     defaultValues: {
@@ -68,38 +55,22 @@ const SignUpForm = () => {
     },
   });
 
-  // ✅ FIX: cleaner way to watch password (no getValues needed)
   const passwordValue = watch("password");
-  // const { control, handleSubmit, watch, getValues } = useForm<SignUpFormValues>(
-  //   {
-  //     resolver: yupResolver(signUpSchema),
-  //   },
-  // );
-  // const { control, handleSubmit, watch, getValues } = useForm({
-  //   resolver: yupResolver(signUpSchema),
-  // });
-
   useEffect(() => {
     setFirstPassword(passwordValue);
   }, [passwordValue]);
-
-  // useEffect(() => {
-  //   setFirstPassword(getValues().password);
-  // }, [watch("password")]);
   const apiErrorMessage =
     (error as any)?.response?.data?.error?.message ||
     (error as any)?.response?.data?.message ||
     "Registration failed. Please try again.";
   const router = useRouter();
-  // ✅ FIX: NO ANY — fully typed submit handler
   const onSubmit: SubmitHandler<SignUpFormValues> = (data) => {
-    // //const onSubmit = (data: any) => {
     mutate(
       {
         email: data.email,
         password: data.password,
-        name: data.name, // ✅ FIX: was using email split (bad practice)
-        userNameSlug: data.userNameSlug, // ✅ Added
+        name: data.name,
+        userNameSlug: data.userNameSlug,
         role: "User",
       },
       {
@@ -107,9 +78,7 @@ const SignUpForm = () => {
           alert("Registered successfully ✅");
           router.push("/sign-in"); // redirect here
         },
-        // ✅ FIX: typed error instead of any
         onError: (err: unknown) => {
-          // //onError: (err: any) => {
           console.error(err);
           alert("Registration failed ❌");
         },
@@ -134,13 +103,7 @@ const SignUpForm = () => {
           control={control}
           placeholder="Enter name"
         />
-        {/* <TextFormInput
-          name="email"
-          control={control}
-          placeholder="Enter email"
-        /> */}
       </div>
-      {/* Username Slug */}
       <div className="mb-3 text-start">
         <TextFormInput<SignUpFormValues>
           name="userNameSlug"

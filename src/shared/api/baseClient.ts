@@ -10,10 +10,8 @@ export const baseClient = axios.create({
   withCredentials: true,
 });
 
-// ✅ Attach access token
 baseClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const accessToken = getAccessToken();
-  // // const { accessToken } = useAuthStore.getState(); // ✅ FIX
   if (accessToken) {
     config.headers.set("Authorization", `Bearer ${accessToken}`);
   }
@@ -69,7 +67,6 @@ baseClient.interceptors.response.use(
 
       try {
         const res = await refreshTokenApi();
-        //const newAccessToken = res.accessToken;
         const newAccessToken = res.result.accessToken;
         const { setUser, user } = useAuthStore.getState();
         if (user) {
@@ -84,7 +81,6 @@ baseClient.interceptors.response.use(
       } catch (err) {
         processQueue(err as AxiosError, null);
 
-        // // window.location.href = "/sign-in";
         const { clearUser } = useAuthStore.getState();
         clearUser();
 
@@ -99,41 +95,3 @@ baseClient.interceptors.response.use(
     return Promise.reject(error);
   },
 );
-
-// import axios from "axios";
-
-// export const baseClient = axios.create({
-//   baseURL: process.env.NEXT_PUBLIC_API_URL,
-//   withCredentials: true, // ✅ REQUIRED for cookies
-// });
-
-// // 🔥 attach access token automatically
-// baseClient.interceptors.request.use((config) => {
-//   const user = JSON.parse(
-//     typeof window !== "undefined"
-//       ? localStorage.getItem("auth-storage") || "null"
-//       : "null",
-//   );
-
-//   if (user?.state?.user?.accessToken) {
-//     config.headers.Authorization = `Bearer ${user.state.user.accessToken}`;
-//   }
-
-//   return config;
-// });
-
-// import axios from "axios";
-// import { env } from "@/config/env";
-
-// export const baseClient = axios.create({
-//   baseURL: env.API_BASE_URL,
-//   withCredentials: true, // important for cookies/JWT later
-// });
-
-// baseClient.interceptors.response.use(
-//   (res) => res,
-//   (error) => {
-//     // global error handling
-//     return Promise.reject(error.response?.data || error);
-//   },
-// );

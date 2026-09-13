@@ -2,7 +2,7 @@
 import { settingPanelLinksData } from "@/assets/data/layout";
 import SettingPanel from "@/shared/components/layout/SettingPanel";
 import { useLayoutContext } from "@/context/useLayoutContext";
-import useViewPort from "@/useViewPort"; // path to be modified based on your project structure
+import useViewPort from "@/useViewPort";
 import type { ChildrenType } from "@/types/component";
 import Navbar from "@/shared/components/layout/Navbar";
 

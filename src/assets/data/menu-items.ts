@@ -26,16 +26,6 @@ export const PROFILE_MENU_ITEMS: MenuItemType[] = [
     url: "/courses",
     parentKey: "pages-profile",
   },
-  // {
-  //   key: "profile-connections",
-  //   label: "Connections",
-  //   url: "/profile/connections",
-  //   badge: {
-  //     text: "300",
-  //     variant: "success",
-  //   },
-  //   parentKey: "pages-profile",
-  // },
   {
     key: "profile-media",
     label: "Media",
@@ -49,12 +39,6 @@ export const PROFILE_MENU_ITEMS: MenuItemType[] = [
     url: "/profile/events",
     parentKey: "pages-profile",
   },
-  // {
-  //   key: "profile-activity",
-  //   label: "Activity",
-  //   url: "/profile/activity",
-  //   parentKey: "pages-profile",
-  // },
 ];
 
 export const APP_MENU_ITEMS: MenuItemType[] = [

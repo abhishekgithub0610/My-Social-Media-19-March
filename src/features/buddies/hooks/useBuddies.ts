@@ -3,8 +3,6 @@ import { createPageApi, updatePageApi } from "../services/pagesApi";
 
 import { queryKeys } from "@/config/queryKeys";
 import { toast } from "react-toastify";
-
-// ✅ CREATE
 export const useCreatePage = () => {
   const queryClient = useQueryClient(); // ✅ ADD HERE
 
@@ -23,14 +21,12 @@ export const useCreatePage = () => {
   });
 };
 
-// ✅ UPDATE
 export const useUpdatePage = () => {
   const queryClient = useQueryClient(); // ✅ ADD HERE
 
   return useMutation({
     mutationFn: updatePageApi,
 
-    // ✅ THIS IS THE RIGHT PLACE
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.pages });
 
@@ -51,16 +47,3 @@ export const useUpdatePage = () => {
     },
   });
 };
-
-// export const useCreatePage = () => {
-//   return useMutation({
-//     mutationFn: createPageApi,
-//   });
-// };
-
-// // ✅ NEW: UPDATE HOOK
-// export const useUpdatePage = () => {
-//   return useMutation({
-//     mutationFn: updatePageApi,
-//   });
-// };

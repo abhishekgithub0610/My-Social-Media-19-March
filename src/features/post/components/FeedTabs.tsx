@@ -1,5 +1,3 @@
-// Create a new component: FeedTabs.tsx
-
 "use client";
 
 import { Card, CardBody } from "react-bootstrap";

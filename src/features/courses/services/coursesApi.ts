@@ -5,7 +5,6 @@ import { ApiResponse } from "@/shared/types/api";
 export const createPageApi = async (formData: FormData) => {
   const response = await baseClient.post("/pages", formData);
   return response.data.data;
-  //return response.data;
 };
 
 export const getPages = async (): Promise<PageType[]> => {

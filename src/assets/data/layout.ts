@@ -36,26 +36,6 @@ export const profilePanelLinksData1: ProfilePanelLink[] = [
     name: "Pages",
     link: "/pages",
   },
-  // {
-  //   image: earthImg,
-  //   name: "Latest News",
-  //   link: "/blogs",
-  // },
-  // {
-  //   image: calendarImg,
-  //   name: "Events",
-  //   link: "/profile/events",
-  // },
-  // {
-  //   image: chatImg,
-  //   name: "Groups",
-  //   link: "/feed/groups",
-  // },
-  // {
-  //   image: notificationImg,
-  //   name: "Notifications",
-  //   link: "/notifications",
-  // },
   {
     image: cogImg,
     name: "Settings",
@@ -117,11 +97,6 @@ export const settingPanelLinksData: ProfilePanelLink[] = [
     name: "Account",
     link: "/settings/account",
   },
-  // {
-  //   image: notificationImg,
-  //   name: "Notification",
-  //   link: "/settings/notification",
-  // },
   {
     image: shieldImg,
     name: "Password and Security",
@@ -132,16 +107,6 @@ export const settingPanelLinksData: ProfilePanelLink[] = [
     name: "Orders and Subscriptions",
     link: "/settings/OrdersAndSubscriptions",
   },
-  // {
-  //   image: handshakeImg,
-  //   name: "Communications",
-  //   link: "/settings/communication",
-  // },
-  // {
-  //   image: chatAltImg,
-  //   name: "Messaging",
-  //   link: "/settings/messaging",
-  // },
   {
     image: trashImg,
     name: "Close account",

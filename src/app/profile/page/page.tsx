@@ -1,6 +1,5 @@
 "use client";
 import { Col } from "react-bootstrap";
-// import Stories from "@/features/post/components/Stories";
 import Feeds from "@/features/post/components/Feeds";
 import CreatePostCard from "@/features/post/components/CreatePostCard";
 import { useState } from "react";
@@ -10,7 +9,7 @@ import { useSearchParams } from "next/navigation";
 const PageProfileFeed = ({ params }: { params: { pageId: string } }) => {
   const [posts, setPosts] = useState<SocialPostType[]>([]);
   const page = usePage();
-    const searchParams = useSearchParams();
+  const searchParams = useSearchParams();
 
   const pageId = searchParams.get("pageId") || "";
   return (
@@ -23,20 +22,12 @@ const PageProfileFeed = ({ params }: { params: { pageId: string } }) => {
             }}
           />
         )}
-        {/* <CreatePostCard
-          onPostCreated={(newPost) => {
-            console.log("STEP 4: parent received", newPost);
-            setPosts((prev) => [newPost, ...prev]);
-          }}
-        /> */}
         <Feeds
           posts={posts}
           setPosts={setPosts}
           feedType="page"
           pageId={pageId}
         />
-        {/* <CreatePostCard />
-        <Feeds /> */}
       </Col>
     </>
   );

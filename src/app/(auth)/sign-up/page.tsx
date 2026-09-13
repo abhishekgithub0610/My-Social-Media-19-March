@@ -618,27 +618,3 @@ const SignUp = () => {
 };
 
 export default SignUp;
-
-// // import type { Metadata } from "next";
-// // import { Card } from "react-bootstrap";
-// // import Link from "next/link";
-// // import SignUpForm from "@/features/account/components/SignUpForm";
-
-// // export const metadata: Metadata = {
-// //   title: "Sign Up",
-// // };
-
-// // export default function SignUpPage() {
-// //   return (
-// //     <Card className="card-body rounded-3 p-4 p-sm-5">
-// //       <div className="text-center">
-// //         <h1 className="mb-2">Sign up</h1>
-// //         <span className="d-block">
-// //           Already have an account? <Link href="/sign-in">Sign in here</Link>
-// //         </span>
-// //       </div>
-
-// //       <SignUpForm />
-// //     </Card>
-// //   );
-// // }

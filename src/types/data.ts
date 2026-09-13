@@ -39,35 +39,17 @@ export type CommentType = {
   children?: CommentType[];
 };
 
-// export type SocialPostType = {
-//   id: IdType;
-//   socialUserId: UserType["id"];
-//   image?: StaticImageData;
-//   socialUser?: UserType;
-//   caption?: string;
-//   createdAt: Date;
-//   likesCount: number;
-//   commentsCount?: number;
-//   liked?: boolean;
-//   comments?: CommentType[];
-//   photos?: StaticImageData[];
-//   isVideo?: boolean;
-//   isSponsored?: boolean;
-// };
-
 export type SocialPostType = {
   id: string;
   caption: string;
   image?: string;
   isVideo: boolean;
   createdAt: Date;
-  //createdAt: string;
-  //photos?: string[];
   likesCount: number;
   commentsCount: number;
   comments?: CommentType[];
   socialUser: {
-    id: string; // ✅ instead of separate socialUserId
+    id: string;
     name: string;
     avatar: string;
   };
@@ -146,7 +128,6 @@ export type ConnectionsType = {
   role: string;
   sharedConnectionAvatars?: StaticImageData[];
   description: string;
-  // ✅ ADD THIS: used in UI for mutual/shared connection count
   sharedConnectionCount?: number;
 };
 

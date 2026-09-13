@@ -24,9 +24,7 @@ export interface MediaDto {
 export interface PostFeedDto {
   id: string;
   content: string;
-  media?: MediaDto[]; // ✅ FIX
-  // mediaUrl?: string;
-  // mediaType?: string;
+  media?: MediaDto[];
   createdAt: string;
   likesCount: number;
   commentsCount: number;

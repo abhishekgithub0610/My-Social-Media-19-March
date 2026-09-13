@@ -6,7 +6,6 @@ import { childrenEqual, objectsEqual } from "@/TinySlider/utils";
 
 type TinySliderProps = {
   settings?: CommonOptions;
-  // Use HTMLElement for the slide instead of any
   onClick?: (
     slideClicked: HTMLElement | null,
     info: TinySliderInfo | null,
@@ -23,21 +22,6 @@ type TinySliderProps = {
   style?: React.CSSProperties;
   children: ReactNode;
 };
-
-// type TinySliderProps = {
-//   settings?: CommonOptions;
-//   onClick?: (slideClicked: any, info: any, event: any) => void;
-//   onIndexChanged?: (info: any) => void;
-//   onTransitionStart?: (info: any) => void;
-//   onTransitionEnd?: (info: any) => void;
-//   onTouchStart?: (info: any) => void;
-//   onTouchMove?: (info: any) => void;
-//   onTouchEnd?: (info: any) => void;
-//   onInit?: (initialized: boolean) => void;
-//   className?: string;
-//   style?: React.CSSProperties;
-//   children: ReactNode;
-// };
 
 const TinySlider: React.FC<TinySliderProps> = ({
   settings,
@@ -79,15 +63,9 @@ const TinySlider: React.FC<TinySliderProps> = ({
       setSlider(instance);
 
       if (ref.current) ref.current.className += " tns-item";
-      // //   setSlider(tns(mergedSettings));
-
-      // //   if (!slider) return;
-
-      // //   if (ref.current) ref.current.className += " tns-item";
     }
   };
 
-  // //   const postInit = (): any => {
   const postInit = (): void => {
     if (!slider) {
       if (count >= 4) {
@@ -98,13 +76,6 @@ const TinySlider: React.FC<TinySliderProps> = ({
       setTimeout(postInit, 100);
       return;
     }
-    // // if (!slider) {
-    // //   if (count >= 4) {
-    // //     return onInit?.(false);
-    // //   }
-    // //   count++;
-    // //   return setTimeout(postInit, 100);
-    // // }
     count = 0;
 
     const { events } = slider;
@@ -160,10 +131,6 @@ const TinySlider: React.FC<TinySliderProps> = ({
     const slideClicked = info.slideItems[info.index] as HTMLElement;
 
     onClick(slideClicked, info, event);
-    // // const info: TinySliderInfo = slider.getInfo();
-    // // const slideClicked = info.slideItems[info.index];
-
-    // // onClick(slideClicked, info, event);
   };
 
   return (

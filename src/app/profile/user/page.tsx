@@ -11,7 +11,6 @@ import { getUserById } from "@/features/users/services/userApi";
 import { UserProfileType } from "@/features/users/types/user";
 import { useAuthStore } from "@/features/account/store/authStore";
 
-//const UserProfileFeed = ({ params }: { params: { pageId: string } }) => {
 const UserProfileFeed = () => {
   const [posts, setPosts] = useState<SocialPostType[]>([]);
   const [user, setUser] = useState<UserProfileType | null>(null);
@@ -29,24 +28,17 @@ const UserProfileFeed = () => {
   if (!user) {
     return <div className="text-center p-5">Loading feed...</div>;
   }
-  //const page = usePage();
   return (
     <>
       <Col md={12} lg={12} className="vstack gap-4">
         {user.isOwner && (
           <CreatePostCard
-            isUserProfile={true} // CHANGED: tells CreatePostCard this is user profile
+            isUserProfile={true}
             onPostCreated={(newPost) => {
               setPosts((prev) => [newPost, ...prev]);
             }}
           />
         )}
-        {/* <CreatePostCard
-          onPostCreated={(newPost) => {
-            console.log("STEP 4: parent received", newPost);
-            setPosts((prev) => [newPost, ...prev]);
-          }}
-        /> */}
         <Feeds
           posts={posts}
           setPosts={setPosts}
@@ -54,8 +46,6 @@ const UserProfileFeed = () => {
           feedType="friends"
           pageId=""
         />{" "}
-        {/* <CreatePostCard />
-        <Feeds /> */}
       </Col>
     </>
   );

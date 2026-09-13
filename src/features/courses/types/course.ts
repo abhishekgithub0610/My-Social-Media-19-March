@@ -7,7 +7,7 @@ export type Course = {
 };
 
 export type CreateCourseFormValues = {
-  courseImage?: File | null; // ✅ FIX
+  courseImage?: File | null;
   courseName: string;
   displayName: string;
 
@@ -17,5 +17,5 @@ export type CreateCourseFormValues = {
 
   aboutPage: string;
   category: string;
-  type: string[]; // ✅ ADD THIS
+  type: string[];
 };

@@ -100,36 +100,3 @@ const Home = () => {
 };
 
 export default Home;
-
-// // import { Col, Container, Row } from "react-bootstrap";
-// // import ContactSidebar from "@/shared/components/layout/ContactSidebar";
-// // import LeftSidebar from "@/shared/components/layout/LeftSidebar";
-// // import Feeds from "@/features/post/components/Feeds";
-// // import Stories from "@/features/post/components/Stories";
-// // import CreatePostCard from "@/features/post/components/CreatePostCard";
-
-// // export default function FeedPage() {
-// //   return (
-// //     <>
-// //       <main>
-// //         <Container fluid>
-// //           <Row className="justify-content-between g-0">
-// //             <Col md={2} lg={3} xxl={4} className="mt-n4">
-// //               <LeftSidebar />
-// //             </Col>
-
-// //             <Col md={8} lg={6} xxl={4} className="vstack gap-4">
-// //               <Stories />
-// //               <CreatePostCard />
-// //               <Feeds />
-// //             </Col>
-
-// //             <Col md={2} lg={3} xxl={4}>
-// //               <ContactSidebar />
-// //             </Col>
-// //           </Row>
-// //         </Container>
-// //       </main>
-// //     </>
-// //   );
-// // }

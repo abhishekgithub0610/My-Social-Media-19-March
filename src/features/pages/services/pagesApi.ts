@@ -5,7 +5,6 @@ import { ApiResponse } from "@/shared/types/api";
 export const createPageApi = async (formData: FormData) => {
   const response = await baseClient.post("/pages", formData);
   return response.data.data;
-  //return response.data;
 };
 
 export const getPages = async (): Promise<PageType[]> => {
@@ -17,10 +16,6 @@ export const getPages = async (): Promise<PageType[]> => {
 
   return res.data.result;
 };
-
-// export const getPageById = (id: string) => {
-//   return baseClient.get<PageType>(`/pages/${id}`);
-// };
 
 export const getPageById = async (id: string): Promise<PageType> => {
   const res = await baseClient.get<ApiResponse<PageType>>(`/pages/${id}`);

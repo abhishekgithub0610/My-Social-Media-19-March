@@ -5,9 +5,9 @@ import { useAuthStore } from "@/features/account/store/authStore";
 import { useState } from "react";
 
 type Buddy = {
-  id: string; // 👈 IMPORTANT
+  id: string;
   isFollowing: boolean;
-  followTypeId?: number; // ✅ ADD THIS
+  followTypeId?: number;
 };
 
 type Props = {
@@ -37,7 +37,6 @@ const FollowBuddyButton = ({ buddy }: Props) => {
   };
   const handleUnfollow = async () => {
     setIsFollowing(false);
-    //setSelectedType(null);
 
     const token = useAuthStore.getState().accessToken;
     await fetch(`http://localhost:7120/api/buddies/${buddy.id}/follow`, {
@@ -46,7 +45,7 @@ const FollowBuddyButton = ({ buddy }: Props) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      credentials: "include", // ✅ if you are using cookies too
+      credentials: "include",
     });
   };
 
@@ -54,9 +53,6 @@ const FollowBuddyButton = ({ buddy }: Props) => {
     <div style={{ minWidth: 140 }}>
       <AnimatePresence mode="wait">
         {!isFollowing ? (
-          // ============================================
-          // ✅ CHANGED: Replaced Select with simple button
-          // ============================================
           <motion.button
             key="follow"
             onClick={handleFollow}
@@ -82,9 +78,6 @@ const FollowBuddyButton = ({ buddy }: Props) => {
             Follow
           </motion.button>
         ) : (
-          // ======================================
-          // ✅ UNCHANGED: Following button UI
-          // ======================================
           <motion.button
             key="following"
             onClick={handleUnfollow}

@@ -53,14 +53,6 @@ const FeedLayout = ({ children }: ChildrenType) => {
                   type="button"
                   aria-controls="offcanvasSideNavbar"
                 >
-                  {/* <button
-                  onClick={startOffcanvas.toggle}
-                  className="border-0 bg-transparent"
-                  type="button"
-                  data-bs-toggle="offcanvas"
-                  data-bs-target="#offcanvasSideNavbar"
-                  aria-controls="offcanvasSideNavbar"
-                > */}
                   <span className="btn btn-primary">
                     <FaSlidersH />
                   </span>

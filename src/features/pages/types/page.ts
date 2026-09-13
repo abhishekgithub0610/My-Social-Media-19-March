@@ -7,7 +7,7 @@ export type Page = {
 };
 
 export type CreatePageFormValues = {
-  pageImage?: File | null; // ✅ FIX
+  pageImage?: File | null;
   pageName: string;
   displayName: string;
 
@@ -17,5 +17,5 @@ export type CreatePageFormValues = {
 
   aboutPage: string;
   category: string;
-  type: string[]; // ✅ ADD THIS
+  type: string[];
 };

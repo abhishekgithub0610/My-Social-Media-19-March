@@ -16,7 +16,7 @@ import type { FormInputProps } from "@/types/component";
 
 type TextAreaFormInputProps = {
   rows?: number;
-  required?: boolean; // ✅ ADDED: support required prop
+  required?: boolean;
 };
 
 const TextAreaFormInput = <
@@ -31,7 +31,7 @@ const TextAreaFormInput = <
   labelClassName,
   label,
   noValidate,
-  required, // ✅ ADDED: destructure required
+  required,
   ...other
 }: FormInputProps<TFieldValues> &
   FormControlProps &
@@ -47,7 +47,6 @@ const TextAreaFormInput = <
             <FormLabel className={labelClassName}>
               {label}
               {required && <span className="text-danger ms-1">*</span>}{" "}
-              {/* ✅ ADDED: show red asterisk if required */}
             </FormLabel>
           )}
           <FormControl

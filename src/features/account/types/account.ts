@@ -28,21 +28,3 @@ export type LoginResponse = {
   message: string | null;
   result: UserResult;
 };
-
-// // export type LoginResponse = {
-// //   id: string;
-// //   email: string;
-// //   role: string;
-
-// //   // ✅ optional (safe)
-// //   name?: string;
-// //   avatar?: string;
-
-// //   accessToken: string;
-// // };
-// // export type LoginResponse = {
-// //   id: string;
-// //   email: string;
-// //   role: string;
-// //   accessToken: string;
-// // };

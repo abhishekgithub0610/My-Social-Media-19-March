@@ -9,7 +9,7 @@ import * as yup from "yup";
 import { useState, useRef } from "react";
 import { useCreatePage, useUpdatePage } from "../hooks/usePages";
 import Image from "next/image";
-import { useEffect } from "react"; // ✅ NEW
+import { useEffect } from "react";
 import { Controller } from "react-hook-form";
 import Select from "react-select";
 import { toast } from "react-toastify";
@@ -32,19 +32,6 @@ import {
 } from "react-icons/bs";
 import { PageType } from "@/shared/types/PageType";
 import { useRouter } from "next/navigation";
-
-// const TYPE_OPTIONS = [
-//   "daily",
-//   "daily+",
-//   "weekly",
-//   "weekly+",
-//   "bi-weekly",
-//   "bi-weekly+",
-//   "monthly",
-//   "monthly+",
-//   "yearly",
-//   "yearly+",
-// ];
 const TYPE_OPTIONS = [
   { label: "Daily", value: "Daily" },
   { label: "Daily+", value: "DailyPlus" },
@@ -61,12 +48,11 @@ type OptionType = {
   label: string;
   value: string;
 };
-// ✅ NEW
 type Props = {
   initialData?: PageType;
   isEdit?: boolean;
-  onClose?: () => void; // ✅ NEW
-  onSuccess?: (data: PageType) => void; // ✅ NEW
+  onClose?: () => void;
+  onSuccess?: (data: PageType) => void;
 };
 const Option = (props: OptionProps<OptionType, true>) => {
   return (
@@ -82,35 +68,15 @@ const Option = (props: OptionProps<OptionType, true>) => {
   );
 };
 
-// const CreatePageForm = () => {
 const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
-  // const { mutate, isPending } = useCreatePage();
   const { mutate: createPage, isPending: isCreating } = useCreatePage();
   const { mutate: updatePage, isPending: isUpdating } = useUpdatePage();
   const isPending = isCreating || isUpdating;
   const router = useRouter();
-
-  // const handleTypeChange = (selected: string[]) => {
-  //   if (!selected.length) {
-  //     setValue("type", []);
-  //     return;
-  //   }
-
-  //   // find lowest index (earliest in list)
-  //   const minIndex = Math.min(
-  //     ...selected.map((val) => TYPE_OPTIONS.indexOf(val)),
-  //   );
-
-  //   // ✅ select from selected → end
-  //   const updated = TYPE_OPTIONS.slice(minIndex);
-
-  //   setValue("type", updated, { shouldValidate: true });
-  // };
   const createFormSchema: yup.ObjectSchema<CreatePageFormValues> = yup.object({
-    // pageImage: yup.mixed<File>().required("Page image is required"),
     pageImage: yup
       .mixed<File>()
-      .nullable() // ✅ MUST MATCH TYPE
+      .nullable()
       .test("fileRequired", "Page image is required", function (value) {
         if (isEdit) return true;
         return !!value;
@@ -119,21 +85,18 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
 
     displayName: yup.string().required("Display name is required"),
 
-    // ✅ optional email (valid if provided)
     email: yup
       .string()
-      .transform((v) => (v === "" ? undefined : v)) // ✅ FIX (no null)
+      .transform((v) => (v === "" ? undefined : v))
       .nullable()
       .email("Please enter a valid email"),
 
-    // ✅ optional URL
     url: yup
       .string()
-      .transform((v) => (v === "" ? undefined : v)) // ✅ FIX
+      .transform((v) => (v === "" ? undefined : v))
       .nullable()
       .url("Please enter a valid URL"),
 
-    // ✅ optional phone
     phoneNo: yup
       .number()
       .typeError("Phone number must be a valid number")
@@ -147,7 +110,7 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
     category: yup.string().required("Please select a category"),
     type: yup
       .array()
-      .of(yup.string().required()) // ✅ FIX HERE
+      .of(yup.string().required())
       .min(1, "Please select at least one type")
       .required("Type is required"),
   });
@@ -155,18 +118,16 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // inside component
-
   const {
     control,
     handleSubmit,
     setValue,
-    reset, // ✅ ADD THIS
+    reset,
     formState: { errors },
   } = useForm<CreatePageFormValues>({
     resolver: yupResolver(createFormSchema),
     defaultValues: {
-      type: [], // ✅ IMPORTANT
+      type: [],
     },
   });
   const imagePreview =
@@ -182,39 +143,17 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
         displayName: initialData.displayName,
         email: initialData.email,
         url: initialData.url,
-        phoneNo: initialData.phoneNo
-          ? Number(initialData.phoneNo) // ✅ FIX phone type
-          : undefined,
+        phoneNo: initialData.phoneNo ? Number(initialData.phoneNo) : undefined,
         aboutPage: initialData.aboutPage,
         category: initialData.category,
         type: initialData.types || [],
       });
     }
   }, [initialData, reset]);
-  // useEffect(() => {
-  //   if (initialData) {
-  //     reset({
-  //       pageName: initialData.pageName,
-  //       displayName: initialData.displayName,
-  //       email: initialData.email,
-  //       url: initialData.url,
-  //       phoneNo: initialData.phoneNo,
-  //       aboutPage: initialData.aboutPage,
-  //       category: initialData.category,
-  //       type: initialData.types || [],
-  //     });
-
-  //     // ✅ FIX: set preview properly
-  //     if (initialData.pageImageUrl) {
-  //       setPreview(`http://localhost:7120/${initialData.pageImageUrl}`);
-  //     }
-  //   }
-  // }, [initialData, reset]);
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // optional validation
     if (!file.type.startsWith("image/")) {
       alert("Please select an image file");
       return;
@@ -237,7 +176,6 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
     formData.append("aboutPage", data.aboutPage);
     formData.append("category", data.category);
 
-    // ✅ FIX: only send image if it's a File (not URL)
     if (data.pageImage instanceof File) {
       formData.append("pageImage", data.pageImage);
     }
@@ -245,21 +183,6 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
     data.type.forEach((t, i) => {
       formData.append(`Types[${i}]`, t);
     });
-
-    // ✅ NEW: conditional logic
-    // if (isEdit && initialData?.id) {
-    //   updatePage(
-    //     { id: initialData.id, formData },
-    //     {
-    //       onSuccess: () => {
-    //         toast.success("Page updated successfully 🚀");
-    //       },
-    //       onError: (err: unknown) => {
-    //         toast.error(getErrorMessage(err));
-    //       },
-    //     },
-    //   );
-    // }
     if (isEdit && initialData?.id) {
       updatePage(
         { id: initialData.id, formData },
@@ -267,7 +190,6 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
           onSuccess: () => {
             toast.success("Page updated successfully 🚀");
 
-            // ✅ REDIRECT AFTER SUCCESS
             router.push(`/profile/page?pageId=${initialData.id}`);
           },
           onError: (err: unknown) => {
@@ -288,35 +210,6 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
       });
     }
   };
-  // const onSubmit = (data: CreatePageFormValues) => {
-  //   const formData = new FormData();
-
-  //   formData.append("pageName", data.pageName);
-  //   formData.append("displayName", data.displayName);
-
-  //   if (data.email) formData.append("email", data.email);
-  //   if (data.url) formData.append("url", data.url);
-  //   if (data.phoneNo) formData.append("phoneNo", String(data.phoneNo));
-
-  //   formData.append("aboutPage", data.aboutPage);
-  //   formData.append("category", data.category);
-
-  //   // ✅ IMAGE (IMPORTANT)
-  //   formData.append("pageImage", data.pageImage);
-  //   data.type.forEach((t, i) => {
-  //     formData.append(`Types[${i}]`, t); // ✅ MATCH BACKEND PROPERTY
-  //   });
-  //   mutate(formData, {
-  //     onSuccess: () => {
-  //       toast.success("Page created successfully 🚀");
-  //       reset();
-  //       setPreview(null);
-  //     },
-  //     onError: (err: unknown) => {
-  //       toast.error(getErrorMessage(err as AxiosError<{ message?: string }>));
-  //     },
-  //   });
-  // };
   return (
     <Card>
       <CardHeader className="border-0 pb-0">
@@ -324,9 +217,6 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
           {isEdit ? "Edit Page" : "Create a page"}
         </h1>
       </CardHeader>
-      {/* <CardHeader className="border-0 pb-0">
-        <h1 className="h4 card-title mb-0">Create a page</h1>
-      </CardHeader> */}
       <CardBody>
         <form className="row g-3" onSubmit={handleSubmit(onSubmit)}>
           {" "}
@@ -355,14 +245,6 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
               ) : (
                 <span>Upload</span>
               )}
-              {/* {preview ? (
-                <img
-                  src={preview}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              ) : (
-                <span>Upload</span>
-              )} */}
             </div>
             {errors.pageImage && (
               <div className="text-danger mt-2">{errors.pageImage.message}</div>
@@ -380,7 +262,7 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
               name="pageName"
               label="Page name"
               placeholder="Page name (Required)"
-              required // ✅ THIS shows *
+              required
               control={control}
             />
             <small>Name that describes what the page is about.</small>
@@ -390,7 +272,7 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
             label="Display name"
             placeholder="Display name (Required)"
             control={control}
-            required // ✅ THIS shows *
+            required
             containerClassName="col-sm-6 col-lg-4"
           />
           <TextFormInput<CreatePageFormValues>
@@ -405,7 +287,7 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
               name="category"
               control={control}
               label="Category (required)"
-              required // ✅ THIS shows *
+              required
               options={[
                 { label: "Comedy", value: "comedy" },
                 { label: "Technology", value: "technology" },
@@ -435,61 +317,15 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
                   isMulti
                   closeMenuOnSelect={false}
                   hideSelectedOptions={false}
-                  // components={{ Option }}
                   options={TYPE_OPTIONS}
-                  // options={TYPE_OPTIONS.map((item) => ({
-                  //   label: item,
-                  //   value: item,
-                  // }))}
                   value={TYPE_OPTIONS.filter((opt) =>
                     field.value?.includes(opt.value),
                   )}
-                  // value={TYPE_OPTIONS.filter((opt) =>
-                  //   field.value?.includes(opt),
-                  // ).map((v) => ({ label: v, value: v }))}
                   onChange={(val) => {
                     const values = val ? val.map((v) => v.value) : [];
                     field.onChange(values);
                   }}
-                  // onChange={(val, actionMeta) => {
-                  //   // ✅ handle clear (when user clicks cross icon)
-                  //   if (actionMeta.action === "clear") {
-                  //     field.onChange([]);
-                  //     return;
-                  //   }
-
-                  //   // ❗ safety check
-                  //   if (!actionMeta.option) return;
-
-                  //   const clickedValue = actionMeta.option.value;
-                  //   const index = TYPE_OPTIONS.indexOf(clickedValue);
-
-                  //   // ✅ always select clicked → bottom
-                  //   const updated = TYPE_OPTIONS.slice(index);
-
-                  //   field.onChange(updated);
-                  // }}
                 />
-                // <Select
-                //   {...field}
-                //   isMulti
-                //   options={TYPE_OPTIONS.map((item) => ({
-                //     label: item,
-                //     value: item,
-                //   }))}
-                //   value={TYPE_OPTIONS.filter((opt) =>
-                //     field.value?.includes(opt),
-                //   ).map((v) => ({ label: v, value: v }))}
-
-                //   onChange={(val) => {
-                //     const values =
-                //       (val as { label: string; value: string }[])?.map(
-                //         (v) => v.value,
-                //       ) || [];
-
-                //     handleTypeChange(values);
-                //   }}
-                // />
               )}
             />
 
@@ -497,23 +333,6 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
               <div className="text-danger mt-1">{errors.type.message}</div>
             )}
           </Col>
-          {/* <Col xs={12}>
-            <SelectInput<CreatePageFormValues>
-              name="type"
-              label="Type"
-              control={control}
-              required
-              isMulti // ✅ IMPORTANT
-              options={TYPE_OPTIONS.map((item) => ({
-                label: item,
-                value: item,
-              }))}
-              onChange={(val: { label: string; value: string }[] | null) => {
-                const values = val?.map((v) => v.value) || [];
-                handleTypeChange(values);
-              }}
-            />
-          </Col> */}
           <TextFormInput
             name="url"
             label="Website URL"
@@ -526,7 +345,7 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
             label="Phone number"
             placeholder="Phone number (Required)"
             control={control}
-            required // ✅ ADD THIS
+            required
             containerClassName="col-lg-6"
           />
           <Col xs={12}>
@@ -534,7 +353,7 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
               name="aboutPage"
               label="About page"
               rows={3}
-              required // ✅ THIS shows *
+              required
               placeholder="Description (Required)"
               control={control}
             />
@@ -610,9 +429,6 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
                   ? "Update Page"
                   : "Create a page"}
             </Button>
-            {/* <Button variant="primary" type="submit" disabled={isPending}>
-              {isPending ? "Creating..." : "Create a page"}
-            </Button> */}
           </Col>
         </form>
       </CardBody>

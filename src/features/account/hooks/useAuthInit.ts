@@ -20,13 +20,6 @@ export const useAuthInit = () => {
           res.accessToken,
         );
         const state = useAuthStore.getState();
-
-        // // setUser({
-        // //   id: res.user.id,
-        // //   email: res.user.email,
-        // //   role: res.user.role,
-        // //   accessToken: res.accessToken,
-        // // });
       } catch {
         // not logged in → ignore
       }

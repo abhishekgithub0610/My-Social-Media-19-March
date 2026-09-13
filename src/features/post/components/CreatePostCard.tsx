@@ -44,7 +44,7 @@ type EventForm = {
   duration: string;
   location: string;
   guest: string;
-  privacy: string; // ✅ ADD THIS
+  privacy: string;
 };
 type CreatePostCardProps = {
   onPostCreated?: (post: SocialPostType) => void;
@@ -66,7 +66,6 @@ type ApiPost = {
     avatar?: string;
   };
 };
-// const CreatePostCard = () => {
 const CreatePostCard = ({
   onPostCreated,
   isUserProfile = false,
@@ -82,7 +81,6 @@ const CreatePostCard = ({
   ];
   const { isTrue: isOpenMedia, toggle: toggleTextModal } = useToggle();
   const [loading, setLoading] = useState(false);
-  //const [preview, setPreview] = useState<string | null>(null);
   const { isTrue: isOpenEvent, toggle: toggleEvent } = useToggle();
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
   const { isTrue: isOpenPost, toggle: togglePost } = useToggle();
@@ -101,7 +99,6 @@ const CreatePostCard = ({
     privacy: yup.string().required("Please select privacy"), // ✅ ADD
   });
   const [text, setText] = useState("");
-  //const [file, setFile] = useState<File | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const { control, handleSubmit, watch } = useForm<EventForm>({
@@ -110,24 +107,11 @@ const CreatePostCard = ({
       privacy: "PB",
     },
   });
-  // useEffect(() => {
-  //   return () => {
-  //     previews.forEach((url) => URL.revokeObjectURL(url));
-  //   };
-  // }, [previews]);
   useEffect(() => {
     return () => {
       previews.forEach((url) => URL.revokeObjectURL(url));
     };
-  }, []); // ✅ only once
-  // useEffect(() => {
-  //   if (!preview) return;
-  //   return () => {
-  //     URL.revokeObjectURL(preview);
-  //   };
-  // }, [preview]);
-  //const privacy = watch("privacy"); // ✅ auto updates
-  //const privacy = useMemo(() => watch("privacy"), [watch]);
+  }, []);
   const privacy = watch("privacy");
   const searchParams = useSearchParams();
 
@@ -147,12 +131,12 @@ const CreatePostCard = ({
         }
       }
       files.forEach((file) => {
-        formData.append("files", file); // ✅ IMPORTANT: same key
+        formData.append("files", file);
       });
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${state.accessToken}`, // ✅ IMPORTANT
+          Authorization: `Bearer ${state.accessToken}`,
         },
         body: formData,
       });
@@ -163,18 +147,13 @@ const CreatePostCard = ({
         setLoading(false); // ✅ FIX
         return;
       }
-
-      // const data = await res.json();
-      // console.log("Post created:", data);
-      // onPostCreated?.(mapToFeedPost(data));
       const json = await res.json();
       const post = json.result ?? json;
       onPostCreated?.(mapToFeedPost(post));
 
-      // reset UI
       setText("");
-      setFiles([]); // ✅ FIX
-      setPreviews([]); // ✅ FIX
+      setFiles([]);
+      setPreviews([]);
 
       setTimeout(() => {
         toggleTextModal();
@@ -212,10 +191,8 @@ const CreatePostCard = ({
   };
   const openModal = () => {
     setText("");
-    // setFile(null);
-    // setPreview(null);
-    setFiles([]); // ✅ FIX
-    setPreviews([]); // ✅ FIX
+    setFiles([]);
+    setPreviews([]);
     toggleTextModal();
   };
   return (
@@ -307,11 +284,10 @@ const CreatePostCard = ({
           </Dropdown>
         </ul>
       </Card>
-      {/* photo */}
       <Modal
         show={isOpenMedia}
         onHide={() => {
-          setLoading(false); // ✅ reset loading
+          setLoading(false);
           toggleTextModal();
         }}
         centered
@@ -336,7 +312,6 @@ const CreatePostCard = ({
                 alt=""
               />
             </div>
-            {/* <form className="w-100"> */}
             <textarea
               className="form-control pe-4 fs-3 lh-1 border-0"
               rows={2}
@@ -344,7 +319,6 @@ const CreatePostCard = ({
               value={text} // ✅ ADDED: bind with state
               onChange={(e) => setText(e.target.value)} // ✅ ADDED: update state
             />
-            {/* </form> */}
           </div>
           <div>
             <label className="form-label">Upload attachment</label>
@@ -353,25 +327,6 @@ const CreatePostCard = ({
               icon={BsCameraReels}
               showPreview
               text="Drag here or click to upload photo."
-              //   onFileUpload={(files) => {
-              //     if (files?.length) {
-              //       const selected = files[0];
-
-              //       // ✅ VALIDATION
-              //       if (
-              //         !selected.type.startsWith("image") &&
-              //         !selected.type.startsWith("video")
-              //       ) {
-              //         alert("Only image/video allowed");
-              //         return;
-              //       }
-
-              //       setFile(selected);
-
-              //       const url = URL.createObjectURL(selected);
-              //       setPreview(url);
-              //     }
-              //   }}
               onFileUpload={(uploadedFiles) => {
                 if (!uploadedFiles?.length) return;
 
@@ -410,7 +365,6 @@ const CreatePostCard = ({
                 setPreviews((prev) => [...prev, ...previewUrls]);
               }}
             />
-            {/* ✅ ADDED: Preview section (image/video preview like Instagram) */}
             {previews.map((preview, index) => (
               <div key={index} className="mt-2">
                 {files[index]?.type.startsWith("image") ? (
@@ -420,25 +374,15 @@ const CreatePostCard = ({
                 )}
               </div>
             ))}
-            {/* {preview && (
-              <div className="mt-3">
-                {file?.type.startsWith("image") ? (
-                  <img src={preview} className="img-fluid rounded" />
-                ) : (
-                  <video src={preview} controls className="w-100 rounded" />
-                )}
-              </div>
-            )} */}
           </div>
         </ModalBody>
         <ModalFooter>
           <button
             type="button"
             className="btn btn-danger-soft me-2"
-            // data-bs-dismiss="modal"
             onClick={() => {
-              setLoading(false); // ✅ stop loader
-              toggleTextModal(); // ✅ close modal
+              setLoading(false);
+              toggleTextModal();
             }}
           >
             Cancel
@@ -446,132 +390,13 @@ const CreatePostCard = ({
           <button
             type="button"
             className="btn btn-success-soft"
-            onClick={handleCreatePost} // ✅ ADDED
+            onClick={handleCreatePost}
             disabled={loading || (!text && files.length === 0)}
           >
             {loading ? "Posting..." : "Post"}
           </button>
-          {/* <button type="button" className="btn btn-success-soft">
-            Post
-          </button> */}
         </ModalFooter>
       </Modal>
-
-      {/* event */}
-      {/* <Modal
-        show={isOpenEvent}
-        onHide={toggleEvent}
-        centered
-        className="fade"
-        id="modalCreateEvents"
-        tabIndex={-1}
-        aria-labelledby="modalLabelCreateEvents"
-        aria-hidden="true"
-      >
-        <form onSubmit={handleSubmit(() => {})}>
-          <ModalHeader closeButton>
-            <h5 className="modal-title" id="modalLabelCreateEvents">
-              Create event
-            </h5>
-          </ModalHeader>
-          <ModalBody>
-            <Row className="g-4">
-              <TextFormInput
-                name="title"
-                label="Title"
-                placeholder="Event name here"
-                containerClassName="col-12"
-                control={control}
-              />
-              <TextAreaFormInput
-                name="description"
-                label="Description"
-                rows={2}
-                placeholder="Ex: topics, schedule, etc."
-                containerClassName="col-12"
-                control={control}
-              />
-
-              <Col sm={4}>
-                <label className="form-label">Date</label>
-                <DateFormInput
-                  options={{ enableTime: false }}
-                  className="form-control"
-                  placeholder="Select date"
-                />
-              </Col>
-              <Col sm={4}>
-                <label className="form-label">Time</label>
-                <DateFormInput
-                  options={{ enableTime: true, noCalendar: true }}
-                  className="form-control"
-                  placeholder="Select time"
-                />
-              </Col>
-              <TextFormInput
-                name="duration"
-                label="Duration"
-                placeholder="1hr 23m"
-                containerClassName="col-sm-4"
-                control={control}
-              />
-              <TextFormInput
-                name="location"
-                label="Location"
-                placeholder="Logansport, IN 46947"
-                containerClassName="col-12"
-                control={control}
-              />
-              <TextFormInput
-                name="guest"
-                type="email"
-                label="Add guests"
-                placeholder="Guest email"
-                containerClassName="col-12"
-                control={control}
-              />
-              <Col xs={12} className="mt-3">
-                <ul className="avatar-group list-unstyled align-items-center mb-0">
-                  {guests.map((avatar, idx) => (
-                    <li className="avatar avatar-xs" key={idx}>
-                      <Image
-                        className="avatar-img rounded-circle"
-                        src={avatar}
-                        alt="avatar"
-                      />
-                    </li>
-                  ))}
-                  <li className="ms-3">
-                    <small> +50 </small>
-                  </li>
-                </ul>
-              </Col>
-              <div className="mb-3">
-                <DropzoneFormInput
-                  showPreview
-                  helpText="Drop presentation and document here or click to upload."
-                  icon={BsFileEarmarkText}
-                  label="Upload attachment"
-                />
-              </div>
-            </Row>
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              variant="danger-soft"
-              type="button"
-              className="me-2"
-              onClick={toggleEvent}
-            >
-              {" "}
-              Cancel
-            </Button>
-            <Button variant="success-soft" type="submit">
-              Create now
-            </Button>
-          </ModalFooter>
-        </form>
-      </Modal> */}
     </>
   );
 };
