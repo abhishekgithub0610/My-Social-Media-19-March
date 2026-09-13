@@ -33,8 +33,8 @@ const LogoBox = () => {
       <Image
         src={logo}
         alt="logo"
-        height={56}
-        width={56}
+        height={36}
+        width={36}
         className="navbar-brand-item"
       />
     </Link>
