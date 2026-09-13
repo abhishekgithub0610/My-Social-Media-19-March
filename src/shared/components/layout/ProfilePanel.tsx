@@ -13,7 +13,7 @@ import { useAuthStore } from "@/features/account/store/authStore";
 import { getUserById } from "@/features/users/services/userApi";
 import { useEffect, useState } from "react";
 import { UserProfileType } from "@/features/users/types/user";
-
+import { useImageViewer } from "@/shared/components/ui/image-viewer/useImageViewer";
 type ProfilePanelProps = {
   links: ProfilePanelLink[];
 };
@@ -23,6 +23,7 @@ const ProfilePanel = ({ links }: ProfilePanelProps) => {
   const [profileImage, setProfileImage] = useState<string>("");
   const [bio, setBio] = useState<string>("");
   const [userAllData, setUserAllData] = useState<UserProfileType | null>(null);
+  const { openImage } = useImageViewer();
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!user?.id) return;
@@ -61,12 +62,28 @@ const ProfilePanel = ({ links }: ProfilePanelProps) => {
           <div className="text-center">
             <div className="avatar avatar-lg mt-n5 mb-3">
               <span role="button">
+                {/* <img
+                  height={64}
+                  width={64}
+                  src={profileImage || avatar7.src}
+                  alt="avatar"
+                  className="avatar-img rounded border border-white border-3"
+                /> */}
+
                 <img
                   height={64}
                   width={64}
                   src={profileImage || avatar7.src}
                   alt="avatar"
                   className="avatar-img rounded border border-white border-3"
+                  style={{ cursor: "pointer" }}
+                  onClick={() =>
+                    openImage({
+                      id: "profile-avatar",
+                      src: profileImage || avatar7.src,
+                      alt: "Profile avatar",
+                    })
+                  }
                 />
               </span>
             </div>

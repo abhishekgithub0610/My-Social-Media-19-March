@@ -6,10 +6,7 @@ import Image from "next/image";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { toast } from "react-toastify";
 import collaborationImg from "@/assets/images/collaboration.png";
-import FacebookImageViewer, {
-  type ViewerImage,
-} from "@/shared/components/ui/FacebookImageViewer";
-
+import { useImageViewer } from "@/shared/components/ui/image-viewer/useImageViewer";
 import {
   getFeed,
   getUserFeed,
@@ -64,6 +61,11 @@ import LoadContentButton from "@/LoadContentButton"; //to be deleted/confirmed
 import avatar12 from "@/assets/images/avatar/12.jpg";
 import { useAuthStore } from "@/features/account/store/authStore";
 import { AnimatePresence, motion } from "framer-motion";
+type ViewerImage = {
+  id: string;
+  src: string;
+  alt: string;
+};
 export type SocialUserType = {
   id: string;
   name: string;
@@ -441,11 +443,10 @@ interface PostCardProps extends SocialPostType {
   onReportComment: (commentId: string) => void;
 
   onReportPost: (postId: string) => void;
-  // ============================================
-  // callback used to open Facebook-style
-  // image viewer for this post.
-  // ============================================
-  onOpenImage: (postId: string) => void;
+  // ============================================================
+  // Callback now simply opens the global image viewer.
+  // ============================================================
+  onOpenImage: (postId: string, imageIndex: number) => void;
 }
 const PostCard = ({
   id,
@@ -458,7 +459,7 @@ const PostCard = ({
   socialUser,
   pageinfo,
   isVideo,
-
+  media,
   isLiked,
 
   onCommentLike,
@@ -689,11 +690,13 @@ const PostCard = ({
 
         {image && !isVideo && (
           <a
-            href={typeof image === "string" ? image : image?.src}
+            href={image}
             className="d-block"
             onClick={(event) => {
               event.preventDefault();
-              onOpenImage(id);
+
+              // First displayed image = index 0.
+              onOpenImage(id, 0);
             }}
           >
             <Image
@@ -884,43 +887,34 @@ const Feeds = ({
   const { user } = useAuthStore();
   const userId = user?.id;
 
-  // ============================================
-  // stores the post ID currently opened
-  // in the Facebook-style image viewer.
-  // ============================================
-  const [viewerImageId, setViewerImageId] = useState<string | null>(null);
+  // ============================================================
+  // Get the global image viewer actions.
+  //
+  // The actual FacebookImageViewer is rendered by the provider,
+  // not by Feeds.
+  // ============================================================
 
-  // ============================================
-  // derive viewer images directly from
-  // the posts state. This also works naturally
-  // with infinite scrolling.
-  // ============================================
-  const viewerImages = useMemo<ViewerImage[]>(() => {
-    return posts.flatMap((post) => {
-      if (!post.image || post.isVideo) {
-        return [];
-      }
+  const { openImages } = useImageViewer();
 
-      const src = typeof post.image === "string" ? post.image : post.image.src;
+  // ============================================================
+  // Open the global viewer for the selected post image.
+  //
+  // Instead of storing viewerImageId locally, we find the image
+  // index and give the complete image collection to the provider.
+  // ============================================================
 
-      return [
-        {
-          id: post.id,
-          src,
-          alt: "Post image",
-        },
-      ];
-    });
-  }, [posts]);
+  const handleOpenImage = (postId: string, imageIndex: number): void => {
+    const post = posts.find((item) => item.id === postId);
 
-  const viewerActiveIndex = viewerImages.findIndex(
-    (image) => image.id === viewerImageId,
-  );
+    if (!post?.media?.length) {
+      return;
+    }
 
-  const isViewerOpen = viewerImageId !== null && viewerActiveIndex !== -1;
+    if (imageIndex < 0 || imageIndex >= post.media.length) {
+      return;
+    }
 
-  const handleOpenImage = (postId: string): void => {
-    setViewerImageId(postId);
+    openImages(post.media, imageIndex);
   };
 
   const [showReportModal, setShowReportModal] = useState(false);
@@ -1248,7 +1242,18 @@ const Feeds = ({
 
       const mappedPosts = res.result.items
         .map((p): SocialPostType | null => {
-          console.log("post dataaaaaa", p);
+          const media: ViewerImage[] = (p.media ?? [])
+            .filter((item) => item.type !== "video" && Boolean(item.url))
+            .map((item, index) => ({
+              id: `${p.id}-${index}`,
+
+              src: item.url.startsWith("http")
+                ? item.url
+                : `http://localhost:7120/${item.url}`,
+
+              alt: `Post image ${index + 1}`,
+            }));
+
           const firstMedia = p.media?.[0];
           const imageUrl = firstMedia?.url;
 
@@ -1292,6 +1297,7 @@ const Feeds = ({
                   avatar: p.pageDetails.avatar || "/default-avatar.png",
                 }
               : undefined,
+            media,
           };
         })
         .filter((post): post is SocialPostType => post !== null);
@@ -1449,23 +1455,7 @@ const Feeds = ({
           {loading && <span>Loading more posts...</span>}
         </div>
       )}
-      {/* ============================================
-          Facebook-style fullscreen image viewer.
-          ============================================ */}
-      {isViewerOpen && (
-        <FacebookImageViewer
-          images={viewerImages}
-          activeIndex={viewerActiveIndex}
-          onClose={() => setViewerImageId(null)}
-          onNavigate={(index) => {
-            const nextImage = viewerImages[index];
 
-            if (nextImage) {
-              setViewerImageId(nextImage.id);
-            }
-          }}
-        />
-      )}
       <Modal show={showReportModal} onHide={closeReportModal}>
         {" "}
         <Modal.Header closeButton>

@@ -2,6 +2,7 @@ import type { StaticImageData } from "next/image";
 import type { IconType } from "react-icons";
 import type { BootstrapVariantType } from "./component";
 import type { ReactNode } from "react";
+import { ViewerImage } from "@/shared/components/ui/image-viewer/useImageViewer";
 
 type IdType = string;
 
@@ -77,6 +78,7 @@ export type SocialPostType = {
   };
   isLikedByCurrentUser?: boolean;
   isLiked?: boolean;
+  media?: ViewerImage[];
 };
 
 export type VideoType = {

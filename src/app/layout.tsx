@@ -10,6 +10,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "@/assets/scss/style.scss";
 import AppProvidersWrapper from "@/shared/components/wrappers/AppProvidersWrapper";
 import GLightboxProvider from "@/providers/GLightboxProvider";
+import ImageViewerProvider from "@/shared/components/ui/image-viewer/ImageViewerProvider";
 // const AppProvidersWrapper = dynamic(
 //   () => import("@/shared/components/wrappers/AppProvidersWrapper"),
 //   { ssr: false },
@@ -82,9 +83,10 @@ export default function RootLayout({
         <div id="__next_splash">
           <AppProvidersWrapper>
             <GLightboxProvider />
-
-            {children}
-            <Footer />
+            <ImageViewerProvider>
+              {children}
+              <Footer />
+            </ImageViewerProvider>
           </AppProvidersWrapper>
         </div>
       </body>
