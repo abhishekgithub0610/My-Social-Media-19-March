@@ -1,10 +1,6 @@
-import {
-  ApiResponseResult,
-  PagedResult,
-  PostFeedDto,
-} from "@/features/post/types/post";
+import { PagedResult, PostFeedDto } from "@/features/post/types/post";
 import { baseClient } from "@/shared/api/baseClient";
-
+import { ApiResponseResult } from "@/types/api";
 export enum ReportReason {
   Spam = 1,
   Harassment = 2,

@@ -39,8 +39,3 @@ export interface PagedResult<T> {
   items: T[];
   hasMore: boolean;
 }
-
-export interface ApiResponseResult<T> {
-  success: boolean;
-  result: T;
-}
