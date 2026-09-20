@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import Image from "next/image";
 import NextTopLoader from "nextjs-toploader";
 import Footer from "@/shared/components/layout/Footer";
-import logo from "@/assets/images/tenor.gif";
+import logo from "@/assets/images/tenor-old.gif";
 import { DEFAULT_PAGE_TITLE } from "@/shared/constants/appConstants";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@/assets/scss/style.scss";
