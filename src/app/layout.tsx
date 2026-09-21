@@ -10,7 +10,7 @@ import "@/assets/scss/style.scss";
 import AppProvidersWrapper from "@/shared/components/wrappers/AppProvidersWrapper";
 import GLightboxProvider from "@/providers/GLightboxProvider";
 import ImageViewerProvider from "@/shared/components/ui/image-viewer/ImageViewerProvider";
-
+//test
 const inter = Inter({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
