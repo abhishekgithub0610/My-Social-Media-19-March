@@ -617,27 +617,3 @@ const SignIn = () => {
 };
 
 export default SignIn;
-
-// // import type { Metadata } from "next";
-// // import { Card } from "react-bootstrap";
-// // import Link from "next/link";
-
-// // export const metadata: Metadata = {
-// //   title: "Sign In",
-// // };
-
-// // export default function SignInPage() {
-// //   return (
-// //     <Card className="card-body rounded-3 p-4 p-sm-5">
-// //       <div className="text-center">
-// //         <h1 className="mb-2">Sign in</h1>
-// //         <span className="d-block">
-// //           Don’t have an account? <Link href="/sign-up">Sign up here</Link>
-// //         </span>
-// //       </div>
-
-// //       {/* Later replace with LoginForm */}
-// //       <p className="text-center mt-4">Login form coming soon...</p>
-// //     </Card>
-// //   );
-// // }

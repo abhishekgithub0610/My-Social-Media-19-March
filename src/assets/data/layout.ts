@@ -112,6 +112,11 @@ export const settingPanelLinksData: ProfilePanelLink[] = [
     name: "Close account",
     link: "/settings/close-account",
   },
+  {
+    image: trashImg,
+    name: "Manage interests",
+    link: "/interests",
+  },
 ];
 
 export const coursePanelLinksData: ProfilePanelLink[] = [
