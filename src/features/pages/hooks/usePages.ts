@@ -41,9 +41,9 @@ export const useUpdatePage = () => {
       //   updatedPage
       // );
 
-      toast.success("Page updated successfully 🚀");
+      //toast.success("Page updated successfully 🚀");
 
-      onSuccess?.(updatedPage);
+      //onSuccess?.(updatedPage);
     },
   });
 };

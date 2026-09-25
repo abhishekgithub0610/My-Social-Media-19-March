@@ -193,6 +193,7 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
             router.push(`/profile/page?pageId=${initialData.id}`);
           },
           onError: (err: unknown) => {
+            console.log("Error updating page:", err);
             toast.error(getErrorMessage(err));
           },
         },
