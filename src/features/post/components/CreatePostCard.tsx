@@ -281,7 +281,10 @@ const CreatePostCard = ({
             >
               <BsThreeDots />
             </DropdownToggle>
-            <DropdownMenu className="dropdown-menu-end" aria-labelledby="feedActionShare">
+            <DropdownMenu
+              className="dropdown-menu-end"
+              aria-labelledby="feedActionShare"
+            >
               <DropdownItem href="#">Create a poll</DropdownItem>
               <DropdownItem href="#">Ask a question</DropdownItem>
               <DropdownDivider />
