@@ -47,6 +47,54 @@ export const toggleCommentLike = async (commentId: string) => {
   return response.data;
 };
 
+// CHANGED: Always send FormData, including text-only edits.
+export const updatePost = async (
+  postId: string,
+  content: string,
+  files?: File[],
+) => {
+  const formData = new FormData();
+
+  formData.append("content", content);
+
+  files?.forEach((file) => {
+    formData.append("files", file);
+  });
+
+  // CHANGED: Browser/Axios supplies Content-Type and multipart boundary.
+  const response = await baseClient.put(`/posts/${postId}`, formData);
+
+  return response.data;
+};
+
+// export const updatePost = async (
+//   postId: string,
+//   content: string,
+//   files?: File[],
+// ) => {
+//   if (files && files.length > 0) {
+//     const formData = new FormData();
+//     formData.append("content", content);
+//     files.forEach((file) => {
+//       formData.append("files", file);
+//     });
+
+//     const response = await baseClient.put(`/posts/${postId}`, formData, {
+//       headers: {
+//         "Content-Type": "multipart/form-data",
+//       },
+//     });
+
+//     return response.data;
+//   }
+
+//   const response = await baseClient.put(`/posts/${postId}`, {
+//     content,
+//   });
+
+//   return response.data;
+// };
+
 export const deletePost = async (postId: string) => {
   const response = await baseClient.delete(`/posts/${postId}`);
   return response.data;

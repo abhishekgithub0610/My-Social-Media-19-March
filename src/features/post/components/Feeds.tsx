@@ -14,6 +14,7 @@ import {
   togglePostLike,
   createComment,
   getPostComments,
+  updatePost,
 } from "@/features/post/services/postApi";
 import {
   deletePost,
@@ -22,6 +23,7 @@ import {
   reportComment,
   ReportReason,
 } from "@/features/post/services/postApi";
+import DropzoneFormInput from "@/shared/components/ui/DropzoneFormInput";
 import {
   Button,
   Card,
@@ -106,15 +108,19 @@ type ApiComment = {
 const ActionMenu = ({
   name,
   postId,
+  currentContent,
   onDelete,
-  isOwner, // ✅ added
+  isOwner,
   onReport,
+  onEdit,
 }: {
   name?: string;
   postId: string;
+  currentContent?: string;
   onDelete: (postId: string) => void;
-  isOwner: boolean; // ✅ added
+  isOwner: boolean;
   onReport: (postId: string) => void;
+  onEdit: (postId: string, currentContent: string) => void;
 }) => {
   return (
     <Dropdown>
@@ -159,18 +165,26 @@ const ActionMenu = ({
           </DropdownItem>
         </li>
         {isOwner && (
-          <li>
-            <DropdownItem
-              onClick={() => {
-                if (confirm("Are you sure you want to delete this post?")) {
-                  onDelete(postId);
-                }
-              }}
-            >
-              <BsSlashCircle size={22} className="fa-fw pe-2" />
-              Delete Post
-            </DropdownItem>
-          </li>
+          <>
+            <li>
+              <DropdownItem onClick={() => onEdit(postId, currentContent || "")}>
+                <BsPencilSquare size={22} className="fa-fw pe-2" />
+                Edit Post
+              </DropdownItem>
+            </li>
+            <li>
+              <DropdownItem
+                onClick={() => {
+                  if (confirm("Are you sure you want to delete this post?")) {
+                    onDelete(postId);
+                  }
+                }}
+              >
+                <BsSlashCircle size={22} className="fa-fw pe-2" />
+                Delete Post
+              </DropdownItem>
+            </li>
+          </>
         )}
         <li>
           <DropdownDivider />
@@ -438,6 +452,7 @@ interface PostCardProps extends SocialPostType {
   ) => Promise<void>;
 
   onDeletePost: (postId: string) => void;
+  onEditPost: (postId: string, currentContent: string) => void;
   setPosts: React.Dispatch<React.SetStateAction<SocialPostType[]>>;
   onDeleteComment: (commentId: string) => void;
   onReportComment: (commentId: string) => void;
@@ -466,6 +481,7 @@ const PostCard = ({
   onPostLike,
   onCreateComment,
   onDeletePost,
+  onEditPost,
   setPosts,
   onDeleteComment,
   onReportComment,
@@ -679,9 +695,11 @@ const PostCard = ({
           <ActionMenu
             name={socialUser?.name}
             postId={id}
+            currentContent={caption}
             onDelete={onDeletePost}
             onReport={onReportPost}
             isOwner={isOwner}
+            onEdit={onEditPost}
           />
         </div>
       </CardHeader>
@@ -918,6 +936,13 @@ const Feeds = ({
   };
 
   const [showReportModal, setShowReportModal] = useState(false);
+  const [editingPost, setEditingPost] = useState<{
+    id: string;
+    content: string;
+    media: ViewerImage[];
+  } | null>(null);
+  const [editingFiles, setEditingFiles] = useState<File[]>([]);
+  const [editLoading, setEditLoading] = useState(false);
 
   const [reportTargetId, setReportTargetId] = useState("");
 
@@ -1329,6 +1354,66 @@ const Feeds = ({
   }, [feedType, userId, pageId]);
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const handleEditPost = (postId: string, currentContent: string) => {
+    const post = posts.find((item) => item.id === postId);
+
+    setEditingPost({
+      id: postId,
+      content: currentContent,
+      media: post?.media || [],
+    });
+    setEditingFiles([]);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingPost || editLoading) return;
+
+    const nextContent = editingPost.content.trim();
+    if (!nextContent && !editingFiles.length && !editingPost.media.length) {
+      toast.error("Post content cannot be empty");
+      return;
+    }
+
+    try {
+      setEditLoading(true);
+      const response = await updatePost(
+        editingPost.id,
+        nextContent,
+        editingFiles.length ? editingFiles : undefined,
+      );
+
+      const updatedContent = response?.result?.content ?? nextContent;
+
+      setPosts((prev) =>
+        prev.map((post) =>
+          post.id === editingPost.id
+            ? {
+                ...post,
+                caption: updatedContent,
+                media:
+                  editingFiles.length > 0
+                    ? editingFiles.map((file, index) => ({
+                        id: `${editingPost.id}-${index}`,
+                        src: URL.createObjectURL(file),
+                        alt: file.name,
+                      }))
+                    : post.media || editingPost.media,
+              }
+            : post,
+        ),
+      );
+
+      toast.success("Post updated successfully");
+      setEditingPost(null);
+      setEditingFiles([]);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update post");
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   const handleDeletePost = async (postId: string) => {
     if (deletingId) return;
 
@@ -1436,6 +1521,7 @@ const Feeds = ({
               onPostLike={handlePostLike}
               onCreateComment={handleCreateComment}
               onDeletePost={handleDeletePost}
+              onEditPost={handleEditPost}
               onDeleteComment={handleDeleteComment}
               onReportComment={handleReportComment}
               onReportPost={handleReportPost}
@@ -1455,6 +1541,95 @@ const Feeds = ({
           {loading && <span>Loading more posts...</span>}
         </div>
       )}
+
+      <Modal
+        show={Boolean(editingPost)}
+        onHide={() => {
+          setEditingPost(null);
+          setEditingFiles([]);
+        }}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Post</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group>
+            <Form.Label>Post content</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={4}
+              value={editingPost?.content ?? ""}
+              onChange={(e) =>
+                setEditingPost((prev) =>
+                  prev ? { ...prev, content: e.target.value } : prev,
+                )
+              }
+            />
+          </Form.Group>
+
+          {(editingPost?.media?.length || editingFiles.length > 0) && (
+            <div className="mt-3">
+              <Form.Label>Current media</Form.Label>
+              <div className="d-flex flex-wrap gap-2">
+                {(editingFiles.length > 0
+                  ? editingFiles.map((file, index) => ({
+                      id: `new-${index}`,
+                      src: URL.createObjectURL(file),
+                      alt: file.name,
+                    }))
+                  : editingPost?.media || []
+                ).map((mediaItem) => (
+                  <div key={mediaItem.id} className="position-relative">
+                    {mediaItem.src.toLowerCase().endsWith(".mp4") ||
+                    mediaItem.src.toLowerCase().includes("video") ? (
+                      <video
+                        src={mediaItem.src}
+                        controls
+                        className="rounded"
+                        style={{ width: 120, height: 120, objectFit: "cover" }}
+                      />
+                    ) : (
+                      <Image
+                        src={mediaItem.src}
+                        alt={mediaItem.alt}
+                        width={120}
+                        height={120}
+                        className="rounded"
+                        unoptimized
+                        style={{ objectFit: "cover" }}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="mt-3">
+            <DropzoneFormInput
+              label="Add photos or videos"
+              text="Drag and drop images/videos here, or click to upload"
+              showPreview
+              onFileUpload={(files) => setEditingFiles(files as File[])}
+            />
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setEditingPost(null);
+              setEditingFiles([]);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleSaveEdit} disabled={editLoading}>
+            {editLoading ? "Saving..." : "Save Changes"}
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       <Modal show={showReportModal} onHide={closeReportModal}>
         {" "}
