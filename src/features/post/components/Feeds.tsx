@@ -167,7 +167,9 @@ const ActionMenu = ({
         {isOwner && (
           <>
             <li>
-              <DropdownItem onClick={() => onEdit(postId, currentContent || "")}>
+              <DropdownItem
+                onClick={() => onEdit(postId, currentContent || "")}
+              >
                 <BsPencilSquare size={22} className="fa-fw pe-2" />
                 Edit Post
               </DropdownItem>
@@ -1625,7 +1627,11 @@ const Feeds = ({
           >
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleSaveEdit} disabled={editLoading}>
+          <Button
+            variant="primary"
+            onClick={handleSaveEdit}
+            disabled={editLoading}
+          >
             {editLoading ? "Saving..." : "Save Changes"}
           </Button>
         </Modal.Footer>
