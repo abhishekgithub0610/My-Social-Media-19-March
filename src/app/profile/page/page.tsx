@@ -18,7 +18,14 @@ const PageProfileFeed = ({ params }: { params: { pageId: string } }) => {
         {page?.isOwner && (
           <CreatePostCard
             onPostCreated={(newPost) => {
-              setPosts((prev) => [newPost, ...prev]);
+              const pageinfo = page
+                ? {
+                    id: page.id,
+                    name: page.displayName,
+                    avatar: page.pageImageUrl,
+                  }
+                : undefined;
+              setPosts((prev) => [{ ...newPost, pageinfo }, ...prev]);
             }}
           />
         )}

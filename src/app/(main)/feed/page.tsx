@@ -32,7 +32,14 @@ const Home = () => {
       <Col md={8} lg={6} className="vstack gap-4">
         {/* <Stories /> */}
         <FeedTabs selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
-        <CreatePostCard isUserProfile={true} />
+        <CreatePostCard
+          isUserProfile={true}
+          onPostCreated={(newPost) => {
+            if (selectedTab === "friends") {
+              setPosts((prev) => [newPost, ...prev]);
+            }
+          }}
+        />
         <Feeds
           posts={posts}
           setPosts={setPosts}

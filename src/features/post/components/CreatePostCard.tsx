@@ -9,46 +9,26 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownToggle,
-  Modal,
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
 } from "react-bootstrap";
 import {
-  BsBookmarkCheck,
   BsCalendar2EventFill,
-  BsCameraReels,
-  BsEnvelope,
   BsImageFill,
-  BsPencilSquare,
+  BsSend,
   BsThreeDots,
+  BsX,
 } from "react-icons/bs";
-import * as yup from "yup";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import useToggle from "@/shared/hooks/useToggle"; //to be confirmed/deleted
-import DropzoneFormInput from "@/shared/components/ui/DropzoneFormInput";
+import useToggle from "@/shared/hooks/useToggle";
 import { toast } from "react-toastify";
-import avatar1 from "@/assets/images/avatar/01.jpg";
-import avatar2 from "@/assets/images/avatar/02.jpg";
 import avatar3 from "@/assets/images/avatar/03.jpg";
-import avatar4 from "@/assets/images/avatar/04.jpg";
-import avatar5 from "@/assets/images/avatar/05.jpg";
-import avatar6 from "@/assets/images/avatar/06.jpg";
-import avatar7 from "@/assets/images/avatar/07.jpg";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { SocialPostType } from "@/types/data";
-type EventForm = {
-  title: string;
-  description: string;
-  duration: string;
-  location: string;
-  guest: string;
-  privacy: string;
-};
 type CreatePostCardProps = {
   onPostCreated?: (post: SocialPostType) => void;
   isUserProfile?: boolean;
+};
+type PostAttachment = {
+  file: File;
+  preview: string;
 };
 type ApiPost = {
   id: string;
@@ -70,58 +50,74 @@ const CreatePostCard = ({
   onPostCreated,
   isUserProfile = false,
 }: CreatePostCardProps) => {
-  const guests = [
-    avatar1,
-    avatar2,
-    avatar3,
-    avatar4,
-    avatar5,
-    avatar6,
-    avatar7,
-  ];
-  const { isTrue: isOpenMedia, toggle: toggleTextModal } = useToggle();
+  const { toggle: toggleEvent } = useToggle();
   const [loading, setLoading] = useState(false);
-  const { isTrue: isOpenEvent, toggle: toggleEvent } = useToggle();
-  const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
-  const { isTrue: isOpenPost, toggle: togglePost } = useToggle();
-  const [activeModal, setActiveModal] = useState<"photo" | "video" | null>(
-    null,
-  );
-  const eventFormSchema = yup.object({
-    title: yup.string().required("Please enter event title"),
-    description: yup.string().required("Please enter event description"),
-    duration: yup.string().required("Please enter event duration"),
-    location: yup.string().required("Please enter event location"),
-    guest: yup
-      .string()
-      .email("Please enter valid email")
-      .required("Please enter event guest email"),
-    privacy: yup.string().required("Please select privacy"), // ✅ ADD
-  });
   const [text, setText] = useState("");
-  const [files, setFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
-  const { control, handleSubmit, watch } = useForm<EventForm>({
-    resolver: yupResolver(eventFormSchema),
-    defaultValues: {
-      privacy: "PB",
-    },
-  });
+  const [attachments, setAttachments] = useState<PostAttachment[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const attachmentUrlsRef = useRef<string[]>([]);
+
   useEffect(() => {
     return () => {
-      previews.forEach((url) => URL.revokeObjectURL(url));
+      attachmentUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
     };
   }, []);
-  const privacy = watch("privacy");
   const searchParams = useSearchParams();
 
+  const handleFilesSelected = (event: ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(event.currentTarget.files ?? []);
+    event.currentTarget.value = "";
+
+    if (selectedFiles.length === 0) return;
+
+    const remainingSlots = Math.max(10 - attachments.length, 0);
+    if (selectedFiles.length > remainingSlots) {
+      toast.error("You can attach up to 10 files.");
+    }
+
+    const validFiles = selectedFiles.slice(0, remainingSlots).filter((file) => {
+      if (file.type.startsWith("image") && file.size > 30 * 1024 * 1024) {
+        toast.error(`${file.name} is larger than 30 MB.`);
+        return false;
+      }
+
+      if (file.type.startsWith("video") && file.size > 4 * 1024 * 1024 * 1024) {
+        toast.error(`${file.name} is larger than 4 GB.`);
+        return false;
+      }
+
+      return file.type.startsWith("image") || file.type.startsWith("video");
+    });
+
+    const newAttachments = validFiles.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+    attachmentUrlsRef.current.push(
+      ...newAttachments.map((attachment) => attachment.preview),
+    );
+    setAttachments((prev) => [...prev, ...newAttachments]);
+  };
+
+  const removeAttachment = (preview: string) => {
+    URL.revokeObjectURL(preview);
+    attachmentUrlsRef.current = attachmentUrlsRef.current.filter(
+      (url) => url !== preview,
+    );
+    setAttachments((prev) =>
+      prev.filter((attachment) => attachment.preview !== preview),
+    );
+  };
+
   const handleCreatePost = async () => {
+    if ((!text.trim() && attachments.length === 0) || loading) return;
+
     try {
       setLoading(true);
       const state = useAuthStore.getState();
       const formData = new FormData();
       formData.append("content", text);
-      formData.append("privacy", privacy);
+      formData.append("privacy", "PB");
 
       if (!isUserProfile) {
         const pageId = searchParams.get("pageId");
@@ -130,7 +126,7 @@ const CreatePostCard = ({
           formData.append("pageId", pageId);
         }
       }
-      files.forEach((file) => {
+      attachments.forEach(({ file }) => {
         formData.append("files", file);
       });
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts`, {
@@ -144,7 +140,7 @@ const CreatePostCard = ({
       if (!res.ok) {
         const error = await res.text();
         console.error("API Error:", error);
-        setLoading(false); // ✅ FIX
+        toast.error("Failed to add post. Please try again.");
         return;
       }
       const json = await res.json();
@@ -152,19 +148,15 @@ const CreatePostCard = ({
       onPostCreated?.(mapToFeedPost(post));
 
       setText("");
-      setFiles([]);
-      setPreviews([]);
-
-      setTimeout(() => {
-        toggleTextModal();
-      }, 300);
-
-      setLoading(false);
-      toast.success("Post added successfully 🚀");
+      attachmentUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      attachmentUrlsRef.current = [];
+      setAttachments([]);
+      toast.success("Post added successfully");
     } catch (err) {
       console.error("Post error:", err);
-      setLoading(false);
       toast.error("Failed to add post. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
   const mapToFeedPost = (p: ApiPost): SocialPostType => {
@@ -189,215 +181,128 @@ const CreatePostCard = ({
       },
     };
   };
-  const openModal = () => {
-    setText("");
-    setFiles([]);
-    setPreviews([]);
-    toggleTextModal();
-  };
   return (
-    <>
-      <Card className="card-body">
-        <div className="d-flex mb-3">
-          <div className="avatar avatar-xs me-2">
-            <span role="button">
-              {" "}
-              <Image
-                className="avatar-img rounded-circle"
-                src={avatar3}
-                alt="avatar3"
-              />{" "}
-            </span>
-          </div>
-
-          <form className="w-100">
+    <Card className="card-body">
+      <input
+        ref={fileInputRef}
+        className="d-none"
+        type="file"
+        accept="image/*,video/*"
+        multiple
+        onChange={handleFilesSelected}
+      />
+      <div className="d-flex mb-3">
+        <div className="avatar avatar-xs me-2">
+          <Image
+            className="avatar-img rounded-circle"
+            src={avatar3}
+            alt="Your profile"
+          />
+        </div>
+        <div className="w-100">
+          <form onSubmit={(event) => event.preventDefault()}>
             <textarea
               className="form-control pe-4 border-0"
               rows={2}
               data-autoresize
               placeholder="Share your thoughts..."
-              defaultValue={""}
+              value={text}
+              onChange={(event) => setText(event.target.value)}
             />
           </form>
         </div>
+      </div>
 
-        <ul className="nav nav-pills nav-stack small fw-normal">
-          <li className="nav-item">
-            <a className="nav-link bg-light py-1 px-2 mb-0" onClick={openModal}>
-              {" "}
-              <BsImageFill size={20} className="text-success pe-2" />
-              Photo/Video
-            </a>
-          </li>
+      {attachments.length > 0 && (
+        <div className="row g-2 mb-3">
+          {attachments.map((attachment) => (
+            <div className="col-6 col-md-4" key={attachment.preview}>
+              <div className="position-relative">
+                {attachment.file.type.startsWith("image") ? (
+                  <img
+                    src={attachment.preview}
+                    alt={attachment.file.name}
+                    className="img-fluid rounded w-100"
+                  />
+                ) : (
+                  <video
+                    src={attachment.preview}
+                    controls
+                    className="w-100 rounded"
+                  />
+                )}
+                <button
+                  type="button"
+                  className="btn btn-dark btn-sm position-absolute top-0 end-0 m-2 rounded-circle"
+                  aria-label={`Remove ${attachment.file.name}`}
+                  onClick={() => removeAttachment(attachment.preview)}
+                >
+                  <BsX />
+                </button>
+              </div>
+              <div className="small text-truncate mt-1">
+                {attachment.file.name}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
-          <li className="nav-item">
-            <a
-              className="nav-link bg-light py-1 px-2 mb-0"
-              onClick={toggleEvent}
-            >
-              {" "}
-              <BsCalendar2EventFill size={20} className="text-danger pe-2" />
-              Event{" "}
-            </a>
-          </li>
+      <ul className="nav nav-pills nav-stack small fw-normal align-items-center gap-2">
+        <li className="nav-item">
+          <button
+            type="button"
+            className="nav-link bg-light py-1 px-2 mb-0 border-0"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <BsImageFill size={20} className="text-success pe-2" />
+            Photo/Video
+          </button>
+        </li>
 
-          <Dropdown drop="start" className="nav-item ms-lg-auto">
+        <li className="nav-item">
+          <button
+            type="button"
+            className="nav-link bg-light py-1 px-2 mb-0 border-0"
+            onClick={toggleEvent}
+          >
+            <BsCalendar2EventFill size={20} className="text-danger pe-2" />
+            Event
+          </button>
+        </li>
+
+        <li className="nav-item ms-lg-auto">
+          <Dropdown drop="start">
             <DropdownToggle
-              as="a"
-              className="nav-link bg-light py-1 px-2 mb-0 content-none"
+              as="button"
+              className="nav-link bg-light py-1 px-2 mb-0 content-none border-0"
               id="feedActionShare"
-              data-bs-toggle="dropdown"
               aria-expanded="false"
             >
               <BsThreeDots />
             </DropdownToggle>
-
-            <DropdownMenu
-              className="dropdown-menu-end"
-              aria-labelledby="feedActionShare"
-            >
-              <li>
-                <DropdownItem href="#">
-                  {" "}
-                  <BsEnvelope size={21} className="fa-fw pe-2" />
-                  Create a poll
-                </DropdownItem>
-              </li>
-              <li>
-                <DropdownItem href="#">
-                  {" "}
-                  <BsBookmarkCheck size={21} className="fa-fw pe-2" />
-                  Ask a question{" "}
-                </DropdownItem>
-              </li>
-              <li>
-                <DropdownDivider />
-              </li>
-              <li>
-                <DropdownItem href="#">
-                  {" "}
-                  <BsPencilSquare size={21} className="fa-fw pe-2" />
-                  Help
-                </DropdownItem>
-              </li>
+            <DropdownMenu className="dropdown-menu-end" aria-labelledby="feedActionShare">
+              <DropdownItem href="#">Create a poll</DropdownItem>
+              <DropdownItem href="#">Ask a question</DropdownItem>
+              <DropdownDivider />
+              <DropdownItem href="#">Help</DropdownItem>
             </DropdownMenu>
           </Dropdown>
-        </ul>
-      </Card>
-      <Modal
-        show={isOpenMedia}
-        onHide={() => {
-          setLoading(false);
-          toggleTextModal();
-        }}
-        centered
-        className="fade"
-        id="feedActionPhoto"
-        tabIndex={-1}
-        aria-labelledby="feedActionPhotoLabel"
-        aria-hidden="true"
-        container={typeof window !== "undefined" ? document.body : undefined}
-      >
-        <ModalHeader closeButton>
-          <h5 className="modal-title" id="feedActionPhotoLabel">
-            Add post
-          </h5>
-        </ModalHeader>
-        <ModalBody>
-          <div className="d-flex mb-3">
-            <div className="avatar avatar-xs me-2">
-              <Image
-                className="avatar-img rounded-circle"
-                src={avatar3}
-                alt=""
-              />
-            </div>
-            <textarea
-              className="form-control pe-4 fs-3 lh-1 border-0"
-              rows={2}
-              placeholder="Share your thoughts..."
-              value={text} // ✅ ADDED: bind with state
-              onChange={(e) => setText(e.target.value)} // ✅ ADDED: update state
-            />
-          </div>
-          <div>
-            <label className="form-label">Upload attachment</label>
-            <DropzoneFormInput
-              label="Upload photo/video"
-              icon={BsCameraReels}
-              showPreview
-              text="Drag here or click to upload photo."
-              onFileUpload={(uploadedFiles) => {
-                if (!uploadedFiles?.length) return;
+        </li>
 
-                const newFiles = [...files, ...uploadedFiles];
-
-                if (newFiles.length > 10) {
-                  alert("Max 10 files allowed");
-                  return;
-                }
-
-                const validFiles: File[] = [];
-                const previewUrls: string[] = [];
-
-                for (const file of uploadedFiles) {
-                  if (
-                    file.type.startsWith("image") &&
-                    file.size > 30 * 1024 * 1024
-                  ) {
-                    alert("Image must be < 30MB");
-                    continue;
-                  }
-
-                  if (
-                    file.type.startsWith("video") &&
-                    file.size > 4 * 1024 * 1024 * 1024
-                  ) {
-                    alert("Video must be < 4GB");
-                    continue;
-                  }
-
-                  validFiles.push(file);
-                  previewUrls.push(URL.createObjectURL(file));
-                }
-
-                setFiles((prev) => [...prev, ...validFiles]);
-                setPreviews((prev) => [...prev, ...previewUrls]);
-              }}
-            />
-            {previews.map((preview, index) => (
-              <div key={index} className="mt-2">
-                {files[index]?.type.startsWith("image") ? (
-                  <img src={preview} className="img-fluid rounded" />
-                ) : (
-                  <video src={preview} controls className="w-100 rounded" />
-                )}
-              </div>
-            ))}
-          </div>
-        </ModalBody>
-        <ModalFooter>
+        <li className="nav-item">
           <button
             type="button"
-            className="btn btn-danger-soft me-2"
-            onClick={() => {
-              setLoading(false);
-              toggleTextModal();
-            }}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="btn btn-success-soft"
+            className="btn btn-primary d-flex align-items-center gap-2"
             onClick={handleCreatePost}
-            disabled={loading || (!text && files.length === 0)}
+            disabled={loading || (!text.trim() && attachments.length === 0)}
           >
-            {loading ? "Posting..." : "Post"}
+            <BsSend />
+            {loading ? "Posting..." : "Add post"}
           </button>
-        </ModalFooter>
-      </Modal>
-    </>
+        </li>
+      </ul>
+    </Card>
   );
 };
 export default CreatePostCard;
