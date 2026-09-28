@@ -2,7 +2,7 @@
 
 import { baseClient } from "@/shared/api/baseClient";
 import { ApiResponse } from "@/shared/types/api";
-import { UserProfileType } from "../types/user";
+import type { UserProfileType, UserStatsType } from "../types/user";
 
 export type UpdateUserProfilePayload = {
   fullName: string;
@@ -21,6 +21,13 @@ export type ChangePasswordPayload = {
 export const getUserById = async (id: string): Promise<UserProfileType> => {
   const res = await baseClient.get<ApiResponse<UserProfileType>>(
     `/users/${id}`,
+  );
+  return res.data.result;
+};
+
+export const getUserStats = async (id: string): Promise<UserStatsType> => {
+  const res = await baseClient.get<ApiResponse<UserStatsType>>(
+    `/users/${id}/stats`,
   );
   return res.data.result;
 };

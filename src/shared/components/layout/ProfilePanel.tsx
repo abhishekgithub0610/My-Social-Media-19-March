@@ -12,7 +12,8 @@ import bgBannerImg from "@/assets/images/bg/01.jpg";
 import { useAuthStore } from "@/features/account/store/authStore";
 import { getUserById } from "@/features/users/services/userApi";
 import { useEffect, useState } from "react";
-import { UserProfileType } from "@/features/users/types/user";
+import type { UserProfileType } from "@/features/users/types/user";
+import { useUserStats } from "@/features/users/hooks/useUserStats";
 import { useImageViewer } from "@/shared/components/ui/image-viewer/useImageViewer";
 type ProfilePanelProps = {
   links: ProfilePanelLink[];
@@ -23,6 +24,10 @@ const ProfilePanel = ({ links }: ProfilePanelProps) => {
   const [profileImage, setProfileImage] = useState<string>("");
   const [bio, setBio] = useState<string>("");
   const [userAllData, setUserAllData] = useState<UserProfileType | null>(null);
+  const { data: userStats, isPending: isStatsPending, isError: isStatsError } =
+    useUserStats(user?.id);
+  const displayStat = (count: number | undefined) =>
+    isStatsPending ? "..." : count ?? (isStatsError ? "—" : 0);
   const { openImage } = useImageViewer();
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -95,21 +100,21 @@ const ProfilePanel = ({ links }: ProfilePanelProps) => {
             <div className="hstack gap-2 gap-xl-3 justify-content-center">
               <div>
                 <h6 className="mb-0">
-                  {userAllData ? userAllData.noOfPosts : "..."}
+                  {displayStat(userStats?.postCount)}
                 </h6>
                 <small>Post</small>
               </div>
               <div className="vr" />
               <div>
                 <h6 className="mb-0">
-                  {userAllData ? userAllData.noOfFollowers : "..."}
+                  {displayStat(userStats?.followerCount)}
                 </h6>
                 <small>Followers</small>
               </div>
               <div className="vr" />
               <div>
                 <h6 className="mb-0">
-                  {userAllData ? userAllData.noOfFollowings : "..."}
+                  {displayStat(userStats?.followingCount)}
                 </h6>
                 <small>Following</small>
               </div>

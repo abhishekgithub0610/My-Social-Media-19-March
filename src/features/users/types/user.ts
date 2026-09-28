@@ -9,7 +9,10 @@ export type UserProfileType = {
   phoneNumber?: string;
   countryCode?: string;
   dateOfBirth?: string;
-  noOfFollowers: number;
-  noOfFollowings: number;
-  noOfPosts: number;
+};
+
+export type UserStatsType = {
+  postCount: number;
+  followerCount: number;
+  followingCount: number;
 };
