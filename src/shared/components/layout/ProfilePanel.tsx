@@ -24,10 +24,13 @@ const ProfilePanel = ({ links }: ProfilePanelProps) => {
   const [profileImage, setProfileImage] = useState<string>("");
   const [bio, setBio] = useState<string>("");
   const [userAllData, setUserAllData] = useState<UserProfileType | null>(null);
-  const { data: userStats, isPending: isStatsPending, isError: isStatsError } =
-    useUserStats(user?.id);
+  const {
+    data: userStats,
+    isPending: isStatsPending,
+    isError: isStatsError,
+  } = useUserStats(user?.id);
   const displayStat = (count: number | undefined) =>
-    isStatsPending ? "..." : count ?? (isStatsError ? "—" : 0);
+    isStatsPending ? "..." : (count ?? (isStatsError ? "—" : 0));
   const { openImage } = useImageViewer();
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -99,9 +102,7 @@ const ProfilePanel = ({ links }: ProfilePanelProps) => {
 
             <div className="hstack gap-2 gap-xl-3 justify-content-center">
               <div>
-                <h6 className="mb-0">
-                  {displayStat(userStats?.postCount)}
-                </h6>
+                <h6 className="mb-0">{displayStat(userStats?.postCount)}</h6>
                 <small>Post</small>
               </div>
               <div className="vr" />
