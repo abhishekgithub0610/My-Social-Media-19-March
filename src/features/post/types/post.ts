@@ -9,6 +9,7 @@ export interface FeedPageDto {
   name: string;
   avatar: string;
   id: string;
+  isFollowing?: boolean;
 }
 export interface FeedUserDto {
   name: string;

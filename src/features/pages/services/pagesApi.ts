@@ -39,6 +39,14 @@ export const getFollowingPages = async (): Promise<PageType[]> => {
   return res.data.result || [];
 };
 
+export const followPage = async (pageId: string): Promise<void> => {
+  await baseClient.post(`/pages/${pageId}/follow`, { pageType: 0 });
+};
+
+export const unfollowPage = async (pageId: string): Promise<void> => {
+  await baseClient.delete(`/pages/${pageId}/follow`);
+};
+
 export const getSuggestedPages = async (): Promise<PageType[]> => {
   const res =
     await baseClient.get<ApiResponse<PageType[]>>("/pages/suggestions");

@@ -23,6 +23,10 @@ import {
   reportComment,
   ReportReason,
 } from "@/features/post/services/postApi";
+import {
+  followPage,
+  unfollowPage,
+} from "@/features/pages/services/pagesApi";
 import DropzoneFormInput from "@/shared/components/ui/DropzoneFormInput";
 import {
   Button,
@@ -58,6 +62,7 @@ import {
   BsThreeDots,
   BsChevronDown,
   BsChevronUp,
+  BsPersonCheckFill,
 } from "react-icons/bs";
 import LoadContentButton from "@/LoadContentButton"; //to be deleted/confirmed
 import avatar12 from "@/assets/images/avatar/12.jpg";
@@ -113,6 +118,7 @@ const ActionMenu = ({
   isOwner,
   onReport,
   onEdit,
+  onUnfollow,
 }: {
   name?: string;
   postId: string;
@@ -121,6 +127,7 @@ const ActionMenu = ({
   isOwner: boolean;
   onReport: (postId: string) => void;
   onEdit: (postId: string, currentContent: string) => void;
+  onUnfollow?: () => void;
 }) => {
   return (
     <Dropdown>
@@ -143,13 +150,20 @@ const ActionMenu = ({
             Save post
           </DropdownItem>
         </li>
-        <li>
-          <DropdownItem onClick={(e) => e.preventDefault()}>
-            {" "}
-            <BsPersonX size={22} className="fa-fw pe-2" />
-            Unfollow {name}{" "}
-          </DropdownItem>
-        </li>
+        {onUnfollow && (
+          <li>
+            <DropdownItem
+              onClick={(e) => {
+                e.preventDefault();
+                onUnfollow();
+              }}
+            >
+              {" "}
+              <BsPersonX size={22} className="fa-fw pe-2" />
+              Unfollow {name}{" "}
+            </DropdownItem>
+          </li>
+        )}
         <li>
           <DropdownItem onClick={(e) => e.preventDefault()}>
             {" "}
@@ -464,6 +478,9 @@ interface PostCardProps extends SocialPostType {
   // Callback now simply opens the global image viewer.
   // ============================================================
   onOpenImage: (postId: string, imageIndex: number) => void;
+  isFollowingPage: boolean | null;
+  onFollowPage: (pageId: string) => Promise<void>;
+  onUnfollowPage: (pageId: string) => Promise<void>;
 }
 const PostCard = ({
   id,
@@ -489,10 +506,15 @@ const PostCard = ({
   onReportComment,
   onReportPost,
   onOpenImage,
+  isFollowingPage,
+  onFollowPage,
+  onUnfollowPage,
 }: PostCardProps) => {
   const { user } = useAuthStore(); // ✅ FIXED
 
   const isOwner = user?.id === socialUser?.id;
+  const [followLoading, setFollowLoading] = useState(false);
+  const [showFollowConfirmation, setShowFollowConfirmation] = useState(false);
   const [commentLoading, setCommentLoading] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [showComments, setShowComments] = useState(false);
@@ -511,6 +533,20 @@ const PostCard = ({
       toast.success("Link copied successfully");
     } catch {
       toast.error("Failed to copy link");
+    }
+  };
+
+  const handleFollowPage = async () => {
+    if (!pageinfo || followLoading) return;
+
+    setFollowLoading(true);
+    setShowFollowConfirmation(true);
+    try {
+      await onFollowPage(pageinfo.id);
+    } catch {
+      setShowFollowConfirmation(false);
+    } finally {
+      setFollowLoading(false);
     }
   };
 
@@ -694,15 +730,53 @@ const PostCard = ({
               <p className="mb-0 small">Web Developer at StackBros</p>
             </div>
           </div>
-          <ActionMenu
-            name={socialUser?.name}
-            postId={id}
-            currentContent={caption}
-            onDelete={onDeletePost}
-            onReport={onReportPost}
-            isOwner={isOwner}
-            onEdit={onEditPost}
-          />
+          {pageinfo && isFollowingPage === null ? null : (
+            <div className="d-flex align-items-center gap-2">
+              {pageinfo && !isFollowingPage && !showFollowConfirmation ? (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleFollowPage}
+                  disabled={followLoading}
+                >
+                  {followLoading ? "Following..." : "Follow"}
+                </Button>
+              ) : (
+                <>
+                  {pageinfo && showFollowConfirmation && (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      title={`Followed ${pageinfo.name}`}
+                      aria-label={`Followed ${pageinfo.name}`}
+                      disabled
+                    >
+                      <BsPersonCheckFill />
+                    </Button>
+                  )}
+                  {(isFollowingPage || !pageinfo) && (
+                    <ActionMenu
+                      name={pageinfo?.name ?? socialUser?.name}
+                      postId={id}
+                      currentContent={caption}
+                      onDelete={onDeletePost}
+                      onReport={onReportPost}
+                      isOwner={isOwner}
+                      onEdit={onEditPost}
+                      onUnfollow={
+                        pageinfo && isFollowingPage
+                          ? async () => {
+                              await onUnfollowPage(pageinfo.id);
+                              setShowFollowConfirmation(false);
+                            }
+                          : undefined
+                      }
+                    />
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardBody>
@@ -1025,6 +1099,46 @@ const Feeds = ({
     }
   };
 
+  const handleFollowPage = async (targetPageId: string) => {
+    try {
+      await followPage(targetPageId);
+      setPosts((previous) =>
+        previous.map((post) =>
+          post.pageinfo?.id === targetPageId
+            ? {
+                ...post,
+                pageinfo: { ...post.pageinfo, isFollowing: true },
+              }
+            : post,
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to follow page:", error);
+      toast.error("Failed to follow page");
+      throw error;
+    }
+  };
+
+  const handleUnfollowPage = async (targetPageId: string) => {
+    try {
+      await unfollowPage(targetPageId);
+      setPosts((previous) =>
+        previous.map((post) =>
+          post.pageinfo?.id === targetPageId
+            ? {
+                ...post,
+                pageinfo: { ...post.pageinfo, isFollowing: false },
+              }
+            : post,
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to unfollow page:", error);
+      toast.error("Failed to unfollow page");
+      throw error;
+    }
+  };
+
   const addReplyRecursively = (
     comments: CommentType[],
     parentCommentId: string,
@@ -1322,6 +1436,7 @@ const Feeds = ({
                   id: p.pageDetails.id,
                   name: p.pageDetails.name,
                   avatar: p.pageDetails.avatar || "/default-avatar.png",
+                  isFollowing: p.pageDetails.isFollowing,
                 }
               : undefined,
             media,
@@ -1531,6 +1646,13 @@ const Feeds = ({
               //  opens the custom Facebook-style viewer.
               // ============================================
               onOpenImage={handleOpenImage}
+              isFollowingPage={
+                post.pageinfo
+                  ? (post.pageinfo.isFollowing ?? null)
+                  : null
+              }
+              onFollowPage={handleFollowPage}
+              onUnfollowPage={handleUnfollowPage}
             />
           </motion.div>
         ))}

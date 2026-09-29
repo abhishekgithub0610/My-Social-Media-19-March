@@ -57,7 +57,7 @@ const FollowButton = ({ page }: Props) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ pageTypeId: val.value }),
+      body: JSON.stringify({ pageType: val.value }),
       credentials: "include",
     });
   };
