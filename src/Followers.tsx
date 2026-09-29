@@ -1,7 +1,4 @@
-import {
-  getPages,
-  followPage,
-} from "@/features/pages/services/pagesApi";
+import { getPages, followPage } from "@/features/pages/services/pagesApi";
 import Image from "next/image";
 import { PageType } from "@/shared/types/PageType";
 import Link from "next/link";
@@ -68,10 +65,7 @@ const Followers = () => {
   };
 
   const pagesToFollow = pages
-    .filter(
-      (page) =>
-        !page.isFollowing || recentlyFollowedPageIds.has(page.id),
-    )
+    .filter((page) => !page.isFollowing || recentlyFollowedPageIds.has(page.id))
     .slice(0, 5);
 
   if (loading) {
@@ -86,8 +80,7 @@ const Followers = () => {
 
       <CardBody>
         {pagesToFollow.map((page) => {
-          const showFollowedConfirmation =
-            recentlyFollowedPageIds.has(page.id);
+          const showFollowedConfirmation = recentlyFollowedPageIds.has(page.id);
 
           return (
             <div key={page.id} className="hstack gap-2 mb-3">
