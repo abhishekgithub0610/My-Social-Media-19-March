@@ -23,10 +23,7 @@ import {
   reportComment,
   ReportReason,
 } from "@/features/post/services/postApi";
-import {
-  followPage,
-  unfollowPage,
-} from "@/features/pages/services/pagesApi";
+import { followPage, unfollowPage } from "@/features/pages/services/pagesApi";
 import DropzoneFormInput from "@/shared/components/ui/DropzoneFormInput";
 import {
   Button,
@@ -1647,9 +1644,7 @@ const Feeds = ({
               // ============================================
               onOpenImage={handleOpenImage}
               isFollowingPage={
-                post.pageinfo
-                  ? (post.pageinfo.isFollowing ?? null)
-                  : null
+                post.pageinfo ? (post.pageinfo.isFollowing ?? null) : null
               }
               onFollowPage={handleFollowPage}
               onUnfollowPage={handleUnfollowPage}
