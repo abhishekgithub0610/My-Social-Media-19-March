@@ -1,11 +1,10 @@
 "use client";
-import { settingPanelLinksData } from "@/assets/data/layout";
-import SettingPanel from "@/shared/components/layout/SettingPanel";
-import { useLayoutContext } from "@/context/useLayoutContext";
-import useViewPort from "@/useViewPort";
+
 import type { ChildrenType } from "@/types/component";
 import Navbar from "@/shared/components/layout/Navbar";
-
+import DashboardSidebar from "@/features/dashboard/components/DashboardSidebar";
+import { useLayoutContext } from "@/context/useLayoutContext";
+import useViewPort from "@/useViewPort";
 import {
   Col,
   Container,
@@ -16,60 +15,58 @@ import {
 } from "react-bootstrap";
 import { FaSlidersH } from "react-icons/fa";
 
-const SettingLayout = ({ children }: ChildrenType) => {
+const DashboardLayout = ({ children }: ChildrenType) => {
   const { width } = useViewPort();
   const { startOffcanvas } = useLayoutContext();
+
   return (
     <>
       <Navbar />
-
       <main>
         <Container>
-          <Row>
+          <div className="mb-4">
+            <h1 className="h3 mb-1">Welcome to your dashboard</h1>
+            <p className="text-body-secondary mb-0">
+              Your activity, audience, and page performance at a glance.
+            </p>
+          </div>
+          <Row className="g-4">
             <Col lg={3}>
-              <div className="d-flex align-items-center mb-4 d-lg-none">
+              <div className="d-flex align-items-center mb-3 d-lg-none">
                 <button
                   onClick={startOffcanvas.toggle}
-                  className="border-0 bg-transparent"
+                  className="border-0 bg-transparent p-0"
                   type="button"
-                  data-bs-toggle="offcanvas"
-                  data-bs-target="#offcanvasNavbar"
-                  aria-controls="offcanvasNavbar"
+                  aria-label="Open dashboard navigation"
                 >
                   <span className="btn btn-primary">
                     <FaSlidersH />
                   </span>
-                  <span className="h6 mb-0 fw-bold d-lg-none ms-2">
-                    Settings
-                  </span>
+                  <span className="h6 mb-0 ms-2">Dashboard menu</span>
                 </button>
               </div>
               <nav className="navbar navbar-light navbar-expand-lg mx-0">
                 {width >= 992 ? (
-                  <div className="p-0">
-                    <SettingPanel links={settingPanelLinksData} />
-                  </div>
+                  <DashboardSidebar />
                 ) : (
                   <Offcanvas
                     show={startOffcanvas.open}
                     onHide={startOffcanvas.toggle}
                     placement="start"
                     tabIndex={-1}
-                    id="offcanvasNavbar"
+                    id="dashboardNavigation"
                     className="w-75"
                   >
                     <OffcanvasHeader closeButton />
                     <OffcanvasBody className="p-0">
-                      <div>
-                        <SettingPanel links={settingPanelLinksData} />
-                      </div>
+                      <DashboardSidebar />
                     </OffcanvasBody>
                   </Offcanvas>
                 )}
               </nav>
             </Col>
             <Col lg={9} className="vstack gap-4">
-              <div className="tab-content py-0 mb-0">{children}</div>
+              {children}
             </Col>
           </Row>
         </Container>
@@ -77,4 +74,5 @@ const SettingLayout = ({ children }: ChildrenType) => {
     </>
   );
 };
-export default SettingLayout;
+
+export default DashboardLayout;

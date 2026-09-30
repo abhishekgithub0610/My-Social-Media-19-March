@@ -31,6 +31,7 @@ import {
   BsEnvelope,
   BsFileEarmarkPdf,
   BsGear,
+  BsGraphUp,
   BsGeoAlt,
   BsHeart,
   BsLock,
@@ -176,14 +177,24 @@ const UserProfileLayout = ({ children }: ChildrenType) => {
                     </div>
                     <div className="d-flex mt-3 justify-content-center ms-sm-auto">
                       {user.isOwner && (
-                        <Button
-                          variant="danger-soft"
-                          className="me-2"
-                          onClick={() => router.push(`/settings/account`)}
-                        >
-                          <BsPencilFill size={19} className="pe-1" />
-                          Edit Profile
-                        </Button>
+                        <>
+                          <Button
+                            variant="primary-soft"
+                            className="me-2"
+                            onClick={() => router.push("/dashboard/insights")}
+                          >
+                            <BsGraphUp size={18} className="me-1" />
+                            Insights
+                          </Button>
+                          <Button
+                            variant="danger-soft"
+                            className="me-2"
+                            onClick={() => router.push(`/settings/account`)}
+                          >
+                            <BsPencilFill size={19} className="pe-1" />
+                            Edit Profile
+                          </Button>
+                        </>
                       )}
                       <Dropdown>
                         <DropdownToggle
