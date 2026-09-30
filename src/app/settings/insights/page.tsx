@@ -51,9 +51,27 @@ const previewByPeriod: Record<InsightsPeriod, InsightsDashboard> = {
       ],
     },
     pages: [
-      { id: "design-club", name: "Design Club", followers: 4210, engagementRate: 5.2, reach: 8400 },
-      { id: "weekend-eats", name: "Weekend Eats", followers: 2890, engagementRate: 3.7, reach: 6100 },
-      { id: "city-frames", name: "City Frames", followers: 5380, engagementRate: 4.9, reach: 6900 },
+      {
+        id: "design-club",
+        name: "Design Club",
+        followers: 4210,
+        engagementRate: 5.2,
+        reach: 8400,
+      },
+      {
+        id: "weekend-eats",
+        name: "Weekend Eats",
+        followers: 2890,
+        engagementRate: 3.7,
+        reach: 6100,
+      },
+      {
+        id: "city-frames",
+        name: "City Frames",
+        followers: 5380,
+        engagementRate: 4.9,
+        reach: 6900,
+      },
     ],
   },
   "30d": {
@@ -88,9 +106,27 @@ const previewByPeriod: Record<InsightsPeriod, InsightsDashboard> = {
       ],
     },
     pages: [
-      { id: "design-club", name: "Design Club", followers: 4210, engagementRate: 5.2, reach: 31400 },
-      { id: "weekend-eats", name: "Weekend Eats", followers: 2890, engagementRate: 3.7, reach: 18100 },
-      { id: "city-frames", name: "City Frames", followers: 5380, engagementRate: 4.9, reach: 36700 },
+      {
+        id: "design-club",
+        name: "Design Club",
+        followers: 4210,
+        engagementRate: 5.2,
+        reach: 31400,
+      },
+      {
+        id: "weekend-eats",
+        name: "Weekend Eats",
+        followers: 2890,
+        engagementRate: 3.7,
+        reach: 18100,
+      },
+      {
+        id: "city-frames",
+        name: "City Frames",
+        followers: 5380,
+        engagementRate: 4.9,
+        reach: 36700,
+      },
     ],
   },
   "90d": {
@@ -125,9 +161,27 @@ const previewByPeriod: Record<InsightsPeriod, InsightsDashboard> = {
       ],
     },
     pages: [
-      { id: "design-club", name: "Design Club", followers: 4210, engagementRate: 5.2, reach: 91300 },
-      { id: "weekend-eats", name: "Weekend Eats", followers: 2890, engagementRate: 3.7, reach: 52600 },
-      { id: "city-frames", name: "City Frames", followers: 5380, engagementRate: 4.9, reach: 102900 },
+      {
+        id: "design-club",
+        name: "Design Club",
+        followers: 4210,
+        engagementRate: 5.2,
+        reach: 91300,
+      },
+      {
+        id: "weekend-eats",
+        name: "Weekend Eats",
+        followers: 2890,
+        engagementRate: 3.7,
+        reach: 52600,
+      },
+      {
+        id: "city-frames",
+        name: "City Frames",
+        followers: 5380,
+        engagementRate: 4.9,
+        reach: 102900,
+      },
     ],
   },
 };
@@ -226,12 +280,17 @@ const MetricCard = ({
               <BsArrowUpRight aria-hidden="true" />
             ) : (
               <BsArrowDownRight aria-hidden="true" />
-            )} {Math.abs(change)}{changeLabel}
+            )}{" "}
+            {Math.abs(change)}
+            {changeLabel}
           </span>
           <span className="text-body-secondary ms-1">vs previous period</span>
         </div>
       ) : (
-        <Link href={href ?? "/pages"} className="small mt-auto text-decoration-none">
+        <Link
+          href={href ?? "/pages"}
+          className="small mt-auto text-decoration-none"
+        >
           View all pages
         </Link>
       )}
@@ -269,7 +328,11 @@ const InsightsPage = () => {
                   aria-pressed={period === option}
                   onClick={() => setPeriod(option)}
                 >
-                  {option === "7d" ? "7 days" : option === "30d" ? "30 days" : "90 days"}
+                  {option === "7d"
+                    ? "7 days"
+                    : option === "30d"
+                      ? "30 days"
+                      : "90 days"}
                 </button>
               ))}
             </div>
@@ -342,7 +405,13 @@ const InsightsPage = () => {
                 label="Follower growth trend"
               />
               <div className="d-flex justify-content-between small text-body-secondary">
-                <span>{period === "7d" ? "7 days ago" : period === "30d" ? "30 days ago" : "90 days ago"}</span>
+                <span>
+                  {period === "7d"
+                    ? "7 days ago"
+                    : period === "30d"
+                      ? "30 days ago"
+                      : "90 days ago"}
+                </span>
                 <span>Today</span>
               </div>
             </CardBody>
@@ -361,7 +430,13 @@ const InsightsPage = () => {
                 label="Engagement rate trend"
               />
               <div className="d-flex justify-content-between small text-body-secondary">
-                <span>{period === "7d" ? "7 days ago" : period === "30d" ? "30 days ago" : "90 days ago"}</span>
+                <span>
+                  {period === "7d"
+                    ? "7 days ago"
+                    : period === "30d"
+                      ? "30 days ago"
+                      : "90 days ago"}
+                </span>
                 <span>Today</span>
               </div>
             </CardBody>
@@ -399,7 +474,11 @@ const InsightsPage = () => {
                   >
                     <div
                       className="w-100 rounded-top bg-primary"
-                      style={{ height: `${value}%`, minHeight: 8, opacity: 0.35 + value / 140 }}
+                      style={{
+                        height: `${value}%`,
+                        minHeight: 8,
+                        opacity: 0.35 + value / 140,
+                      }}
                       title={`${day}: ${value}% activity`}
                     />
                     <span className="small text-body-secondary">{day}</span>
@@ -422,19 +501,27 @@ const InsightsPage = () => {
                 <table className="table align-middle mb-0">
                   <thead>
                     <tr className="small text-body-secondary">
-                      <th scope="col" className="ps-3">Page</th>
+                      <th scope="col" className="ps-3">
+                        Page
+                      </th>
                       <th scope="col">Followers</th>
                       <th scope="col">Engagement</th>
-                      <th scope="col" className="pe-3">Reach</th>
+                      <th scope="col" className="pe-3">
+                        Reach
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {dashboard.pages.map((page) => (
                       <tr key={page.id}>
-                        <th scope="row" className="ps-3 fw-semibold">{page.name}</th>
+                        <th scope="row" className="ps-3 fw-semibold">
+                          {page.name}
+                        </th>
                         <td>{compactFormat.format(page.followers)}</td>
                         <td>{page.engagementRate}%</td>
-                        <td className="pe-3">{compactFormat.format(page.reach)}</td>
+                        <td className="pe-3">
+                          {compactFormat.format(page.reach)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

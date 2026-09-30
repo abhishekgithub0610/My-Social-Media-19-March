@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import { Card, CardBody, CardHeader, Col, Row } from "react-bootstrap";
-import { BsArrowUpRight, BsCalendarCheck, BsExclamationTriangle, BsLightningCharge } from "react-icons/bs";
+import {
+  BsArrowUpRight,
+  BsCalendarCheck,
+  BsExclamationTriangle,
+  BsLightningCharge,
+} from "react-icons/bs";
 import { useMyActivity } from "@/features/analytics/hooks/useMyActivity";
 import type { UserActivitySummary } from "@/features/analytics/types/activity";
 import type { InsightsPeriod } from "@/features/analytics/types/insights";
@@ -17,7 +22,8 @@ const previewByPeriod: Record<InsightsPeriod, UserActivitySummary> = {
     commentsLiked: 4,
     pagesFollowed: 1,
     invalidEvents: 0,
-    activityBreakdown: "PostCreated: 3, CommentCreated: 9, PostLiked: 14, CommentLiked: 4, PageFollowed: 1",
+    activityBreakdown:
+      "PostCreated: 3, CommentCreated: 9, PostLiked: 14, CommentLiked: 4, PageFollowed: 1",
   },
   "30d": {
     totalActivities: 126,
@@ -28,7 +34,8 @@ const previewByPeriod: Record<InsightsPeriod, UserActivitySummary> = {
     commentsLiked: 21,
     pagesFollowed: 3,
     invalidEvents: 0,
-    activityBreakdown: "PostCreated: 12, CommentCreated: 34, PostLiked: 56, CommentLiked: 21, PageFollowed: 3",
+    activityBreakdown:
+      "PostCreated: 12, CommentCreated: 34, PostLiked: 56, CommentLiked: 21, PageFollowed: 3",
   },
   "90d": {
     totalActivities: 348,
@@ -39,7 +46,8 @@ const previewByPeriod: Record<InsightsPeriod, UserActivitySummary> = {
     commentsLiked: 55,
     pagesFollowed: 9,
     invalidEvents: 0,
-    activityBreakdown: "PostCreated: 31, CommentCreated: 96, PostLiked: 157, CommentLiked: 55, PageFollowed: 9",
+    activityBreakdown:
+      "PostCreated: 31, CommentCreated: 96, PostLiked: 157, CommentLiked: 55, PageFollowed: 9",
   },
 };
 
@@ -76,10 +84,7 @@ const MyActivityPage = () => {
   const { data, isError, isFetching } = useMyActivity(startDate, endDate);
   const activity = data ?? previewByPeriod[period];
   const isPreview = !data;
-  const maxCount = Math.max(
-    ...activityRows.map(({ key }) => activity[key]),
-    1,
-  );
+  const maxCount = Math.max(...activityRows.map(({ key }) => activity[key]), 1);
 
   return (
     <div className="vstack gap-4">
@@ -90,7 +95,11 @@ const MyActivityPage = () => {
             A summary of your posts, comments, likes, and follows.
           </p>
         </div>
-        <div className="btn-group" role="group" aria-label="Select activity date range">
+        <div
+          className="btn-group"
+          role="group"
+          aria-label="Select activity date range"
+        >
           {(["7d", "30d", "90d"] as const).map((option) => (
             <button
               key={option}
@@ -99,7 +108,11 @@ const MyActivityPage = () => {
               aria-pressed={period === option}
               onClick={() => setPeriod(option)}
             >
-              {option === "7d" ? "7 days" : option === "30d" ? "30 days" : "90 days"}
+              {option === "7d"
+                ? "7 days"
+                : option === "30d"
+                  ? "30 days"
+                  : "90 days"}
             </button>
           ))}
         </div>
@@ -120,44 +133,92 @@ const MyActivityPage = () => {
 
       <Row className="g-3">
         <Col sm={6} xl={3}>
-          <Card className="h-100"><CardBody>
-            <div className="d-flex align-items-center justify-content-between mb-3">
-              <span className="small fw-semibold text-body-secondary">Total activities</span>
-              <BsLightningCharge className="text-primary" size={20} aria-hidden="true" />
-            </div>
-            <strong className="h3">{activity.totalActivities.toLocaleString()}</strong>
-            <div className="small text-body-secondary mt-2">Effective actions in this period</div>
-          </CardBody></Card>
+          <Card className="h-100">
+            <CardBody>
+              <div className="d-flex align-items-center justify-content-between mb-3">
+                <span className="small fw-semibold text-body-secondary">
+                  Total activities
+                </span>
+                <BsLightningCharge
+                  className="text-primary"
+                  size={20}
+                  aria-hidden="true"
+                />
+              </div>
+              <strong className="h3">
+                {activity.totalActivities.toLocaleString()}
+              </strong>
+              <div className="small text-body-secondary mt-2">
+                Effective actions in this period
+              </div>
+            </CardBody>
+          </Card>
         </Col>
         <Col sm={6} xl={3}>
-          <Card className="h-100"><CardBody>
-            <div className="d-flex align-items-center justify-content-between mb-3">
-              <span className="small fw-semibold text-body-secondary">Active days</span>
-              <BsCalendarCheck className="text-success" size={20} aria-hidden="true" />
-            </div>
-            <strong className="h3">{activity.activeDays}</strong>
-            <div className="small text-body-secondary mt-2">Days with recorded activity</div>
-          </CardBody></Card>
+          <Card className="h-100">
+            <CardBody>
+              <div className="d-flex align-items-center justify-content-between mb-3">
+                <span className="small fw-semibold text-body-secondary">
+                  Active days
+                </span>
+                <BsCalendarCheck
+                  className="text-success"
+                  size={20}
+                  aria-hidden="true"
+                />
+              </div>
+              <strong className="h3">{activity.activeDays}</strong>
+              <div className="small text-body-secondary mt-2">
+                Days with recorded activity
+              </div>
+            </CardBody>
+          </Card>
         </Col>
         <Col sm={6} xl={3}>
-          <Card className="h-100"><CardBody>
-            <div className="d-flex align-items-center justify-content-between mb-3">
-              <span className="small fw-semibold text-body-secondary">Content created</span>
-              <BsArrowUpRight className="text-info" size={20} aria-hidden="true" />
-            </div>
-            <strong className="h3">{(activity.postsCreated + activity.commentsCreated).toLocaleString()}</strong>
-            <div className="small text-body-secondary mt-2">Posts and comments</div>
-          </CardBody></Card>
+          <Card className="h-100">
+            <CardBody>
+              <div className="d-flex align-items-center justify-content-between mb-3">
+                <span className="small fw-semibold text-body-secondary">
+                  Content created
+                </span>
+                <BsArrowUpRight
+                  className="text-info"
+                  size={20}
+                  aria-hidden="true"
+                />
+              </div>
+              <strong className="h3">
+                {(
+                  activity.postsCreated + activity.commentsCreated
+                ).toLocaleString()}
+              </strong>
+              <div className="small text-body-secondary mt-2">
+                Posts and comments
+              </div>
+            </CardBody>
+          </Card>
         </Col>
         <Col sm={6} xl={3}>
-          <Card className="h-100"><CardBody>
-            <div className="d-flex align-items-center justify-content-between mb-3">
-              <span className="small fw-semibold text-body-secondary">Invalid events</span>
-              <BsExclamationTriangle className={activity.invalidEvents ? "text-danger" : "text-success"} size={20} aria-hidden="true" />
-            </div>
-            <strong className="h3">{activity.invalidEvents}</strong>
-            <div className="small text-body-secondary mt-2">Invalid or orphaned references</div>
-          </CardBody></Card>
+          <Card className="h-100">
+            <CardBody>
+              <div className="d-flex align-items-center justify-content-between mb-3">
+                <span className="small fw-semibold text-body-secondary">
+                  Invalid events
+                </span>
+                <BsExclamationTriangle
+                  className={
+                    activity.invalidEvents ? "text-danger" : "text-success"
+                  }
+                  size={20}
+                  aria-hidden="true"
+                />
+              </div>
+              <strong className="h3">{activity.invalidEvents}</strong>
+              <div className="small text-body-secondary mt-2">
+                Invalid or orphaned references
+              </div>
+            </CardBody>
+          </Card>
         </Col>
       </Row>
 
@@ -166,12 +227,15 @@ const MyActivityPage = () => {
           <Card className="h-100">
             <CardHeader className="bg-transparent">
               <h3 className="h6 mb-1">Activity breakdown</h3>
-              <p className="small text-body-secondary mb-0">Actions counted by type</p>
+              <p className="small text-body-secondary mb-0">
+                Actions counted by type
+              </p>
             </CardHeader>
             <CardBody className="vstack gap-3">
               {activityRows.map(({ key, label, color }) => {
                 const count = activity[key];
-                const width = count === 0 ? 0 : Math.max((count / maxCount) * 100, 4);
+                const width =
+                  count === 0 ? 0 : Math.max((count / maxCount) * 100, 4);
 
                 return (
                   <div key={key}>
@@ -179,8 +243,18 @@ const MyActivityPage = () => {
                       <span>{label}</span>
                       <strong>{count.toLocaleString()}</strong>
                     </div>
-                    <div className="progress" role="progressbar" aria-label={label} aria-valuenow={count} aria-valuemin={0} aria-valuemax={maxCount}>
-                      <div className={`progress-bar ${color}`} style={{ width: `${width}%` }} />
+                    <div
+                      className="progress"
+                      role="progressbar"
+                      aria-label={label}
+                      aria-valuenow={count}
+                      aria-valuemin={0}
+                      aria-valuemax={maxCount}
+                    >
+                      <div
+                        className={`progress-bar ${color}`}
+                        style={{ width: `${width}%` }}
+                      />
                     </div>
                   </div>
                 );
@@ -192,17 +266,22 @@ const MyActivityPage = () => {
           <Card className="h-100">
             <CardHeader className="bg-transparent">
               <h3 className="h6 mb-1">Engagement actions</h3>
-              <p className="small text-body-secondary mb-0">Interactions and new follows</p>
+              <p className="small text-body-secondary mb-0">
+                Interactions and new follows
+              </p>
             </CardHeader>
             <CardBody className="vstack gap-3">
               <div className="d-flex justify-content-between border-bottom pb-3">
-                <span>Posts liked</span><strong>{activity.postsLiked.toLocaleString()}</strong>
+                <span>Posts liked</span>
+                <strong>{activity.postsLiked.toLocaleString()}</strong>
               </div>
               <div className="d-flex justify-content-between border-bottom pb-3">
-                <span>Comments liked</span><strong>{activity.commentsLiked.toLocaleString()}</strong>
+                <span>Comments liked</span>
+                <strong>{activity.commentsLiked.toLocaleString()}</strong>
               </div>
               <div className="d-flex justify-content-between">
-                <span>Pages followed</span><strong>{activity.pagesFollowed.toLocaleString()}</strong>
+                <span>Pages followed</span>
+                <strong>{activity.pagesFollowed.toLocaleString()}</strong>
               </div>
             </CardBody>
           </Card>

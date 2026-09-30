@@ -13,7 +13,11 @@ import {
 } from "react-icons/bs";
 
 const dashboardLinks = [
-  { label: "Insights", href: "/dashboard/insights", icon: BsFileEarmarkBarGraph },
+  {
+    label: "Insights",
+    href: "/dashboard/insights",
+    icon: BsFileEarmarkBarGraph,
+  },
   { label: "My Pages", href: "/dashboard/my-pages", icon: BsWindowStack },
   { label: "My Posts", href: "/dashboard/my-posts", icon: BsFileEarmarkPost },
   { label: "My Users", href: "/dashboard/my-users", icon: BsPeople },
