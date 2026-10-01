@@ -3,12 +3,13 @@
 import Select, { SingleValue } from "react-select";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/features/account/store/authStore";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Page = {
   id: string;
   isFollowing: boolean;
   followTypeId?: number;
+  followType?: number | string | null;
 };
 
 type FollowTypeOption = {
@@ -17,16 +18,45 @@ type FollowTypeOption = {
 };
 const pageTypeOptions = [
   { value: 0, label: "📅 Daily" },
-  { value: 1, label: "📅 Daily+" },
   { value: 2, label: "🗓️ Weekly" },
-  { value: 3, label: "🗓️ Weekly+" },
-  { value: 4, label: "🗓️ BiWeekly" },
-  { value: 5, label: "🗓️ BiWeekly+" },
+  { value: 4, label: "🗓️ Every 15 days" },
   { value: 6, label: "📊 Monthly" },
-  { value: 7, label: "📊 Monthly+" },
   { value: 8, label: "🏆 Yearly" },
-  { value: 9, label: "🏆 Yearly+" },
 ];
+
+const getFollowTypeOption = (
+  value: number | string | null | undefined,
+): FollowTypeOption | null => {
+  if (typeof value === "number") {
+    return pageTypeOptions.find((option) => option.value === value) || null;
+  }
+
+  if (typeof value !== "string") return null;
+
+  const numericValue = Number(value);
+  if (value.trim() !== "" && Number.isInteger(numericValue)) {
+    return pageTypeOptions.find((option) => option.value === numericValue) || null;
+  }
+
+  const enumValues: Record<string, number> = {
+    daily: 0,
+    dailyplus: 1,
+    weekly: 2,
+    weeklyplus: 3,
+    fifteendays: 4,
+    fifteendaysplus: 5,
+    monthly: 6,
+    monthlyplus: 7,
+    yearly: 8,
+  };
+  const enumName = value.replace(/[^a-z]/gi, "").toLowerCase();
+  const matchingValue = enumValues[enumName];
+
+  return matchingValue === undefined
+    ? null
+    : pageTypeOptions.find((option) => option.value === matchingValue) || null;
+};
+
 type Props = {
   page: Page;
 };
@@ -34,10 +64,13 @@ type Props = {
 const FollowButton = ({ page }: Props) => {
   const [isFollowing, setIsFollowing] = useState(page.isFollowing);
   const [selectedType, setSelectedType] = useState<FollowTypeOption | null>(
-    page.followTypeId
-      ? pageTypeOptions.find((x) => x.value === page.followTypeId) || null
-      : null,
+    getFollowTypeOption(page.followType ?? page.followTypeId),
   );
+
+  useEffect(() => {
+    setIsFollowing(page.isFollowing);
+    setSelectedType(getFollowTypeOption(page.followType ?? page.followTypeId));
+  }, [page.isFollowing, page.followType, page.followTypeId]);
 
   const handleChange = async (val: SingleValue<FollowTypeOption>) => {
     if (!val) return;
