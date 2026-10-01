@@ -12,9 +12,10 @@ import { useAuthStore } from "@/features/account/store/authStore";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { user } = useAuthStore();
 
-  if (!user) return null;
+  if (!user && !isLoggingOut) return null;
   return (
     <StyledHeader>
       <div className="container">
@@ -37,7 +38,7 @@ const Navbar = () => {
 
           <NotificationDropdown />
 
-          <ProfileDropdown />
+          <ProfileDropdown onLogoutStart={() => setIsLoggingOut(true)} />
         </ul>
       </div>
     </StyledHeader>

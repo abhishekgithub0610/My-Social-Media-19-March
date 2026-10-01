@@ -26,7 +26,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getUserById } from "@/features/users/services/userApi";
-const ProfileDropdown = () => {
+const ProfileDropdown = ({ onLogoutStart }: { onLogoutStart: () => void }) => {
   const { user, clearUser } = useAuthStore();
   const router = useRouter();
   const [profileImage, setProfileImage] = useState<string>("");
@@ -49,8 +49,9 @@ const ProfileDropdown = () => {
     fetchUserProfile();
   }, [user?.id]);
   const handleLogout = () => {
+    onLogoutStart();
     clearUser();
-    router.push("/sign-in");
+    router.replace("/sign-in");
   };
   if (!user) return null;
   return (
