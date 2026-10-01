@@ -35,7 +35,9 @@ const getFollowTypeOption = (
 
   const numericValue = Number(value);
   if (value.trim() !== "" && Number.isInteger(numericValue)) {
-    return pageTypeOptions.find((option) => option.value === numericValue) || null;
+    return (
+      pageTypeOptions.find((option) => option.value === numericValue) || null
+    );
   }
 
   const enumValues: Record<string, number> = {
