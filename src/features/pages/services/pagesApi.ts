@@ -36,9 +36,12 @@ export const getPages = async (): Promise<PageType[]> => {
 export const getMyPages = async (
   params: GetMyPagesParams,
 ): Promise<MyPagesPageResult> => {
-  const res = await baseClient.get<ApiResponse<MyPagesPageResult>>("/pages/mine", {
-    params,
-  });
+  const res = await baseClient.get<ApiResponse<MyPagesPageResult>>(
+    "/pages/mine",
+    {
+      params,
+    },
+  );
 
   if (!res.data.isSuccess || !res.data.result) {
     throw new Error(res.data.message || "Unable to load your pages.");
