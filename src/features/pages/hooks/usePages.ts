@@ -1,5 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createPageApi, updatePageApi } from "../services/pagesApi";
+import {
+  createPageApi,
+  setPageFeaturedApi,
+  updatePageApi,
+} from "../services/pagesApi";
 
 import { queryKeys } from "@/config/queryKeys";
 import { toast } from "react-toastify";
@@ -44,6 +48,20 @@ export const useUpdatePage = () => {
       //toast.success("Page updated successfully 🚀");
 
       //onSuccess?.(updatedPage);
+    },
+  });
+};
+
+export const useSetPageFeatured = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: setPageFeaturedApi,
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.pages });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.page(variables.id),
+      });
     },
   });
 };

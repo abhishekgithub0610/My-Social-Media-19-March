@@ -11,4 +11,5 @@ export type PageType = {
   url: string;
   phoneNo: number;
   isOwner: boolean;
+  isFeatured?: boolean;
 };
