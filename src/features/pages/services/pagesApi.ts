@@ -18,6 +18,32 @@ export type GetMyPagesParams = {
   sortDirection: "asc" | "desc";
 };
 
+export type PagePerformancePeriod = "7d" | "30d" | "90d";
+
+export type PagePerformanceMetric = {
+  total: number;
+  change: number;
+};
+
+export type PagePerformance = {
+  pageId: string;
+  pageName: string;
+  period: PagePerformancePeriod;
+  posts: PagePerformanceMetric;
+  likes: PagePerformanceMetric;
+  comments: PagePerformanceMetric;
+  followers: PagePerformanceMetric & {
+    trend: { label: string; total: number }[];
+  };
+  topPosts: {
+    id: string;
+    content: string;
+    createdAt: string;
+    likesCount: number;
+    commentsCount: number;
+  }[];
+};
+
 export const createPageApi = async (formData: FormData) => {
   const response = await baseClient.post("/pages", formData);
   return response.data.data;
@@ -45,6 +71,22 @@ export const getMyPages = async (
 
   if (!res.data.isSuccess || !res.data.result) {
     throw new Error(res.data.message || "Unable to load your pages.");
+  }
+
+  return res.data.result;
+};
+
+export const getPagePerformance = async (
+  id: string,
+  period: PagePerformancePeriod,
+): Promise<PagePerformance> => {
+  const res = await baseClient.get<ApiResponse<PagePerformance>>(
+    `/pages/${id}/performance`,
+    { params: { period } },
+  );
+
+  if (!res.data.isSuccess || !res.data.result) {
+    throw new Error(res.data.message || "Unable to load page performance.");
   }
 
   return res.data.result;

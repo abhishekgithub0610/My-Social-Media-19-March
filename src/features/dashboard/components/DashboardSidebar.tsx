@@ -33,6 +33,9 @@ const DashboardSidebar = () => {
         <div className="mb-3 px-2">
           <div className="small text-body-secondary">WORKSPACE</div>
           <strong>Dashboard</strong>
+          <p className="small text-body-secondary mb-0">
+            Your activity, audience, and page performance at a glance.
+          </p>
         </div>
         <nav aria-label="Dashboard navigation">
           <ul className="nav nav-tabs nav-pills nav-pills-soft flex-column fw-bold gap-2 border-0">

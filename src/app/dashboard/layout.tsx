@@ -24,14 +24,11 @@ const DashboardLayout = ({ children }: ChildrenType) => {
       <Navbar />
       <main>
         <Container>
-          <div className="mb-4">
-            <h1 className="h3 mb-1">Welcome to your dashboard</h1>
-            <p className="text-body-secondary mb-0">
-              Your activity, audience, and page performance at a glance.
-            </p>
-          </div>
           <Row className="g-4">
             <Col lg={3}>
+              <div className="mb-4">
+                <h1 className="h5 mb-1">Welcome to your dashboard</h1>
+              </div>
               <div className="d-flex align-items-center mb-3 d-lg-none">
                 <button
                   onClick={startOffcanvas.toggle}
@@ -45,7 +42,7 @@ const DashboardLayout = ({ children }: ChildrenType) => {
                   <span className="h6 mb-0 ms-2">Dashboard menu</span>
                 </button>
               </div>
-              <nav className="navbar navbar-light navbar-expand-lg mx-0">
+              <nav className="navbar navbar-light navbar-expand-lg mx-0 pt-0">
                 {width >= 992 ? (
                   <DashboardSidebar />
                 ) : (

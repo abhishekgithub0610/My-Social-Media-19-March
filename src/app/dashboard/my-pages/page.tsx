@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   Button,
   Card,
@@ -11,7 +11,12 @@ import {
   Form,
   Pagination,
 } from "react-bootstrap";
-import { BsPencilSquare, BsSearch, BsStar, BsStarFill } from "react-icons/bs";
+import {
+  BsGraphUp,
+  BsSearch,
+  BsStar,
+  BsStarFill,
+} from "react-icons/bs";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/config/queryKeys";
 import { useSetPageFeatured } from "@/features/pages/hooks/usePages";
@@ -73,21 +78,21 @@ const MyPages = () => {
   return (
     <div>
       <div className="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
-        <div>
-          <h2 className="h4 mb-1">My Pages</h2>
-          <p className="text-body-secondary mb-0">Manage pages you created.</p>
-        </div>
-        <div className="d-flex gap-4">
+        {/* <div> */}
+        <h2 className="h5 mb-1">My Pages</h2>
+        {/* <p className="text-body-secondary mb-0">Manage pages you created.</p> */}
+        {/* </div> */}
+        {/* <div className="d-flex gap-4">
           <div>
             <div className="small text-body-secondary">Pages</div>
             <strong>{totalCount}</strong>
           </div>
-        </div>
+        </div> */}
       </div>
 
       <Card>
-        <CardHeader className="bg-transparent d-flex flex-wrap align-items-center justify-content-between gap-3">
-          <h3 className="h6 mb-0">Pages you manage</h3>
+        <CardHeader className="bg-transparent d-flex flex-wrap align-items-center justify-content-between gap-3 py-2">
+          <h3 className="h6 fw-semibold mb-0">Pages you manage</h3>
           <Form
             role="search"
             className="position-relative"
@@ -112,7 +117,7 @@ const MyPages = () => {
         <CardBody className="p-0">
           <div className="table-responsive">
             <table className="table align-middle mb-0">
-              <thead>
+              <thead className="table-info">
                 <tr>
                   <th className="ps-3">
                     <button
@@ -154,26 +159,27 @@ const MyPages = () => {
                         : ""}
                     </button>
                   </th>
+                  <th className="text-center">Performance</th>
                   <th className="text-end pe-3">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="table-light">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={5} className="text-center py-5">
+                    <td colSpan={6} className="text-center py-5">
                       Loading your pages...
                     </td>
                   </tr>
                 ) : isError ? (
                   <tr>
-                    <td colSpan={5} className="text-center text-danger py-5">
+                    <td colSpan={6} className="text-center text-danger py-5">
                       {getErrorMessage(error)}
                     </td>
                   </tr>
                 ) : visiblePages.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={6}
                       className="text-center text-body-secondary py-5"
                     >
                       {search
@@ -240,13 +246,22 @@ const MyPages = () => {
                           )}
                         </Button>
                       </td>
+                      <td className="text-center">
+                        <Link
+                          href={`/dashboard/my-pages/${page.id}/performance`}
+                          className="btn btn-outline-primary btn-sm p-1"
+                          aria-label={`View performance for ${page.displayName || page.pageName}`}
+                          title="View page performance"
+                        >
+                          <BsGraphUp aria-hidden="true" size={14} />
+                        </Link>
+                      </td>
                       <td className="text-end pe-3">
                         <Link
                           href={`/pages/${page.id}/edit`}
                           className="btn btn-outline-secondary btn-sm"
                           aria-label={`Edit ${page.displayName}`}
                         >
-                          <BsPencilSquare aria-hidden="true" className="me-1" />{" "}
                           Edit
                         </Link>
                       </td>
