@@ -713,7 +713,7 @@ const PostCard = ({
           </div>
           {pageinfo && isFollowingPage === null ? null : (
             <div className="d-flex align-items-center gap-2">
-              {pageinfo && (
+              {pageinfo && !isFollowingPage && (
                 <FollowButton
                   key={`${pageinfo.id}-${isFollowingPage}-${pageinfo.pageType ?? ""}-${pageinfo.followType ?? ""}`}
                   page={{
@@ -735,6 +735,11 @@ const PostCard = ({
                   onReport={onReportPost}
                   isOwner={isOwner}
                   onEdit={onEditPost}
+                  onUnfollow={
+                    pageinfo && isFollowingPage
+                      ? () => onUnfollowPage(pageinfo.id)
+                      : undefined
+                  }
                 />
               )}
             </div>
@@ -1064,20 +1069,6 @@ const Feeds = ({
   const handleFollowPage = async (targetPageId: string, pageType: number) => {
     try {
       await followPage(targetPageId, pageType);
-      setPosts((previous) =>
-        previous.map((post) =>
-          post.pageinfo?.id === targetPageId
-            ? {
-                ...post,
-                pageinfo: {
-                  ...post.pageinfo,
-                  isFollowing: true,
-                  followType: pageType,
-                },
-              }
-            : post,
-        ),
-      );
     } catch (error) {
       console.error("Failed to follow page:", error);
       toast.error("Failed to follow page");
