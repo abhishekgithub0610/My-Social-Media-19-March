@@ -24,6 +24,7 @@ import {
   ReportReason,
 } from "@/features/post/services/postApi";
 import { followPage, unfollowPage } from "@/features/pages/services/pagesApi";
+import FollowButton from "@/shared/components/ui/FollowButton ";
 import DropzoneFormInput from "@/shared/components/ui/DropzoneFormInput";
 import {
   Button,
@@ -59,7 +60,6 @@ import {
   BsThreeDots,
   BsChevronDown,
   BsChevronUp,
-  BsPersonCheckFill,
 } from "react-icons/bs";
 import LoadContentButton from "@/LoadContentButton"; //to be deleted/confirmed
 import avatar12 from "@/assets/images/avatar/12.jpg";
@@ -476,7 +476,7 @@ interface PostCardProps extends SocialPostType {
   // ============================================================
   onOpenImage: (postId: string, imageIndex: number) => void;
   isFollowingPage: boolean | null;
-  onFollowPage: (pageId: string) => Promise<void>;
+  onFollowPage: (pageId: string, pageType: number) => Promise<void>;
   onUnfollowPage: (pageId: string) => Promise<void>;
 }
 const PostCard = ({
@@ -510,8 +510,6 @@ const PostCard = ({
   const { user } = useAuthStore(); // ✅ FIXED
 
   const isOwner = user?.id === socialUser?.id;
-  const [followLoading, setFollowLoading] = useState(false);
-  const [showFollowConfirmation, setShowFollowConfirmation] = useState(false);
   const [commentLoading, setCommentLoading] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [showComments, setShowComments] = useState(false);
@@ -530,20 +528,6 @@ const PostCard = ({
       toast.success("Link copied successfully");
     } catch {
       toast.error("Failed to copy link");
-    }
-  };
-
-  const handleFollowPage = async () => {
-    if (!pageinfo || followLoading) return;
-
-    setFollowLoading(true);
-    setShowFollowConfirmation(true);
-    try {
-      await onFollowPage(pageinfo.id);
-    } catch {
-      setShowFollowConfirmation(false);
-    } finally {
-      setFollowLoading(false);
     }
   };
 
@@ -729,48 +713,29 @@ const PostCard = ({
           </div>
           {pageinfo && isFollowingPage === null ? null : (
             <div className="d-flex align-items-center gap-2">
-              {pageinfo && !isFollowingPage && !showFollowConfirmation ? (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={handleFollowPage}
-                  disabled={followLoading}
-                >
-                  {followLoading ? "Following..." : "Follow"}
-                </Button>
-              ) : (
-                <>
-                  {pageinfo && showFollowConfirmation && (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      title={`Followed ${pageinfo.name}`}
-                      aria-label={`Followed ${pageinfo.name}`}
-                      disabled
-                    >
-                      <BsPersonCheckFill />
-                    </Button>
-                  )}
-                  {(isFollowingPage || !pageinfo) && (
-                    <ActionMenu
-                      name={pageinfo?.name ?? socialUser?.name}
-                      postId={id}
-                      currentContent={caption}
-                      onDelete={onDeletePost}
-                      onReport={onReportPost}
-                      isOwner={isOwner}
-                      onEdit={onEditPost}
-                      onUnfollow={
-                        pageinfo && isFollowingPage
-                          ? async () => {
-                              await onUnfollowPage(pageinfo.id);
-                              setShowFollowConfirmation(false);
-                            }
-                          : undefined
-                      }
-                    />
-                  )}
-                </>
+              {pageinfo && (
+                <FollowButton
+                  key={`${pageinfo.id}-${isFollowingPage}-${pageinfo.pageType ?? ""}-${pageinfo.followType ?? ""}`}
+                  page={{
+                    id: pageinfo.id,
+                    isFollowing: Boolean(isFollowingPage),
+                    pageType: pageinfo.pageType,
+                    followType: pageinfo.followType,
+                  }}
+                  onFollow={onFollowPage}
+                  onUnfollow={onUnfollowPage}
+                />
+              )}
+              {(isFollowingPage || !pageinfo) && (
+                <ActionMenu
+                  name={pageinfo?.name ?? socialUser?.name}
+                  postId={id}
+                  currentContent={caption}
+                  onDelete={onDeletePost}
+                  onReport={onReportPost}
+                  isOwner={isOwner}
+                  onEdit={onEditPost}
+                />
               )}
             </div>
           )}
@@ -1096,15 +1061,19 @@ const Feeds = ({
     }
   };
 
-  const handleFollowPage = async (targetPageId: string) => {
+  const handleFollowPage = async (targetPageId: string, pageType: number) => {
     try {
-      await followPage(targetPageId);
+      await followPage(targetPageId, pageType);
       setPosts((previous) =>
         previous.map((post) =>
           post.pageinfo?.id === targetPageId
             ? {
                 ...post,
-                pageinfo: { ...post.pageinfo, isFollowing: true },
+                pageinfo: {
+                  ...post.pageinfo,
+                  isFollowing: true,
+                  followType: pageType,
+                },
               }
             : post,
         ),
@@ -1124,7 +1093,11 @@ const Feeds = ({
           post.pageinfo?.id === targetPageId
             ? {
                 ...post,
-                pageinfo: { ...post.pageinfo, isFollowing: false },
+                pageinfo: {
+                  ...post.pageinfo,
+                  isFollowing: false,
+                  followType: null,
+                },
               }
             : post,
         ),
@@ -1434,6 +1407,8 @@ const Feeds = ({
                   name: p.pageDetails.name,
                   avatar: p.pageDetails.avatar || "/default-avatar.png",
                   isFollowing: p.pageDetails.isFollowing,
+                  pageType: p.pageDetails.pageType,
+                  followType: p.pageDetails.followType,
                 }
               : undefined,
             media,

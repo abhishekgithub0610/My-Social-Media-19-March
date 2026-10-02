@@ -18,16 +18,12 @@ type FollowTypeOption = {
   label: string;
 };
 const pageTypeOptions = [
-  { value: 0, label: "All" },
+  { value: 0, label: "📰 All posts" },
   { value: 1, label: "📅 Daily" },
-  { value: 2, label: "📅 Daily+" },
   { value: 3, label: "🗓️ Weekly" },
-  { value: 4, label: "🗓️ Weekly+" },
   { value: 5, label: "🗓️ Fifteen Days" },
-  { value: 6, label: "🗓️ Fifteen Days+" },
   { value: 7, label: "📊 Monthly" },
-  { value: 8, label: "📊 Monthly+" },
-  { value: 9, label: "🏆 Yearly" },
+  { value: 9, label: "📅 Yearly" },
 ];
 
 const enumValues: Record<string, number> = {
@@ -65,9 +61,11 @@ const getFollowTypeOption = (
 
 type Props = {
   page: Page;
+  onFollow?: (pageId: string, pageType: number) => Promise<void>;
+  onUnfollow?: (pageId: string) => Promise<void>;
 };
 
-const FollowButton = ({ page }: Props) => {
+const FollowButton = ({ page, onFollow, onUnfollow }: Props) => {
   const pageTypeValue = getEnumValue(page.pageType) ?? 0;
   const availableOptions = pageTypeOptions.filter(
     (option) => option.value >= pageTypeValue,
@@ -82,6 +80,17 @@ const FollowButton = ({ page }: Props) => {
 
     setSelectedType(val);
     setIsFollowing(true);
+
+    if (onFollow) {
+      try {
+        await onFollow(page.id, val.value);
+      } catch (error) {
+        setSelectedType(null);
+        setIsFollowing(false);
+        console.error("Failed to follow page:", error);
+      }
+      return;
+    }
 
     const token = useAuthStore.getState().accessToken;
     if (!token) {
@@ -101,8 +110,20 @@ const FollowButton = ({ page }: Props) => {
   };
 
   const handleUnfollow = async () => {
+    const previousType = selectedType;
     setIsFollowing(false);
     setSelectedType(null);
+
+    if (onUnfollow) {
+      try {
+        await onUnfollow(page.id);
+      } catch (error) {
+        setIsFollowing(true);
+        setSelectedType(previousType);
+        console.error("Failed to unfollow page:", error);
+      }
+      return;
+    }
 
     const token = useAuthStore.getState().accessToken;
     await fetch(`http://localhost:7120/api/pages/${page.id}/follow`, {

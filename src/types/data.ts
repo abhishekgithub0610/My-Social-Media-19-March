@@ -58,6 +58,8 @@ export type SocialPostType = {
     name: string;
     avatar?: string;
     isFollowing?: boolean;
+    pageType?: number | string | null;
+    followType?: number | string | null;
   };
   isLikedByCurrentUser?: boolean;
   isLiked?: boolean;
