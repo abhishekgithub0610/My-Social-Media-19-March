@@ -17,11 +17,11 @@ type FollowTypeOption = {
   label: string;
 };
 const pageTypeOptions = [
-  { value: 0, label: "📅 Daily" },
-  { value: 2, label: "🗓️ Weekly" },
-  { value: 4, label: "🗓️ Every 15 days" },
-  { value: 6, label: "📊 Monthly" },
-  { value: 8, label: "🏆 Yearly" },
+  { value: 1, label: "📅 Daily" },
+  { value: 3, label: "🗓️ Weekly" },
+  { value: 5, label: "🗓️ Every 15 days" },
+  { value: 7, label: "📊 Monthly" },
+  { value: 9, label: "🏆 Yearly" },
 ];
 
 const getFollowTypeOption = (
@@ -41,15 +41,11 @@ const getFollowTypeOption = (
   }
 
   const enumValues: Record<string, number> = {
-    daily: 0,
-    dailyplus: 1,
-    weekly: 2,
-    weeklyplus: 3,
-    fifteendays: 4,
-    fifteendaysplus: 5,
-    monthly: 6,
-    monthlyplus: 7,
-    yearly: 8,
+    daily: 1,
+    weekly: 3,
+    fifteendays: 5,
+    monthly: 7,
+    yearly: 9,
   };
   const enumName = value.replace(/[^a-z]/gi, "").toLowerCase();
   const matchingValue = enumValues[enumName];

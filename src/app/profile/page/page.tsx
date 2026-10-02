@@ -17,6 +17,7 @@ const PageProfileFeed = ({ params }: { params: { pageId: string } }) => {
       <Col md={12} lg={12} className="vstack gap-4">
         {page?.isOwner && (
           <CreatePostCard
+            isPagePost={true}
             onPostCreated={(newPost) => {
               const pageinfo = page
                 ? {

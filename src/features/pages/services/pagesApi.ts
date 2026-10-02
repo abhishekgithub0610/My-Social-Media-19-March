@@ -83,7 +83,7 @@ export const getFollowingPages = async (): Promise<PageType[]> => {
 };
 
 export const followPage = async (pageId: string): Promise<void> => {
-  await baseClient.post(`/pages/${pageId}/follow`, { pageType: 0 });
+  await baseClient.post(`/pages/${pageId}/follow`, { pageType: 1 });
 };
 
 export const unfollowPage = async (pageId: string): Promise<void> => {

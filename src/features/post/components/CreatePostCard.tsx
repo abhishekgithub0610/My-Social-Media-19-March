@@ -25,7 +25,19 @@ import { SocialPostType } from "@/types/data";
 type CreatePostCardProps = {
   onPostCreated?: (post: SocialPostType) => void;
   isUserProfile?: boolean;
+  isPagePost?: boolean;
 };
+const pagePostTypes = [
+  { value: 1, label: "Daily" },
+  { value: 2, label: "Daily+" },
+  { value: 3, label: "Weekly" },
+  { value: 4, label: "Weekly+" },
+  { value: 5, label: "Every 15 days" },
+  { value: 6, label: "Every 15 days+" },
+  { value: 7, label: "Monthly" },
+  { value: 8, label: "Monthly+" },
+  { value: 9, label: "Yearly" },
+];
 type PostAttachment = {
   file: File;
   preview: string;
@@ -49,10 +61,12 @@ type ApiPost = {
 const CreatePostCard = ({
   onPostCreated,
   isUserProfile = false,
+  isPagePost = false,
 }: CreatePostCardProps) => {
   const { toggle: toggleEvent } = useToggle();
   const [loading, setLoading] = useState(false);
   const [text, setText] = useState("");
+  const [pagePostType, setPagePostType] = useState(1);
   const [attachments, setAttachments] = useState<PostAttachment[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const attachmentUrlsRef = useRef<string[]>([]);
@@ -119,12 +133,16 @@ const CreatePostCard = ({
       formData.append("content", text);
       formData.append("privacy", "PB");
 
-      if (!isUserProfile) {
+      if (isPagePost) {
         const pageId = searchParams.get("pageId");
 
-        if (pageId) {
-          formData.append("pageId", pageId);
+        if (!pageId) {
+          toast.error("Could not identify the page for this post.");
+          return;
         }
+
+        formData.append("pageId", pageId);
+        formData.append("postType", String(pagePostType));
       }
       attachments.forEach(({ file }) => {
         formData.append("files", file);
@@ -148,6 +166,7 @@ const CreatePostCard = ({
       onPostCreated?.(mapToFeedPost(post));
 
       setText("");
+      setPagePostType(1);
       attachmentUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
       attachmentUrlsRef.current = [];
       setAttachments([]);
@@ -249,6 +268,26 @@ const CreatePostCard = ({
       )}
 
       <ul className="nav nav-pills nav-stack small fw-normal align-items-center gap-2">
+        {isPagePost && (
+          <li className="nav-item">
+            <label className="visually-hidden" htmlFor="page-post-type">
+              Page post type
+            </label>
+            <select
+              id="page-post-type"
+              className="form-select form-select-sm"
+              value={pagePostType}
+              onChange={(event) => setPagePostType(Number(event.target.value))}
+              aria-label="Page post type"
+            >
+              {pagePostTypes.map((postType) => (
+                <option key={postType.value} value={postType.value}>
+                  {postType.label}
+                </option>
+              ))}
+            </select>
+          </li>
+        )}
         <li className="nav-item">
           <button
             type="button"
