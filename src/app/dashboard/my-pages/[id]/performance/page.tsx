@@ -68,9 +68,11 @@ const PagePerformance = () => {
     enabled: Boolean(id),
     retry: false,
   });
+  const followerTrend = data?.followerTrend ?? [];
+  const topPosts = data?.topPosts ?? [];
   const maxFollowers = Math.max(
     1,
-    ...(data?.followers.trend.map((point) => point.total) ?? [1]),
+    ...followerTrend.map((point) => point.total),
   );
 
   return (
@@ -178,7 +180,8 @@ const PagePerformance = () => {
                     role="img"
                     aria-label="Follower count trend for the selected period"
                   >
-                    {data.followers.trend.map((point) => (
+                    {followerTrend.length > 0 ? (
+                      followerTrend.map((point) => (
                       <div
                         key={point.label}
                         className="d-flex flex-fill h-100 flex-column align-items-center justify-content-end gap-2"
@@ -194,7 +197,12 @@ const PagePerformance = () => {
                           {point.label}
                         </small>
                       </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p className="small text-body-secondary mb-4">
+                        No follower history is available for this period.
+                      </p>
+                    )}
                   </div>
                 </CardBody>
               </Card>
@@ -205,7 +213,7 @@ const PagePerformance = () => {
                   <div className="px-3 py-3 border-bottom">
                     <h2 className="h6 mb-0">Top posts</h2>
                   </div>
-                  {data.topPosts.length > 0 ? (
+                  {topPosts.length > 0 ? (
                     <div className="table-responsive">
                       <table className="table align-middle mb-0">
                         <thead className="table-info">
@@ -217,7 +225,7 @@ const PagePerformance = () => {
                           </tr>
                         </thead>
                         <tbody className="table-light">
-                          {data.topPosts.map((post) => (
+                          {topPosts.map((post) => (
                             <tr key={post.id}>
                               <td
                                 className="ps-3 text-truncate"

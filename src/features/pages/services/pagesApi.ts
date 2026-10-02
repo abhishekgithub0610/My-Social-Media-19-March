@@ -32,9 +32,8 @@ export type PagePerformance = {
   posts: PagePerformanceMetric;
   likes: PagePerformanceMetric;
   comments: PagePerformanceMetric;
-  followers: PagePerformanceMetric & {
-    trend: { label: string; total: number }[];
-  };
+  followers: PagePerformanceMetric;
+  followerTrend: { label: string; total: number }[];
   topPosts: {
     id: string;
     content: string;
