@@ -11,6 +11,9 @@ type PageType = {
   aboutPage: string;
   pageImageUrl?: string;
   isFollowing: boolean;
+  pageType?: number | string | null;
+  followType?: number | string | null;
+  followTypeId?: number;
 };
 const PageRow = ({ page }: { page: PageType }) => {
   useAuthRedirect();
@@ -38,7 +41,10 @@ const PageRow = ({ page }: { page: PageType }) => {
         >
           <h6 className="mb-0 text-dark fw-semibold">{page.displayName}</h6>
         </Link>
-        <FollowButton page={page} />
+        <FollowButton
+          key={`${page.id}-${page.isFollowing}-${page.pageType ?? ""}-${page.followType ?? page.followTypeId ?? ""}`}
+          page={page}
+        />
       </div>
       <Link
         href={`/profile/page?pageId=${page.id}`}

@@ -16,6 +16,9 @@ type PageType = {
   aboutPage: string;
   pageImageUrl?: string;
   isFollowing: boolean;
+  pageType?: number | string | null;
+  followType?: number | string | null;
+  followTypeId?: number;
 };
 
 const PageList = () => {

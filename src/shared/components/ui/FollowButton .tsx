@@ -3,11 +3,12 @@
 import Select, { SingleValue } from "react-select";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/features/account/store/authStore";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type Page = {
   id: string;
   isFollowing: boolean;
+  pageType?: number | string | null;
   followTypeId?: number;
   followType?: number | string | null;
 };
@@ -17,42 +18,49 @@ type FollowTypeOption = {
   label: string;
 };
 const pageTypeOptions = [
+  { value: 0, label: "All" },
   { value: 1, label: "📅 Daily" },
+  { value: 2, label: "📅 Daily+" },
   { value: 3, label: "🗓️ Weekly" },
-  { value: 5, label: "🗓️ Every 15 days" },
+  { value: 4, label: "🗓️ Weekly+" },
+  { value: 5, label: "🗓️ Fifteen Days" },
+  { value: 6, label: "🗓️ Fifteen Days+" },
   { value: 7, label: "📊 Monthly" },
+  { value: 8, label: "📊 Monthly+" },
   { value: 9, label: "🏆 Yearly" },
 ];
 
-const getFollowTypeOption = (
-  value: number | string | null | undefined,
-): FollowTypeOption | null => {
-  if (typeof value === "number") {
-    return pageTypeOptions.find((option) => option.value === value) || null;
-  }
+const enumValues: Record<string, number> = {
+  all: 0,
+  daily: 1,
+  dailyplus: 2,
+  weekly: 3,
+  weeklyplus: 4,
+  fifteendays: 5,
+  fifteendaysplus: 6,
+  monthly: 7,
+  monthlyplus: 8,
+  yearly: 9,
+};
 
+const getEnumValue = (value: number | string | null | undefined) => {
+  if (typeof value === "number" && Number.isInteger(value)) return value;
   if (typeof value !== "string") return null;
 
   const numericValue = Number(value);
   if (value.trim() !== "" && Number.isInteger(numericValue)) {
-    return (
-      pageTypeOptions.find((option) => option.value === numericValue) || null
-    );
+    return numericValue;
   }
 
-  const enumValues: Record<string, number> = {
-    daily: 1,
-    weekly: 3,
-    fifteendays: 5,
-    monthly: 7,
-    yearly: 9,
-  };
-  const enumName = value.replace(/[^a-z]/gi, "").toLowerCase();
-  const matchingValue = enumValues[enumName];
+  return enumValues[value.replace(/[^a-z]/gi, "").toLowerCase()] ?? null;
+};
 
-  return matchingValue === undefined
-    ? null
-    : pageTypeOptions.find((option) => option.value === matchingValue) || null;
+const getFollowTypeOption = (
+  value: number | string | null | undefined,
+  options: FollowTypeOption[],
+): FollowTypeOption | null => {
+  const enumValue = getEnumValue(value);
+  return options.find((option) => option.value === enumValue) || null;
 };
 
 type Props = {
@@ -60,15 +68,17 @@ type Props = {
 };
 
 const FollowButton = ({ page }: Props) => {
+  const pageTypeValue = getEnumValue(page.pageType) ?? 0;
+  const availableOptions = pageTypeOptions.filter(
+    (option) => option.value >= pageTypeValue,
+  );
   const [isFollowing, setIsFollowing] = useState(page.isFollowing);
   const [selectedType, setSelectedType] = useState<FollowTypeOption | null>(
-    getFollowTypeOption(page.followType ?? page.followTypeId),
+    getFollowTypeOption(
+      page.followType ?? page.followTypeId,
+      availableOptions,
+    ),
   );
-
-  useEffect(() => {
-    setIsFollowing(page.isFollowing);
-    setSelectedType(getFollowTypeOption(page.followType ?? page.followTypeId));
-  }, [page.isFollowing, page.followType, page.followTypeId]);
 
   const handleChange = async (val: SingleValue<FollowTypeOption>) => {
     if (!val) return;
@@ -121,7 +131,7 @@ const FollowButton = ({ page }: Props) => {
             whileTap={{ scale: 0.96 }}
           >
             <Select
-              options={pageTypeOptions}
+              options={availableOptions}
               placeholder="Follow"
               value={selectedType}
               onChange={handleChange}
