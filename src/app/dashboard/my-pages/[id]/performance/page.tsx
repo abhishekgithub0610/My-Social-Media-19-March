@@ -26,8 +26,7 @@ const periodLabels: Record<PagePerformancePeriod, string> = {
   "90d": "Last 90 days",
 };
 
-const formatNumber = (value: number) =>
-  new Intl.NumberFormat().format(value);
+const formatNumber = (value: number) => new Intl.NumberFormat().format(value);
 
 const MetricCard = ({
   title,
@@ -86,7 +85,9 @@ const PagePerformance = () => {
             Back to My Pages
           </Link>
           <h1 className="h4 mb-1">
-            {data?.pageName ? `${data.pageName} performance` : "Page performance"}
+            {data?.pageName
+              ? `${data.pageName} performance`
+              : "Page performance"}
           </h1>
           <p className="text-body-secondary mb-0">
             Posts, engagement, and audience growth.
@@ -117,10 +118,13 @@ const PagePerformance = () => {
         </div>
       ) : isError || !data ? (
         <Alert variant="info">
-          <Alert.Heading className="h6">Performance data unavailable</Alert.Heading>
+          <Alert.Heading className="h6">
+            Performance data unavailable
+          </Alert.Heading>
           <p className="mb-0">
             This view needs a page performance endpoint from the API. Once it is
-            available, this page will show post, engagement, and follower metrics.
+            available, this page will show post, engagement, and follower
+            metrics.
           </p>
         </Alert>
       ) : (

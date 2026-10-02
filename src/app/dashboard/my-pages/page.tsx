@@ -11,12 +11,7 @@ import {
   Form,
   Pagination,
 } from "react-bootstrap";
-import {
-  BsGraphUp,
-  BsSearch,
-  BsStar,
-  BsStarFill,
-} from "react-icons/bs";
+import { BsGraphUp, BsSearch, BsStar, BsStarFill } from "react-icons/bs";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/config/queryKeys";
 import { useSetPageFeatured } from "@/features/pages/hooks/usePages";
