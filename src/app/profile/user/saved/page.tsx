@@ -100,7 +100,9 @@ const SavedPostsPage = () => {
     <Col md={12} lg={12} className="vstack gap-4">
       <h2 className="h4 mb-0">Saved Posts</h2>
       {loading && posts.length === 0 ? (
-        <div className="text-center text-muted py-5">Loading saved posts...</div>
+        <div className="text-center text-muted py-5">
+          Loading saved posts...
+        </div>
       ) : loadError && posts.length === 0 ? (
         <Card>
           <CardBody className="text-center py-5">

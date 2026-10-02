@@ -1706,9 +1706,7 @@ const Feeds = ({
               onOpenImage={handleOpenImage}
               isSaved={savedPostIds.has(post.id)}
               onToggleSavePost={handleToggleSavePost}
-              onHidePost={
-                feedType === "saved" ? undefined : handleHidePost
-              }
+              onHidePost={feedType === "saved" ? undefined : handleHidePost}
               isFollowingPage={
                 post.pageinfo ? (post.pageinfo.isFollowing ?? null) : null
               }
