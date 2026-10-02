@@ -74,10 +74,7 @@ const FollowButton = ({ page }: Props) => {
   );
   const [isFollowing, setIsFollowing] = useState(page.isFollowing);
   const [selectedType, setSelectedType] = useState<FollowTypeOption | null>(
-    getFollowTypeOption(
-      page.followType ?? page.followTypeId,
-      availableOptions,
-    ),
+    getFollowTypeOption(page.followType ?? page.followTypeId, availableOptions),
   );
 
   const handleChange = async (val: SingleValue<FollowTypeOption>) => {
