@@ -15,6 +15,9 @@ import {
   createComment,
   getPostComments,
   updatePost,
+  savePostPreference,
+  removeSavedPostPreference,
+  hidePostPreference,
 } from "@/features/post/services/postApi";
 import {
   deletePost,
@@ -116,6 +119,9 @@ const ActionMenu = ({
   onReport,
   onEdit,
   onUnfollow,
+  isSaved,
+  onToggleSave,
+  onHidePost,
 }: {
   name?: string;
   postId: string;
@@ -125,6 +131,9 @@ const ActionMenu = ({
   onReport: (postId: string) => void;
   onEdit: (postId: string, currentContent: string) => void;
   onUnfollow?: () => void;
+  isSaved: boolean;
+  onToggleSave: (postId: string) => void;
+  onHidePost?: (postId: string) => void;
 }) => {
   return (
     <Dropdown>
@@ -141,10 +150,18 @@ const ActionMenu = ({
         aria-labelledby="cardFeedAction"
       >
         <li>
-          <DropdownItem onClick={(e) => e.preventDefault()}>
-            {" "}
-            <BsBookmark size={22} className="fa-fw pe-2" />
-            Save post
+          <DropdownItem
+            onClick={(e) => {
+              e.preventDefault();
+              onToggleSave(postId);
+            }}
+          >
+            {isSaved ? (
+              <BsBookmarkCheck size={22} className="fa-fw pe-2" />
+            ) : (
+              <BsBookmark size={22} className="fa-fw pe-2" />
+            )}
+            {isSaved ? "Remove saved post" : "Save post"}
           </DropdownItem>
         </li>
         {onUnfollow && (
@@ -161,13 +178,19 @@ const ActionMenu = ({
             </DropdownItem>
           </li>
         )}
-        <li>
-          <DropdownItem onClick={(e) => e.preventDefault()}>
-            {" "}
-            <BsXCircle size={22} className="fa-fw pe-2" />
-            Hide post
-          </DropdownItem>
-        </li>
+        {onHidePost && (
+          <li>
+            <DropdownItem
+              onClick={(e) => {
+                e.preventDefault();
+                onHidePost(postId);
+              }}
+            >
+              <BsXCircle size={22} className="fa-fw pe-2" />
+              Hide post
+            </DropdownItem>
+          </li>
+        )}
         <li>
           <DropdownItem onClick={(e) => e.preventDefault()}>
             {" "}
@@ -476,6 +499,9 @@ interface PostCardProps extends SocialPostType {
   // ============================================================
   onOpenImage: (postId: string, imageIndex: number) => void;
   isFollowingPage: boolean | null;
+  isSaved: boolean;
+  onToggleSavePost: (postId: string) => void;
+  onHidePost?: (postId: string) => void;
   onFollowPage: (pageId: string, pageType: number) => Promise<void>;
   onUnfollowPage: (pageId: string) => Promise<void>;
 }
@@ -504,6 +530,9 @@ const PostCard = ({
   onReportPost,
   onOpenImage,
   isFollowingPage,
+  isSaved,
+  onToggleSavePost,
+  onHidePost,
   onFollowPage,
   onUnfollowPage,
 }: PostCardProps) => {
@@ -711,39 +740,38 @@ const PostCard = ({
               <p className="mb-0 small">Web Developer at StackBros</p>
             </div>
           </div>
-          {pageinfo && isFollowingPage === null ? null : (
-            <div className="d-flex align-items-center gap-2">
-              {pageinfo && !isFollowingPage && (
-                <FollowButton
-                  key={`${pageinfo.id}-${isFollowingPage}-${pageinfo.pageType ?? ""}-${pageinfo.followType ?? ""}`}
-                  page={{
-                    id: pageinfo.id,
-                    isFollowing: Boolean(isFollowingPage),
-                    pageType: pageinfo.pageType,
-                    followType: pageinfo.followType,
-                  }}
-                  onFollow={onFollowPage}
-                  onUnfollow={onUnfollowPage}
-                />
-              )}
-              {(isFollowingPage || !pageinfo) && (
-                <ActionMenu
-                  name={pageinfo?.name ?? socialUser?.name}
-                  postId={id}
-                  currentContent={caption}
-                  onDelete={onDeletePost}
-                  onReport={onReportPost}
-                  isOwner={isOwner}
-                  onEdit={onEditPost}
-                  onUnfollow={
-                    pageinfo && isFollowingPage
-                      ? () => onUnfollowPage(pageinfo.id)
-                      : undefined
-                  }
-                />
-              )}
-            </div>
-          )}
+          <div className="d-flex align-items-center gap-2">
+            {pageinfo && isFollowingPage === false && (
+              <FollowButton
+                key={`${pageinfo.id}-${isFollowingPage}-${pageinfo.pageType ?? ""}-${pageinfo.followType ?? ""}`}
+                page={{
+                  id: pageinfo.id,
+                  isFollowing: false,
+                  pageType: pageinfo.pageType,
+                  followType: pageinfo.followType,
+                }}
+                onFollow={onFollowPage}
+                onUnfollow={onUnfollowPage}
+              />
+            )}
+            <ActionMenu
+              name={pageinfo?.name ?? socialUser?.name}
+              postId={id}
+              currentContent={caption}
+              onDelete={onDeletePost}
+              onReport={onReportPost}
+              isOwner={isOwner}
+              onEdit={onEditPost}
+              isSaved={isSaved}
+              onToggleSave={onToggleSavePost}
+              onHidePost={onHidePost}
+              onUnfollow={
+                pageinfo && isFollowingPage
+                  ? () => onUnfollowPage(pageinfo.id)
+                  : undefined
+              }
+            />
+          </div>
         </div>
       </CardHeader>
       <CardBody>
@@ -931,7 +959,7 @@ type FeedsProps = {
   posts: SocialPostType[];
   setPosts: React.Dispatch<React.SetStateAction<SocialPostType[]>>;
   isUserProfile?: boolean;
-  feedType?: "page" | "friends";
+  feedType?: "page" | "friends" | "saved";
   pageId?: string;
 };
 const Feeds = ({
@@ -944,6 +972,9 @@ const Feeds = ({
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const savedPostIds = new Set(
+    posts.filter((post) => post.isSaved).map((post) => post.id),
+  );
   const observerRef = useRef<IntersectionObserver | null>(null);
   const { user } = useAuthStore();
   const userId = user?.id;
@@ -976,6 +1007,59 @@ const Feeds = ({
     }
 
     openImages(post.media, imageIndex);
+  };
+
+  const handleToggleSavePost = async (postId: string) => {
+    if (!userId) {
+      toast.error("Sign in to save posts.");
+      return;
+    }
+
+    const post = posts.find((item) => item.id === postId);
+    if (!post) return;
+
+    const isSaved = savedPostIds.has(postId);
+
+    try {
+      if (isSaved) {
+        await removeSavedPostPreference(postId);
+        setPosts((previous) =>
+          feedType === "saved"
+            ? previous.filter((item) => item.id !== postId)
+            : previous.map((item) =>
+                item.id === postId ? { ...item, isSaved: false } : item,
+              ),
+        );
+        toast.success("Post removed from saved posts");
+      } else {
+        await savePostPreference(postId);
+        setPosts((previous) =>
+          previous.map((item) =>
+            item.id === postId ? { ...item, isSaved: true } : item,
+          ),
+        );
+        toast.success("Post saved");
+      }
+    } catch (error) {
+      console.error("Failed to update saved post:", error);
+      toast.error("Could not update saved posts. Please try again.");
+    }
+  };
+
+  const handleHidePost = async (postId: string) => {
+    if (!userId) {
+      toast.error("Sign in to hide posts.");
+      return;
+    }
+
+    try {
+      await hidePostPreference(postId);
+      setPosts((previous) => previous.filter((post) => post.id !== postId));
+      toast.success("Post hidden from your feeds");
+    } catch (error) {
+      console.error("Failed to hide post:", error);
+      toast.error("Could not hide this post. Please try again.");
+    }
   };
 
   const [showReportModal, setShowReportModal] = useState(false);
@@ -1318,6 +1402,11 @@ const Feeds = ({
   // Decide active mode automatically
   const activeFeedType = feedType;
   const fetchPosts = async (currentPage = page, forceFetch = false) => {
+    if (feedType === "saved") {
+      setHasMore(false);
+      return;
+    }
+
     //if (loading || !hasMore) return;
     if (!forceFetch && (loading || !hasMore)) return;
 
@@ -1374,6 +1463,7 @@ const Feeds = ({
             id: p.id,
             caption: p.content,
             isLiked: p.isLikedByCurrentUser,
+            isSaved: p.isSaved,
             comments: [],
             image:
               imageUrl && imageUrl.startsWith("http")
@@ -1423,6 +1513,11 @@ const Feeds = ({
     }
   };
   useEffect(() => {
+    if (feedType === "saved") {
+      setHasMore(false);
+      return;
+    }
+
     const resetAndFetch = async () => {
       setPosts([]);
       setPage(1);
@@ -1609,6 +1704,11 @@ const Feeds = ({
               //  opens the custom Facebook-style viewer.
               // ============================================
               onOpenImage={handleOpenImage}
+              isSaved={savedPostIds.has(post.id)}
+              onToggleSavePost={handleToggleSavePost}
+              onHidePost={
+                feedType === "saved" ? undefined : handleHidePost
+              }
               isFollowingPage={
                 post.pageinfo ? (post.pageinfo.isFollowing ?? null) : null
               }

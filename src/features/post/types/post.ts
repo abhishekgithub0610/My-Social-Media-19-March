@@ -35,6 +35,7 @@ export interface PostFeedDto {
   pageDetails: FeedPageDto;
   isLikedByCurrentUser?: boolean;
   isLiked?: boolean;
+  isSaved?: boolean;
   comments?: CommentType[];
 }
 

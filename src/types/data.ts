@@ -63,6 +63,7 @@ export type SocialPostType = {
   };
   isLikedByCurrentUser?: boolean;
   isLiked?: boolean;
+  isSaved?: boolean;
   media?: ViewerImage[];
 };
 

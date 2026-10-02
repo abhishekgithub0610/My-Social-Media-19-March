@@ -9,6 +9,12 @@ export const PROFILE_MENU_ITEMS: MenuItemType[] = [
     parentKey: "pages-profile",
   },
   {
+    key: "profile-saved-posts",
+    label: "Saved Posts",
+    url: "/profile/user/saved",
+    parentKey: "pages-profile",
+  },
+  {
     key: "profile-about",
     label: "About",
     url: "/profile/about",

@@ -39,6 +39,31 @@ export const getUserFeed = async (
   return response.data;
 };
 
+export const savePostPreference = async (postId: string): Promise<void> => {
+  await baseClient.post(`/posts/${postId}/save`);
+};
+
+export const removeSavedPostPreference = async (
+  postId: string,
+): Promise<void> => {
+  await baseClient.delete(`/posts/${postId}/save`);
+};
+
+export const hidePostPreference = async (postId: string): Promise<void> => {
+  await baseClient.post(`/posts/${postId}/hide`);
+};
+
+export const getSavedPosts = async (
+  page: number = 1,
+  pageSize: number = 10,
+): Promise<ApiResponseResult<PagedResult<PostFeedDto>>> => {
+  const response = await baseClient.get<
+    ApiResponseResult<PagedResult<PostFeedDto>>
+  >("/posts/saved", { params: { page, pageSize } });
+
+  return response.data;
+};
+
 export const toggleCommentLike = async (commentId: string) => {
   const response = await baseClient.post(
     `/posts/toggle-like?commentId=${commentId}`,
