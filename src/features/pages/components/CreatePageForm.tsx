@@ -2,7 +2,6 @@
 import SelectInput from "@/shared/components/ui/SelectInput";
 import TextAreaFormInput from "@/shared/components/ui/TextAreaFormInput";
 import TextFormInput from "@/shared/components/ui/TextFormInput";
-import { components, OptionProps } from "react-select";
 import type { CreatePageFormValues } from "../types/page";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -33,20 +32,21 @@ import {
 import { PageType } from "@/shared/types/PageType";
 import { useRouter } from "next/navigation";
 const TYPE_OPTIONS = [
-  { label: "Daily", value: "Daily" },
-  { label: "Daily+", value: "DailyPlus" },
-  { label: "Weekly", value: "Weekly" },
-  { label: "Weekly+", value: "WeeklyPlus" },
-  { label: "Bi-Weekly", value: "BiWeekly" },
-  { label: "Bi-Weekly+", value: "BiWeeklyPlus" },
-  { label: "Monthly", value: "Monthly" },
-  { label: "Monthly+", value: "MonthlyPlus" },
-  { label: "Yearly", value: "Yearly" },
-  { label: "Yearly+", value: "YearlyPlus" },
+  { label: "All", value: "All", enumValue: 0 },
+  { label: "Daily", value: "Daily", enumValue: 1 },
+  { label: "Daily+", value: "DailyPlus", enumValue: 2 },
+  { label: "Weekly", value: "Weekly", enumValue: 3 },
+  { label: "Weekly+", value: "WeeklyPlus", enumValue: 4 },
+  { label: "Fifteen Days", value: "FifteenDays", enumValue: 5 },
+  { label: "Fifteen Days+", value: "FifteenDaysPlus", enumValue: 6 },
+  { label: "Monthly", value: "Monthly", enumValue: 7 },
+  { label: "Monthly+", value: "MonthlyPlus", enumValue: 8 },
+  { label: "Yearly", value: "Yearly", enumValue: 9 },
 ];
 type OptionType = {
   label: string;
   value: string;
+  enumValue: number;
 };
 type Props = {
   initialData?: PageType;
@@ -54,18 +54,28 @@ type Props = {
   onClose?: () => void;
   onSuccess?: (data: PageType) => void;
 };
-const Option = (props: OptionProps<OptionType, true>) => {
-  return (
-    <components.Option {...props}>
-      <input
-        type="checkbox"
-        checked={props.isSelected}
-        onChange={() => null}
-        style={{ marginRight: 8 }}
-      />
-      {props.label}
-    </components.Option>
-  );
+const getInitialType = (
+  typeValue?: string | number | (string | number)[] | null,
+) => {
+  const types = Array.isArray(typeValue)
+    ? typeValue
+    : typeValue === null || typeValue === undefined
+      ? []
+      : [typeValue];
+  const normalizedTypes = types.map((type) => {
+    if (typeof type === "number" || /^\d+$/.test(type)) {
+      const numericValue = Number(type);
+      return TYPE_OPTIONS.find((option) => option.enumValue === numericValue)
+        ?.value;
+    }
+
+    return TYPE_OPTIONS.find(
+      (option) => option.value.toLowerCase() === type.toLowerCase(),
+    )?.value;
+  });
+
+  return TYPE_OPTIONS.find((option) => normalizedTypes.includes(option.value))
+    ?.value ?? "";
 };
 
 const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
@@ -108,11 +118,7 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
       .required("About page is required"),
 
     category: yup.string().required("Please select a category"),
-    type: yup
-      .array()
-      .of(yup.string().required())
-      .min(1, "Please select at least one type")
-      .required("Type is required"),
+    type: yup.string().required("Please select a type"),
   });
   const [preview, setPreview] = useState<string | null>(null);
 
@@ -127,7 +133,7 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
   } = useForm<CreatePageFormValues>({
     resolver: yupResolver(createFormSchema),
     defaultValues: {
-      type: [],
+      type: "",
     },
   });
   const imagePreview =
@@ -146,7 +152,7 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
         phoneNo: initialData.phoneNo ? Number(initialData.phoneNo) : undefined,
         aboutPage: initialData.aboutPage,
         category: initialData.category,
-        type: initialData.types || [],
+        type: getInitialType(initialData.pageType ?? initialData.types),
       });
     }
   }, [initialData, reset]);
@@ -180,9 +186,7 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
       formData.append("pageImage", data.pageImage);
     }
 
-    data.type.forEach((t, i) => {
-      formData.append(`Types[${i}]`, t);
-    });
+    formData.append("type", data.type);
     if (isEdit && initialData?.id) {
       updatePage(
         { id: initialData.id, formData },
@@ -313,20 +317,47 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
               name="type"
               control={control}
               render={({ field }) => (
-                <Select
-                  {...field}
-                  isMulti
-                  closeMenuOnSelect={false}
-                  hideSelectedOptions={false}
+                <>
+                  <Select<OptionType, false>
+                  name={field.name}
+                  onBlur={field.onBlur}
+                  onChange={(option) => field.onChange(option?.value ?? "")}
                   options={TYPE_OPTIONS}
-                  value={TYPE_OPTIONS.filter((opt) =>
-                    field.value?.includes(opt.value),
+                  value={
+                    TYPE_OPTIONS.find((option) => option.value === field.value) ??
+                    null
+                  }
+                  isClearable
+                  />
+                  {field.value && (
+                    <div
+                      className="d-flex flex-wrap gap-3 mt-2"
+                      aria-live="polite"
+                    >
+                      {TYPE_OPTIONS.slice(
+                        TYPE_OPTIONS.findIndex(
+                          (option) => option.value === field.value,
+                        ),
+                      ).map((option) => (
+                        <label
+                          className="form-check d-flex align-items-center gap-2 mb-0"
+                          key={option.value}
+                        >
+                          <input
+                            className="form-check-input mt-0"
+                            type="checkbox"
+                            checked
+                            disabled
+                            readOnly
+                          />
+                          <span className="form-check-label">
+                            {option.label}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
                   )}
-                  onChange={(val) => {
-                    const values = val ? val.map((v) => v.value) : [];
-                    field.onChange(values);
-                  }}
-                />
+                </>
               )}
             />
 

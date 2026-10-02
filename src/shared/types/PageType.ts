@@ -5,7 +5,8 @@ export type PageType = {
   category?: string;
   aboutPage: string;
   pageImageUrl?: string;
-  types: string[];
+  pageType?: string | number | null;
+  types?: string[];
   isFollowing: boolean;
   email: string;
   url: string;
