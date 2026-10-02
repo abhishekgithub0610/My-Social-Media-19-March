@@ -182,21 +182,21 @@ const PagePerformance = () => {
                   >
                     {followerTrend.length > 0 ? (
                       followerTrend.map((point) => (
-                      <div
-                        key={point.label}
-                        className="d-flex flex-fill h-100 flex-column align-items-center justify-content-end gap-2"
-                        title={`${point.label}: ${formatNumber(point.total)} followers`}
-                      >
                         <div
-                          className="w-100 rounded-top bg-primary"
-                          style={{
-                            height: `${Math.max(4, (point.total / maxFollowers) * 100)}%`,
-                          }}
-                        />
-                        <small className="text-body-secondary text-truncate w-100 text-center">
-                          {point.label}
-                        </small>
-                      </div>
+                          key={point.label}
+                          className="d-flex flex-fill h-100 flex-column align-items-center justify-content-end gap-2"
+                          title={`${point.label}: ${formatNumber(point.total)} followers`}
+                        >
+                          <div
+                            className="w-100 rounded-top bg-primary"
+                            style={{
+                              height: `${Math.max(4, (point.total / maxFollowers) * 100)}%`,
+                            }}
+                          />
+                          <small className="text-body-secondary text-truncate w-100 text-center">
+                            {point.label}
+                          </small>
+                        </div>
                       ))
                     ) : (
                       <p className="small text-body-secondary mb-4">
