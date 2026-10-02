@@ -74,8 +74,10 @@ const getInitialType = (
     )?.value;
   });
 
-  return TYPE_OPTIONS.find((option) => normalizedTypes.includes(option.value))
-    ?.value ?? "";
+  return (
+    TYPE_OPTIONS.find((option) => normalizedTypes.includes(option.value))
+      ?.value ?? ""
+  );
 };
 
 const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
@@ -319,15 +321,16 @@ const CreatePageForm = ({ initialData, isEdit = false }: Props) => {
               render={({ field }) => (
                 <>
                   <Select<OptionType, false>
-                  name={field.name}
-                  onBlur={field.onBlur}
-                  onChange={(option) => field.onChange(option?.value ?? "")}
-                  options={TYPE_OPTIONS}
-                  value={
-                    TYPE_OPTIONS.find((option) => option.value === field.value) ??
-                    null
-                  }
-                  isClearable
+                    name={field.name}
+                    onBlur={field.onBlur}
+                    onChange={(option) => field.onChange(option?.value ?? "")}
+                    options={TYPE_OPTIONS}
+                    value={
+                      TYPE_OPTIONS.find(
+                        (option) => option.value === field.value,
+                      ) ?? null
+                    }
+                    isClearable
                   />
                   {field.value && (
                     <div
