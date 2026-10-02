@@ -115,7 +115,7 @@ export const settingPanelLinksData: ProfilePanelLink[] = [
   {
     image: trashImg,
     name: "Manage interests",
-    link: "/interests",
+    link: "/settings/interests",
   },
 ];
 
