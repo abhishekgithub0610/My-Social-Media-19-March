@@ -19,6 +19,7 @@ import chatAltImg from "@/assets/images/icon/chat-alt-outline-filled.svg";
 import trashImg from "@/assets/images/icon/trash-var-outline-filled.svg";
 import placement from "@/assets/images/placement.png";
 import pages from "@/assets/images/icon/pages.svg";
+import { BsLightbulb } from "react-icons/bs";
 
 export const profilePanelLinksData1: ProfilePanelLink[] = [
   {
@@ -30,6 +31,11 @@ export const profilePanelLinksData1: ProfilePanelLink[] = [
     image: personImg,
     name: "Buddies",
     link: "/buddies",
+  },
+  {
+    icon: "thinking",
+    name: "Thinking IDE",
+    link: "/thinking-ide",
   },
   {
     image: pages,

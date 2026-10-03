@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { BsLightbulb } from "react-icons/bs";
 import { Button, Card, CardBody, CardFooter } from "react-bootstrap";
 import {
   currentYear,
@@ -128,13 +131,17 @@ const ProfilePanel = ({ links }: ProfilePanelProps) => {
             {links.map((item, idx) => (
               <li key={item.name + idx} className="nav-item">
                 <Link className="nav-link" href={item.link}>
-                  <Image
-                    src={item.image}
-                    alt="icon"
-                    height={20}
-                    width={20}
-                    className="me-2 h-20px fa-fw"
-                  />
+                  {item.icon === "thinking" ? (
+                    <BsLightbulb className="me-2 fa-fw" size={20} aria-hidden="true" />
+                  ) : item.image ? (
+                    <Image
+                      src={item.image}
+                      alt=""
+                      height={20}
+                      width={20}
+                      className="me-2 h-20px fa-fw"
+                    />
+                  ) : null}
                   <span>{item.name} </span>
                 </Link>
               </li>
