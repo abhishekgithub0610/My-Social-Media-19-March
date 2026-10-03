@@ -132,7 +132,11 @@ const ProfilePanel = ({ links }: ProfilePanelProps) => {
               <li key={item.name + idx} className="nav-item">
                 <Link className="nav-link" href={item.link}>
                   {item.icon === "thinking" ? (
-                    <BsLightbulb className="me-2 fa-fw" size={20} aria-hidden="true" />
+                    <BsLightbulb
+                      className="me-2 fa-fw"
+                      size={20}
+                      aria-hidden="true"
+                    />
                   ) : item.image ? (
                     <Image
                       src={item.image}

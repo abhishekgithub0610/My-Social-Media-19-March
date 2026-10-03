@@ -71,8 +71,7 @@ export async function rateThoughtNode(
   nodeId: string,
   score: number | null,
 ): Promise<void> {
-  await baseClient.put(
-    `${sessionsPath}/${sessionId}/nodes/${nodeId}/rating`,
-    { score },
-  );
+  await baseClient.put(`${sessionsPath}/${sessionId}/nodes/${nodeId}/rating`, {
+    score,
+  });
 }

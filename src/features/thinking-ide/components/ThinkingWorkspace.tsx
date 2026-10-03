@@ -44,7 +44,8 @@ function buildTree(nodes: ThoughtNode[]): TreeNode[] {
   const sortChildren = (branch: TreeNode) => {
     branch.children.sort(
       (left, right) =>
-        new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime(),
+        new Date(left.createdAt).getTime() -
+        new Date(right.createdAt).getTime(),
     );
     branch.children.forEach(sortChildren);
   };
@@ -57,7 +58,8 @@ function toExportTree(nodes: ThoughtNode[], parentId: string | null = null) {
     .filter((node) => node.parentId === parentId)
     .sort(
       (left, right) =>
-        new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime(),
+        new Date(left.createdAt).getTime() -
+        new Date(right.createdAt).getTime(),
     )
     .map((node) => ({
       id: node.id,
@@ -113,11 +115,17 @@ export default function ThinkingWorkspace() {
   const tree = useMemo(() => buildTree(nodes), [nodes]);
   const selectedNode =
     nodes.find((node) => node.id === activeNodeId) ??
-    (session ? nodes.find((node) => node.id === mostRecentlyUpdated(nodes)) : undefined);
+    (session
+      ? nodes.find((node) => node.id === mostRecentlyUpdated(nodes))
+      : undefined);
   const contentValue =
-    draftNodeId === selectedNode?.id ? contentDraft : selectedNode?.content ?? "";
+    draftNodeId === selectedNode?.id
+      ? contentDraft
+      : (selectedNode?.content ?? "");
   const statusValue =
-    draftNodeId === selectedNode?.id ? statusDraft : selectedNode?.status ?? "open";
+    draftNodeId === selectedNode?.id
+      ? statusDraft
+      : (selectedNode?.status ?? "open");
   const scoreValue =
     draftNodeId === selectedNode?.id
       ? scoreDraft
@@ -128,7 +136,9 @@ export default function ThinkingWorkspace() {
   const refreshSession = async (sessionId: string) => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ["thinking-sessions"] }),
-      queryClient.invalidateQueries({ queryKey: ["thinking-session", sessionId] }),
+      queryClient.invalidateQueries({
+        queryKey: ["thinking-session", sessionId],
+      }),
     ]);
   };
 
@@ -161,8 +171,13 @@ export default function ThinkingWorkspace() {
   });
 
   const createNodeMutation = useMutation({
-    mutationFn: ({ sessionId, payload }: { sessionId: string; payload: CreateThoughtNode }) =>
-      createThoughtNode(sessionId, payload),
+    mutationFn: ({
+      sessionId,
+      payload,
+    }: {
+      sessionId: string;
+      payload: CreateThoughtNode;
+    }) => createThoughtNode(sessionId, payload),
     onSuccess: async (created, variables) => {
       setBranchDraft("");
       setActiveNodeId(created.id);
@@ -232,7 +247,9 @@ export default function ThinkingWorkspace() {
       const rated = siblings.filter((node) => node.score !== null);
       const highest = Math.max(...rated.map((node) => node.score!));
       if (rated.length && highest >= 0) {
-        rated.filter((node) => node.score === highest).forEach((node) => result.add(node.id));
+        rated
+          .filter((node) => node.score === highest)
+          .forEach((node) => result.add(node.id));
       }
     });
     return result;
@@ -296,13 +313,27 @@ export default function ThinkingWorkspace() {
             onClick={() => setActiveNodeId(node.id)}
           >
             <span className={styles.nodeMeta}>
-              <span className={node.kind === "question" ? styles.questionTag : styles.answerTag}>
+              <span
+                className={
+                  node.kind === "question"
+                    ? styles.questionTag
+                    : styles.answerTag
+                }
+              >
                 {node.kind}
               </span>
-              <span className={node.status === "resolved" ? styles.resolvedTag : styles.openTag}>
+              <span
+                className={
+                  node.status === "resolved"
+                    ? styles.resolvedTag
+                    : styles.openTag
+                }
+              >
                 {node.status}
               </span>
-              {isTopRated && <span className={styles.topTag}>Top rated branch</span>}
+              {isTopRated && (
+                <span className={styles.topTag}>Top rated branch</span>
+              )}
               <span className={styles.scoreTag}>
                 {node.score === null ? "Not rated" : `${node.score}/10`}
               </span>
@@ -311,7 +342,9 @@ export default function ThinkingWorkspace() {
           </button>
         </div>
         {node.children.length > 0 && expanded && (
-          <ul className={styles.treeChildren}>{node.children.map(renderTreeNode)}</ul>
+          <ul className={styles.treeChildren}>
+            {node.children.map(renderTreeNode)}
+          </ul>
         )}
       </li>
     );
@@ -342,7 +375,10 @@ export default function ThinkingWorkspace() {
             onSubmit={(event) => {
               event.preventDefault();
               setError("");
-              createSessionMutation.mutate({ title: newTitle.trim(), initialQuestion: initialQuestion.trim() });
+              createSessionMutation.mutate({
+                title: newTitle.trim(),
+                initialQuestion: initialQuestion.trim(),
+              });
             }}
           >
             <label htmlFor="session-title">Session title</label>
@@ -364,7 +400,10 @@ export default function ThinkingWorkspace() {
               onChange={(event) => setInitialQuestion(event.target.value)}
               placeholder="What are you trying to understand?"
             />
-            <button className={styles.primaryButton} disabled={createSessionMutation.isPending}>
+            <button
+              className={styles.primaryButton}
+              disabled={createSessionMutation.isPending}
+            >
               {createSessionMutation.isPending ? "Creating…" : "Create session"}
             </button>
           </form>
@@ -388,12 +427,22 @@ export default function ThinkingWorkspace() {
             <p className={styles.inlineError}>Sessions could not be loaded.</p>
           ) : sessionsQuery.data?.length ? (
             [...sessionsQuery.data]
-              .sort((left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime())
+              .sort(
+                (left, right) =>
+                  new Date(right.updatedAt).getTime() -
+                  new Date(left.updatedAt).getTime(),
+              )
               .map((item) => (
-                <div className={`${styles.sessionItem} ${activeSessionId === item.id ? styles.activeSession : ""}`} key={item.id}>
+                <div
+                  className={`${styles.sessionItem} ${activeSessionId === item.id ? styles.activeSession : ""}`}
+                  key={item.id}
+                >
                   <button type="button" onClick={() => selectSession(item.id)}>
                     <strong>{item.title}</strong>
-                    <span>{item.nodeCount} thoughts - {new Date(item.updatedAt).toLocaleDateString()}</span>
+                    <span>
+                      {item.nodeCount} thoughts -{" "}
+                      {new Date(item.updatedAt).toLocaleDateString()}
+                    </span>
                   </button>
                   <button
                     type="button"
@@ -402,7 +451,11 @@ export default function ThinkingWorkspace() {
                     aria-label={`Delete ${item.title}`}
                     disabled={deleteSessionMutation.isPending}
                     onClick={() => {
-                      if (window.confirm(`Delete "${item.title}" and all its thoughts? This cannot be undone.`)) {
+                      if (
+                        window.confirm(
+                          `Delete "${item.title}" and all its thoughts? This cannot be undone.`,
+                        )
+                      ) {
                         setError("");
                         deleteSessionMutation.mutate(item.id);
                       }
@@ -415,28 +468,47 @@ export default function ThinkingWorkspace() {
           ) : (
             <div className={styles.emptySessions}>
               <strong>{search ? "No matches" : "No sessions yet"}</strong>
-              <span>{search ? "Try another title." : "Start with a question worth exploring."}</span>
+              <span>
+                {search
+                  ? "Try another title."
+                  : "Start with a question worth exploring."}
+              </span>
             </div>
           )}
         </div>
       </aside>
 
       <div className={styles.thinkingArea}>
-        {error && <div className={styles.errorBanner} role="alert">{error}</div>}
+        {error && (
+          <div className={styles.errorBanner} role="alert">
+            {error}
+          </div>
+        )}
         {!activeSessionId ? (
           <div className={styles.welcomeState}>
-            <span className={styles.welcomeMark}><BsArrowDownUp aria-hidden="true" /></span>
+            <span className={styles.welcomeMark}>
+              <BsArrowDownUp aria-hidden="true" />
+            </span>
             <p className={styles.eyebrow}>MAKE ROOM FOR A BETTER QUESTION</p>
             <h2>Follow an idea where it leads.</h2>
-            <p>Create a private session, branch questions and answers, and keep useful thoughts rated and close at hand.</p>
-            <button className={styles.primaryButton} onClick={() => setShowCreateForm(true)}>
+            <p>
+              Create a private session, branch questions and answers, and keep
+              useful thoughts rated and close at hand.
+            </p>
+            <button
+              className={styles.primaryButton}
+              onClick={() => setShowCreateForm(true)}
+            >
               <BsPlus aria-hidden="true" /> New thinking session
             </button>
           </div>
         ) : sessionQuery.isPending ? (
           <div className={styles.loadingState}>Loading your session...</div>
         ) : sessionQuery.isError ? (
-          <div className={styles.loadingState} role="alert">This session could not be opened. It may have been deleted or access denied.</div>
+          <div className={styles.loadingState} role="alert">
+            This session could not be opened. It may have been deleted or access
+            denied.
+          </div>
         ) : session ? (
           <>
             <header className={styles.sessionHeader}>
@@ -444,34 +516,62 @@ export default function ThinkingWorkspace() {
                 <p className={styles.eyebrow}>SESSION</p>
                 <h2>{session.title}</h2>
               </div>
-              <button className={styles.secondaryButton} type="button" onClick={() => handleExport(session)}>
+              <button
+                className={styles.secondaryButton}
+                type="button"
+                onClick={() => handleExport(session)}
+              >
                 <BsDownload aria-hidden="true" /> <span>Export JSON</span>
               </button>
             </header>
             <div className={styles.editorGrid}>
-              <section className={styles.treePanel} aria-label="Thought branches">
+              <section
+                className={styles.treePanel}
+                aria-label="Thought branches"
+              >
                 <div className={styles.panelHeading}>
-                  <div><h3>Branch map</h3><span>{nodes.length} thoughts</span></div>
+                  <div>
+                    <h3>Branch map</h3>
+                    <span>{nodes.length} thoughts</span>
+                  </div>
                 </div>
                 {tree.length ? (
-                  <ul className={styles.treeRoot}>{tree.map(renderTreeNode)}</ul>
+                  <ul className={styles.treeRoot}>
+                    {tree.map(renderTreeNode)}
+                  </ul>
                 ) : (
-                  <p className={styles.muted}>This session has no thoughts yet.</p>
+                  <p className={styles.muted}>
+                    This session has no thoughts yet.
+                  </p>
                 )}
               </section>
 
-              <aside className={styles.detailPanel} aria-label="Selected thought details">
+              <aside
+                className={styles.detailPanel}
+                aria-label="Selected thought details"
+              >
                 {selectedNode ? (
                   <>
                     <div className={styles.panelHeading}>
-                      <div><h3>Thought details</h3><span>{selectedNode.kind}</span></div>
-                      <span className={styles.updatedNote}>Updated {new Date(selectedNode.updatedAt).toLocaleDateString()}</span>
+                      <div>
+                        <h3>Thought details</h3>
+                        <span>{selectedNode.kind}</span>
+                      </div>
+                      <span className={styles.updatedNote}>
+                        Updated{" "}
+                        {new Date(selectedNode.updatedAt).toLocaleDateString()}
+                      </span>
                     </div>
                     <form
                       className={styles.detailForm}
                       onSubmit={(event) => {
                         event.preventDefault();
-                        if (!activeSessionId || !selectedNode || !contentValue.trim()) return;
+                        if (
+                          !activeSessionId ||
+                          !selectedNode ||
+                          !contentValue.trim()
+                        )
+                          return;
                         setError("");
                         saveNodeMutation.mutate({
                           sessionId: activeSessionId,
@@ -500,18 +600,26 @@ export default function ThinkingWorkspace() {
                           aria-pressed={statusValue === "resolved"}
                           onClick={() => {
                             setDraftNodeId(selectedNode.id);
-                            setStatusDraft(statusValue === "resolved" ? "open" : "resolved");
+                            setStatusDraft(
+                              statusValue === "resolved" ? "open" : "resolved",
+                            );
                           }}
                         >
-                          {statusValue === "resolved" ? <BsCheck2 aria-hidden="true" /> : null}
+                          {statusValue === "resolved" ? (
+                            <BsCheck2 aria-hidden="true" />
+                          ) : null}
                           {statusValue === "resolved" ? "Resolved" : "Open"}
                         </button>
                       </div>
                       <button
                         className={styles.primaryButton}
-                        disabled={saveNodeMutation.isPending || !contentValue.trim()}
+                        disabled={
+                          saveNodeMutation.isPending || !contentValue.trim()
+                        }
                       >
-                          {saveNodeMutation.isPending ? "Saving..." : "Save thought"}
+                        {saveNodeMutation.isPending
+                          ? "Saving..."
+                          : "Save thought"}
                       </button>
                     </form>
 
@@ -525,7 +633,10 @@ export default function ThinkingWorkspace() {
                           setDraftNodeId(selectedNode.id);
                           setScoreDraft(event.target.value);
                           if (!activeSessionId || !selectedNode) return;
-                          const score = event.target.value === "" ? null : Number(event.target.value);
+                          const score =
+                            event.target.value === ""
+                              ? null
+                              : Number(event.target.value);
                           rateNodeMutation.mutate({
                             sessionId: activeSessionId,
                             nodeId: selectedNode.id,
@@ -536,37 +647,58 @@ export default function ThinkingWorkspace() {
                       >
                         <option value="">Not rated</option>
                         {Array.from({ length: 11 }, (_, score) => (
-                          <option key={score} value={score}>{score} / 10</option>
+                          <option key={score} value={score}>
+                            {score} / 10
+                          </option>
                         ))}
                       </select>
-                      <small>Ratings are compared only with sibling branches.</small>
+                      <small>
+                        Ratings are compared only with sibling branches.
+                      </small>
                     </div>
 
                     <form
                       className={styles.branchForm}
                       onSubmit={(event) => {
                         event.preventDefault();
-                        if (!activeSessionId || !selectedNode || !branchDraft.trim()) return;
+                        if (
+                          !activeSessionId ||
+                          !selectedNode ||
+                          !branchDraft.trim()
+                        )
+                          return;
                         setError("");
                         createNodeMutation.mutate({
                           sessionId: activeSessionId,
-                          payload: { parentId: selectedNode.id, kind: branchKind, content: branchDraft.trim() },
+                          payload: {
+                            parentId: selectedNode.id,
+                            kind: branchKind,
+                            content: branchDraft.trim(),
+                          },
                         });
                       }}
                     >
                       <h4>Add a branch</h4>
-                      <div className={styles.kindPicker} role="group" aria-label="Branch type">
-                        {(["question", "answer"] as ThoughtKind[]).map((kind) => (
-                          <button
-                            type="button"
-                            key={kind}
-                            aria-pressed={branchKind === kind}
-                            className={branchKind === kind ? styles.kindSelected : ""}
-                            onClick={() => setBranchKind(kind)}
-                          >
-                            {kind === "question" ? "? Question" : "Answer"}
-                          </button>
-                        ))}
+                      <div
+                        className={styles.kindPicker}
+                        role="group"
+                        aria-label="Branch type"
+                      >
+                        {(["question", "answer"] as ThoughtKind[]).map(
+                          (kind) => (
+                            <button
+                              type="button"
+                              key={kind}
+                              aria-pressed={branchKind === kind}
+                              className={
+                                branchKind === kind ? styles.kindSelected : ""
+                              }
+                              onClick={() => setBranchKind(kind)}
+                            >
+                              {kind === "question" ? "? Question" : "Answer"}
+                            </button>
+                          ),
+                        )}
                       </div>
                       <textarea
                         aria-label="New branch content"
@@ -574,15 +706,29 @@ export default function ThinkingWorkspace() {
                         maxLength={5000}
                         rows={3}
                         onChange={(event) => setBranchDraft(event.target.value)}
-                        placeholder={branchKind === "question" ? "What follows from this?" : "Add a possible answer..."}
+                        placeholder={
+                          branchKind === "question"
+                            ? "What follows from this?"
+                            : "Add a possible answer..."
+                        }
                       />
-                      <button className={styles.secondaryButton} disabled={createNodeMutation.isPending || !branchDraft.trim()}>
-                        <BsPlus aria-hidden="true" /> {createNodeMutation.isPending ? "Adding..." : "Add branch"}
+                      <button
+                        className={styles.secondaryButton}
+                        disabled={
+                          createNodeMutation.isPending || !branchDraft.trim()
+                        }
+                      >
+                        <BsPlus aria-hidden="true" />{" "}
+                        {createNodeMutation.isPending
+                          ? "Adding..."
+                          : "Add branch"}
                       </button>
                     </form>
                   </>
                 ) : (
-                  <div className={styles.noSelection}>Choose a thought to inspect it, edit it, or add a branch.</div>
+                  <div className={styles.noSelection}>
+                    Choose a thought to inspect it, edit it, or add a branch.
+                  </div>
                 )}
               </aside>
             </div>
