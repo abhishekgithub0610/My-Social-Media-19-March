@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { BsLightbulb } from "react-icons/bs";
+import { BsJournalBookmark, BsLightbulb } from "react-icons/bs";
+import { usePathname } from "next/navigation";
 import { Button, Card, CardBody, CardFooter } from "react-bootstrap";
 import {
   currentYear,
@@ -23,6 +24,7 @@ type ProfilePanelProps = {
 };
 
 const ProfilePanel = ({ links }: ProfilePanelProps) => {
+  const pathname = usePathname();
   const { user } = useAuthStore();
   const [profileImage, setProfileImage] = useState<string>("");
   const [bio, setBio] = useState<string>("");
@@ -130,13 +132,19 @@ const ProfilePanel = ({ links }: ProfilePanelProps) => {
           <ul className="nav nav-link-secondary flex-column fw-bold gap-2">
             {links.map((item, idx) => (
               <li key={item.name + idx} className="nav-item">
-                <Link className="nav-link" href={item.link}>
+                <Link
+                  className={pathname === item.link ? "nav-link active" : "nav-link"}
+                  aria-current={pathname === item.link ? "page" : undefined}
+                  href={item.link}
+                >
                   {item.icon === "thinking" ? (
                     <BsLightbulb
                       className="me-2 fa-fw"
                       size={20}
                       aria-hidden="true"
                     />
+                  ) : item.icon === "slambook" ? (
+                    <BsJournalBookmark className="me-2 fa-fw" size={20} aria-hidden="true" />
                   ) : item.image ? (
                     <Image
                       src={item.image}

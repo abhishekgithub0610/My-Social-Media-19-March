@@ -4,5 +4,5 @@ export type ProfilePanelLink = {
   name: string;
   link: string;
   image?: string | StaticImageData;
-  icon?: "thinking";
+  icon?: "thinking" | "slambook";
 };

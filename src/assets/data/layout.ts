@@ -1,3 +1,4 @@
+import type { ProfilePanelLink as FeedProfilePanelLink } from "@/features/profile/types/profile";
 import type { ProfilePanelLink } from "@/types/data";
 
 import homeImg from "@/assets/images/icon/home-outline-filled.svg";
@@ -19,9 +20,8 @@ import chatAltImg from "@/assets/images/icon/chat-alt-outline-filled.svg";
 import trashImg from "@/assets/images/icon/trash-var-outline-filled.svg";
 import placement from "@/assets/images/placement.png";
 import pages from "@/assets/images/icon/pages.svg";
-import { BsLightbulb } from "react-icons/bs";
 
-export const profilePanelLinksData1: ProfilePanelLink[] = [
+export const profilePanelLinksData1: FeedProfilePanelLink[] = [
   {
     image: homeImg,
     name: "Feed",
@@ -36,6 +36,11 @@ export const profilePanelLinksData1: ProfilePanelLink[] = [
     icon: "thinking",
     name: "Thinking IDE",
     link: "/thinking-ide",
+  },
+  {
+    icon: "slambook",
+    name: "Slambook",
+    link: "/slambook",
   },
   {
     image: pages,
